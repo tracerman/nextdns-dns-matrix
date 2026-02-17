@@ -673,24 +673,34 @@ function rankResults(results, preference, toleranceMs = 10) {
 // ─── IP Resolution via DoH ────────────────────────────────────────────────────
 
 const DOH_RESOLVERS = {
-  google:     { label: 'Google',     url: 'https://dns.google/resolve' },
-  cloudflare: { label: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query', headers: { 'Accept': 'application/dns-json' } },
-  quad9:      { label: 'Quad9',      url: 'https://dns.quad9.net:5053/dns-query', headers: { 'Accept': 'application/dns-json' } },
+  google:     { label: 'Google',     url: 'https://dns.google/resolve',             batch: 8, delayMs: 0 },
+  cloudflare: { label: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query',   batch: 4, delayMs: 150, headers: { 'Accept': 'application/dns-json' } },
+  quad9:      { label: 'Quad9',      url: 'https://dns.quad9.net:5053/dns-query',   batch: 3, delayMs: 250, headers: { 'Accept': 'application/dns-json' } },
 };
 
 async function resolveHostname(hostname, type = 'A', resolver = 'google') {
   const cfg = DOH_RESOLVERS[resolver] || DOH_RESOLVERS.google;
-  try {
-    const resp = await fetch(`${cfg.url}?name=${encodeURIComponent(hostname)}&type=${type}`, {
-      headers: cfg.headers || {},
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    if (data.Answer && data.Answer.length > 0) {
-      const record = data.Answer.find(a => a.type === (type === 'A' ? 1 : 28));
-      return record ? record.data : null;
+  const maxRetries = 2;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const resp = await fetch(`${cfg.url}?name=${encodeURIComponent(hostname)}&type=${type}`, {
+        headers: cfg.headers || {},
+      });
+      if (resp.status === 429) {
+        await sleep(500 * (attempt + 1));
+        continue;
+      }
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      if (data.Answer && data.Answer.length > 0) {
+        const record = data.Answer.find(a => a.type === (type === 'A' ? 1 : 28));
+        return record ? record.data : null;
+      }
+      return null;
+    } catch {
+      if (attempt < maxRetries - 1) await sleep(300 * (attempt + 1));
     }
-  } catch { /* ignore */ }
+  }
   return null;
 }
 
@@ -712,10 +722,13 @@ async function resolveAllIPs(results, onProgress, resolver = 'google') {
 
   const jobs = [...hostnames.values()];
   let completed = 0;
+  const cfg = DOH_RESOLVERS[resolver] || DOH_RESOLVERS.google;
+  const batchSize = cfg.batch || 8;
+  const delayMs = cfg.delayMs || 0;
 
-  // Resolve in batches of 8
-  for (let i = 0; i < jobs.length; i += 8) {
-    const batch = jobs.slice(i, i + 8);
+  for (let i = 0; i < jobs.length; i += batchSize) {
+    if (i > 0 && delayMs > 0) await sleep(delayMs);
+    const batch = jobs.slice(i, i + batchSize);
     const batchResults = await Promise.all(
       batch.map(j => resolveHostname(j.hostname, j.qtype, resolver))
     );
