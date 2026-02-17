@@ -33,6 +33,18 @@ NextDNS gives you a default DNS config, but it's not always the fastest. Their i
 - **Config strings** — Asus DoT (separate IP + Hostname fields), DoH, DoT, plain DNS — all with copy-to-clipboard
 - Color-coded latency: green (<20ms), yellow (<40ms), red (>=40ms)
 
+## DoH Resolver Selection
+
+The tool needs a DoH (DNS-over-HTTPS) resolver to translate server hostnames into IPs. Choose whichever isn't blocked on your network:
+
+| Resolver | Endpoint |
+|----------|----------|
+| **Google** (default) | `dns.google/resolve` |
+| **Cloudflare** | `cloudflare-dns.com/dns-query` |
+| **Quad9** | `dns.quad9.net:5053/dns-query` |
+
+All three return the same JSON wire format. The resolver choice doesn't affect benchmarking accuracy — it only matters for IP resolution.
+
 ## Server Preference Modes
 
 | Mode | Best For |
@@ -50,13 +62,13 @@ Uses two NextDNS APIs (both CORS `*`):
 1. **`GET https://router.nextdns.io/?source=ping`** — returns PoP servers geo-tailored to your location
 2. **`GET https://{hostname}/info`** — returns `{ pop, rtt, locationName }` where `rtt` is server-measured TCP RTT in microseconds
 
-Since browsers can't resolve DNS directly, IPs are resolved via the **Google DoH API** (`dns.google/resolve`) after benchmarking.
+Since browsers can't resolve DNS directly, IPs are resolved via a **public DoH API** after benchmarking. You can choose between Google, Cloudflare, and Quad9 as the resolver.
 
 ### Benchmark Phases
 
 1. **Discovery** — fetch server list from `router.nextdns.io`, add anycast + ultralow endpoints
 2. **Benchmark** — hit `/info` on each hostname (3 rounds, 6 concurrent, 3s timeout)
-3. **IP Resolution** — bulk-resolve all hostnames via Google DoH (batches of 8)
+3. **IP Resolution** — bulk-resolve all hostnames via the selected DoH resolver (batches of 8)
 4. **Ranking** — sort by latency with optional type preference boost
 5. **Config** — generate all output formats using resolved IPs
 

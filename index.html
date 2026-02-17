@@ -324,6 +324,14 @@ tr:hover td { background: rgba(88,166,255,0.04); }
         </select>
       </div>
       <div class="form-group">
+        <label for="dohResolver">DNS Resolver</label>
+        <select id="dohResolver">
+          <option value="google">Google</option>
+          <option value="cloudflare">Cloudflare</option>
+          <option value="quad9">Quad9</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label for="preference">Preference</label>
         <select id="preference">
           <option value="auto">auto (fastest wins)</option>
@@ -664,9 +672,18 @@ function rankResults(results, preference, toleranceMs = 10) {
 
 // ─── IP Resolution via DoH ────────────────────────────────────────────────────
 
-async function resolveHostname(hostname, type = 'A') {
+const DOH_RESOLVERS = {
+  google:     { label: 'Google',     url: 'https://dns.google/resolve' },
+  cloudflare: { label: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query', headers: { 'Accept': 'application/dns-json' } },
+  quad9:      { label: 'Quad9',      url: 'https://dns.quad9.net:5053/dns-query', headers: { 'Accept': 'application/dns-json' } },
+};
+
+async function resolveHostname(hostname, type = 'A', resolver = 'google') {
+  const cfg = DOH_RESOLVERS[resolver] || DOH_RESOLVERS.google;
   try {
-    const resp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(hostname)}&type=${type}`);
+    const resp = await fetch(`${cfg.url}?name=${encodeURIComponent(hostname)}&type=${type}`, {
+      headers: cfg.headers || {},
+    });
     if (!resp.ok) return null;
     const data = await resp.json();
     if (data.Answer && data.Answer.length > 0) {
@@ -679,7 +696,7 @@ async function resolveHostname(hostname, type = 'A') {
 
 // ─── Bulk IP Resolution ───────────────────────────────────────────────────────
 
-async function resolveAllIPs(results, onProgress) {
+async function resolveAllIPs(results, onProgress, resolver = 'google') {
   const ok = results.filter(r => r.status === 'ok');
   const hostnames = new Map(); // hostname -> { qtype, indices[] }
 
@@ -700,7 +717,7 @@ async function resolveAllIPs(results, onProgress) {
   for (let i = 0; i < jobs.length; i += 8) {
     const batch = jobs.slice(i, i + 8);
     const batchResults = await Promise.all(
-      batch.map(j => resolveHostname(j.hostname, j.qtype))
+      batch.map(j => resolveHostname(j.hostname, j.qtype, resolver))
     );
     batch.forEach((j, bi) => {
       const ip = batchResults[bi];
@@ -916,6 +933,7 @@ async function runBenchmark() {
   const configId = document.getElementById('configId').value.trim();
   const rounds = parseInt(document.getElementById('rounds').value);
   const preference = document.getElementById('preference').value;
+  const resolver = document.getElementById('dohResolver').value;
 
   if (!configId || configId.length < 4) {
     showError('Please enter a valid NextDNS config ID (at least 4 characters). Find it at my.nextdns.io → Setup.');
@@ -953,11 +971,11 @@ async function runBenchmark() {
     });
 
     // Phase 3: Resolve IPs
-    setProgress('Resolving DNS for all servers...', 90);
+    setProgress(`Resolving DNS via ${DOH_RESOLVERS[resolver].label}...`, 90);
     await resolveAllIPs(results, (cur, tot) => {
       const pct = Math.round(90 + (cur / tot) * 5);
       setProgress(`Resolving IPs: ${cur}/${tot} hostnames...`, pct);
-    });
+    }, resolver);
 
     // Phase 4: Rank
     setProgress('Ranking results...', 96);
