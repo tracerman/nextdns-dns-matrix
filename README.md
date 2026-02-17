@@ -68,22 +68,20 @@ For ASUSWRT / Merlin routers: **WAN → DNS → DNS Privacy Protocol → DNS-ove
 
 Each entry has two fields (leave port blank):
 - **IP:** the resolved server IP
-- **Hostname:** `{configId}.dns1.nextdns.io` or `{configId}.dns2.nextdns.io`
+- **Hostname:** `{configId}.dns.nextdns.io`
 
 Includes: Primary (fastest), Secondary (backup), and two Anycast fallbacks.
 
 ### DNS-over-HTTPS (DoH)
 
 ```
-https://dns1.nextdns.io/{configId}
-https://dns2.nextdns.io/{configId}
+https://dns.nextdns.io/{configId}
 ```
 
-### DNS-over-TLS Hostnames
+### DNS-over-TLS Hostname
 
 ```
-{configId}.dns1.nextdns.io
-{configId}.dns2.nextdns.io
+{configId}.dns.nextdns.io
 ```
 
 ### Plain DNS IPs
