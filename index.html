@@ -742,30 +742,23 @@ function generateConfig(ranked, configId) {
   const anycastV6IP1 = (anycastV6[0] && anycastV6[0].resolvedIP) || ANYCAST_FALLBACK.ipv6.dns1;
   const anycastV6IP2 = (anycastV6[1] && anycastV6[1].resolvedIP) || ANYCAST_FALLBACK.ipv6.dns2;
 
-  const dotHostname = `${configId}.dns1.nextdns.io`;
-  const dotHostname2 = `${configId}.dns2.nextdns.io`;
+  const dotHostname = `${configId}.dns.nextdns.io`;
 
   return {
     ipv4: {
-      best:     { ip: primaryIP,   hostname: dotHostname,  result: bestV4 },
-      backup:   { ip: secondaryIP, hostname: dotHostname2, result: secondV4 },
+      best:     { ip: primaryIP,   hostname: dotHostname, result: bestV4 },
+      backup:   { ip: secondaryIP, hostname: dotHostname, result: secondV4 },
       anycast1: { ip: anycastIP1,  hostname: dotHostname },
-      anycast2: { ip: anycastIP2,  hostname: dotHostname2 },
+      anycast2: { ip: anycastIP2,  hostname: dotHostname },
     },
     ipv6: {
-      best:     { ip: bestV6IP,      hostname: dotHostname,  result: bestV6 },
-      backup:   { ip: secondV6IP,    hostname: dotHostname2, result: secondV6 },
+      best:     { ip: bestV6IP,      hostname: dotHostname, result: bestV6 },
+      backup:   { ip: secondV6IP,    hostname: dotHostname, result: secondV6 },
       anycast1: { ip: anycastV6IP1,  hostname: dotHostname },
-      anycast2: { ip: anycastV6IP2,  hostname: dotHostname2 },
+      anycast2: { ip: anycastV6IP2,  hostname: dotHostname },
     },
-    doh: {
-      primary:   `https://dns1.nextdns.io/${configId}`,
-      secondary: `https://dns2.nextdns.io/${configId}`,
-    },
-    dot: {
-      primary:   dotHostname,
-      secondary: dotHostname2,
-    },
+    doh: `https://dns.nextdns.io/${configId}`,
+    dot: dotHostname,
     bestV4, secondV4, bestV6, secondV6,
     anycastV4Best: anycastV4[0] || null,
     improvementMs: (bestV4 && anycastV4[0] && bestV4.type !== 'anycast')
@@ -885,13 +878,11 @@ function renderConfig(config, configId) {
 
   // DoH
   document.getElementById('dohConfig').innerHTML =
-    configLine('Primary:', config.doh.primary)
-    + configLine('Secondary:', config.doh.secondary);
+    configLine('URL:', config.doh);
 
   // DoT
   document.getElementById('dotConfig').innerHTML =
-    configLine('Primary:', config.dot.primary)
-    + configLine('Secondary:', config.dot.secondary);
+    configLine('Hostname:', config.dot);
 
   // Plain DNS
   let plain = configLine('IPv4 Best:', config.ipv4.best.ip,
