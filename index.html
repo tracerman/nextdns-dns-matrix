@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NextDNS DNS Switcher — Benchmark &amp; Recommend</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --cyan: #58a6ff;
+  --green: #3fb950;
+  --yellow: #d29922;
+  --red: #f85149;
+  --magenta: #bc8cff;
+  --blue: #58a6ff;
+  --mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: fit-content;
+  min-width: min(960px, 100%);
+  margin: 0 auto;
+}
+
+/* Banner */
+.banner {
+  border: 1px solid var(--cyan);
+  border-radius: 6px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.banner h1 {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+.banner p {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* Form */
+.form-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.form-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: end;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.form-group label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+.form-group input, .form-group select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  outline: none;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--cyan);
+}
+.form-group input::placeholder {
+  color: var(--text-dim);
+}
+
+.btn {
+  background: var(--cyan);
+  color: var(--bg);
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.55rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { opacity: 0.9; }
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Progress */
+.progress-section {
+  margin-bottom: 1.5rem;
+  display: none;
+}
+.progress-status {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+.progress-bar-track {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  height: 24px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  background: var(--cyan);
+  height: 100%;
+  width: 0%;
+  transition: width 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--bg);
+  font-weight: 600;
+  min-width: 3rem;
+}
+
+/* Results */
+.results-section {
+  display: none;
+}
+.section-header {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.sub-header {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--yellow);
+}
+.insight-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.insight-box .stat {
+  color: var(--green);
+  font-weight: 600;
+}
+
+/* Table */
+.results-table-wrap {
+  margin-bottom: 1.5rem;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+th {
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 400;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #21262d;
+  white-space: nowrap;
+}
+tr:hover td { background: rgba(88,166,255,0.04); }
+.rank-star { color: var(--green); font-weight: 700; }
+.type-edge { color: var(--cyan); }
+.type-anycast { color: var(--blue); }
+.type-ultralow { color: var(--magenta); }
+.lat-green { color: var(--green); }
+.lat-yellow { color: var(--yellow); }
+.lat-red { color: var(--red); }
+.text-dim { color: var(--text-dim); }
+
+/* Config section */
+.config-section {
+  display: none;
+  margin-top: 2rem;
+}
+.config-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.config-block h3 {
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+.config-block .desc {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  margin-bottom: 0.75rem;
+}
+.config-line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+.config-label {
+  color: var(--text-dim);
+  min-width: 90px;
+  font-size: 0.8rem;
+}
+.config-value {
+  color: var(--cyan);
+  font-weight: 600;
+  word-break: break-all;
+}
+.config-value.dim {
+  color: var(--text-dim);
+  font-weight: 400;
+}
+.config-note {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.copy-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+/* Error display */
+.error-box {
+  background: rgba(248,81,73,0.1);
+  border: 1px solid var(--red);
+  border-radius: 6px;
+  padding: 1rem;
+  color: var(--red);
+  margin-bottom: 1rem;
+  display: none;
+}
+
+/* Footer */
+.footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.footer a { color: var(--cyan); text-decoration: none; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  body { padding: 1rem 0.5rem; font-size: 13px; }
+  .form-row { flex-direction: column; }
+  .form-group { width: 100%; }
+  .btn { width: 100%; }
+  table { font-size: 0.75rem; }
+  td, th { padding: 0.3rem 0.4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="banner">
+    <h1>NextDNS DNS Switcher</h1>
+    <p>Benchmark NextDNS servers and find the fastest DNS for your network</p>
+  </div>
+
+  <div class="form-section">
+    <div class="form-row">
+      <div class="form-group" style="flex:1;min-width:140px">
+        <label for="configId">NextDNS Config ID</label>
+        <input type="text" id="configId" placeholder="e.g. abc123" spellcheck="false" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="rounds">Rounds</label>
+        <select id="rounds">
+          <option value="1">1</option>
+          <option value="3" selected>3</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="preference">Preference</label>
+        <select id="preference">
+          <option value="auto">auto (fastest wins)</option>
+          <option value="ultralow">ultralow</option>
+          <option value="anycast">anycast</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>&nbsp;</label>
+        <button class="btn" id="runBtn" onclick="runBenchmark()">Run Benchmark</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="progress-section" id="progressSection">
+    <div class="progress-status" id="progressStatus">Discovering servers...</div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill">0%</div>
+    </div>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <div class="section-header">Benchmark Results</div>
+
+    <div class="insight-box" id="insightBox"></div>
+
+    <div id="ipv4Section">
+      <div class="sub-header" id="ipv4Header">IPv4 Servers</div>
+      <div class="results-table-wrap">
+        <table id="ipv4Table"><thead></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div id="ipv6Section" style="display:none">
+      <div class="sub-header" id="ipv6Header">IPv6 Servers</div>
+      <div class="results-table-wrap">
+        <table id="ipv6Table"><thead></thead><tbody></tbody></table>
+      </div>
+    </div>
+
+    <div id="errorServersSection" style="display:none">
+      <div class="sub-header" style="color:var(--red)">Unreachable Servers</div>
+      <div class="text-dim" id="errorServersList" style="font-size:0.82rem"></div>
+    </div>
+  </div>
+
+  <div class="config-section" id="configSection">
+    <div class="section-header">Recommended Configuration</div>
+
+    <div class="config-block">
+      <h3>IPv4 Recommendation</h3>
+      <div id="ipv4RecConfig"></div>
+    </div>
+
+    <div class="config-block" id="ipv6RecBlock" style="display:none">
+      <h3>IPv6 Recommendation</h3>
+      <div id="ipv6RecConfig"></div>
+    </div>
+
+    <div class="config-block">
+      <h3>Asus Router (DoT)</h3>
+      <div class="desc">WAN &rarr; DNS &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS &rarr; add each server (IP + Hostname, leave port blank)</div>
+      <div id="asusConfig"></div>
+    </div>
+
+    <div class="config-block">
+      <h3>DNS-over-HTTPS (DoH)</h3>
+      <div id="dohConfig"></div>
+    </div>
+
+    <div class="config-block">
+      <h3>DNS-over-TLS Hostnames</h3>
+      <div class="desc">Generic hostnames &mdash; DNS steering picks the IP</div>
+      <div id="dotConfig"></div>
+    </div>
+
+    <div class="config-block">
+      <h3>Plain DNS IPs</h3>
+      <div class="desc">For non-encrypted fallback / IoT devices</div>
+      <div id="plainConfig"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Edge server IPs rotate. Re-run when DNS starts timing out.<br>
+    <a href="https://github.com" target="_blank">NextDNS DNS Switcher</a> &mdash; browser edition
+  </div>
+</div>
+
+<script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const PING_TIMEOUT = 3000;
+const MAX_CONCURRENT = 6;
+const STAGGER_MS = 80;
+
+const ANYCAST_HOSTNAMES = [
+  { hostname: 'ipv4-anycast.dns1.nextdns.io', family: 'IPv4', dnsNum: 1 },
+  { hostname: 'ipv4-anycast.dns2.nextdns.io', family: 'IPv4', dnsNum: 2 },
+  { hostname: 'ipv6-anycast.dns1.nextdns.io', family: 'IPv6', dnsNum: 1 },
+  { hostname: 'ipv6-anycast.dns2.nextdns.io', family: 'IPv6', dnsNum: 2 },
+];
+
+const ULTRALOW_HOSTNAMES = [
+  { hostname: 'ipv4.dns1.nextdns.io', family: 'IPv4', dnsNum: 1 },
+  { hostname: 'ipv4.dns2.nextdns.io', family: 'IPv4', dnsNum: 2 },
+  { hostname: 'ipv6.dns1.nextdns.io', family: 'IPv6', dnsNum: 1 },
+  { hostname: 'ipv6.dns2.nextdns.io', family: 'IPv6', dnsNum: 2 },
+];
+
+const ANYCAST_FALLBACK = {
+  ipv4: { dns1: '45.90.28.0', dns2: '45.90.30.0' },
+  ipv6: { dns1: '2a07:a8c0::', dns2: '2a07:a8c1::' },
+};
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('errorBox').style.display = 'none';
+}
+
+function setProgress(status, pct) {
+  document.getElementById('progressStatus').textContent = status;
+  const fill = document.getElementById('progressFill');
+  fill.style.width = pct + '%';
+  fill.textContent = pct + '%';
+}
+
+function latencyClass(ms) {
+  if (ms < 20) return 'lat-green';
+  if (ms < 40) return 'lat-yellow';
+  return 'lat-red';
+}
+
+function typeClass(type) {
+  if (type === 'server') return 'text-dim';
+  return 'type-' + type;
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+async function copyToClipboard(text, btn) {
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+  } catch { /* ignore */ }
+}
+
+// ─── Server Discovery ─────────────────────────────────────────────────────────
+
+async function discoverServers(onStatus) {
+  const servers = [];
+
+  // 1. Fetch geo-tailored PoP servers from router API
+  // Response: [{ pop: "hetzner-iad", server: "hetzner-iad-1", ipv4: true, ipv6: true }, ...]
+  onStatus('Fetching server list from router.nextdns.io...');
+  try {
+    const resp = await fetch('https://router.nextdns.io/?source=ping');
+    if (resp.ok) {
+      const data = await resp.json();
+      if (Array.isArray(data)) {
+        for (const entry of data) {
+          const srv = entry.server || '';
+          const pop = entry.pop || srv;
+          if (!srv) continue;
+          // IPv4
+          if (entry.ipv4 !== false) {
+            servers.push({
+              hostname: `ipv4-${srv}.edge.nextdns.io`,
+              type: 'server',
+              family: 'IPv4',
+              nodeId: pop,
+            });
+          }
+          // IPv6
+          if (entry.ipv6) {
+            servers.push({
+              hostname: `ipv6-${srv}.edge.nextdns.io`,
+              type: 'server',
+              family: 'IPv6',
+              nodeId: pop,
+            });
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('router.nextdns.io fetch failed:', e);
+  }
+
+  // 2. Add anycast hostnames
+  for (const ac of ANYCAST_HOSTNAMES) {
+    servers.push({
+      hostname: ac.hostname,
+      type: 'anycast',
+      family: ac.family,
+      nodeId: ac.dnsNum === 1 ? 'anycast1' : 'anycast2',
+    });
+  }
+
+  // 3. Add ultralow hostnames
+  for (const ul of ULTRALOW_HOSTNAMES) {
+    servers.push({
+      hostname: ul.hostname,
+      type: 'ultralow',
+      family: ul.family,
+      nodeId: ul.dnsNum === 1 ? 'ultralow1' : 'ultralow2',
+    });
+  }
+
+  onStatus(`Discovered ${servers.length} server endpoints`);
+  return servers;
+}
+
+// ─── Benchmark Single Server ──────────────────────────────────────────────────
+
+async function benchmarkServer(server, rounds) {
+  const results = [];
+
+  for (let i = 0; i < rounds; i++) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), PING_TIMEOUT);
+
+      const t0 = performance.now();
+      const resp = await fetch(`https://${server.hostname}/info`, {
+        signal: controller.signal,
+        cache: 'no-store',
+      });
+      const t1 = performance.now();
+      clearTimeout(timer);
+
+      if (resp.ok) {
+        const data = await resp.json();
+        results.push({
+          clientMs: Math.round((t1 - t0) * 100) / 100,
+          serverRttUs: data.rtt || null,
+          pop: data.pop || null,
+          location: data.locationName || null,
+        });
+      }
+    } catch {
+      // timeout or network error — skip this round
+    }
+
+    if (i < rounds - 1) await sleep(STAGGER_MS);
+  }
+
+  if (results.length === 0) {
+    return {
+      ...server,
+      avgMs: Infinity,
+      minMs: Infinity,
+      maxMs: Infinity,
+      jitter: Infinity,
+      successRate: 0,
+      status: 'error',
+      pop: null,
+      location: null,
+    };
+  }
+
+  // Use server-reported RTT (microseconds → ms) as primary metric
+  const hasServerRtt = results[0].serverRttUs !== null;
+  const times = hasServerRtt
+    ? results.map(r => r.serverRttUs / 1000)
+    : results.map(r => r.clientMs);
+
+  const avg = times.reduce((a, b) => a + b, 0) / times.length;
+  const min = Math.min(...times);
+  const max = Math.max(...times);
+
+  return {
+    ...server,
+    avgMs: Math.round(avg * 100) / 100,
+    minMs: Math.round(min * 100) / 100,
+    maxMs: Math.round(max * 100) / 100,
+    jitter: Math.round((max - min) * 100) / 100,
+    successRate: Math.round((results.length / rounds) * 100),
+    status: 'ok',
+    pop: results[0].pop,
+    location: results[0].location,
+  };
+}
+
+// ─── Full Benchmark ───────────────────────────────────────────────────────────
+
+async function runFullBenchmark(servers, rounds, onProgress) {
+  const results = [];
+  let completed = 0;
+
+  for (let i = 0; i < servers.length; i += MAX_CONCURRENT) {
+    const batch = servers.slice(i, i + MAX_CONCURRENT);
+    const batchResults = await Promise.all(batch.map(s => benchmarkServer(s, rounds)));
+    results.push(...batchResults);
+    completed += batch.length;
+    onProgress(completed, servers.length);
+  }
+
+  return results;
+}
+
+// ─── Ranking ──────────────────────────────────────────────────────────────────
+
+function rankResults(results, preference, toleranceMs = 10) {
+  const sorted = [...results];
+  sorted.sort((a, b) => {
+    if (a.status !== b.status) return a.status === 'ok' ? -1 : 1;
+    if (preference === 'auto') return a.avgMs - b.avgMs;
+
+    const diff = a.avgMs - b.avgMs;
+    const aP = a.type === preference;
+    const bP = b.type === preference;
+    if (aP && !bP && diff < toleranceMs) return -1;
+    if (!aP && bP && -diff < toleranceMs) return 1;
+    return a.avgMs - b.avgMs;
+  });
+  return sorted;
+}
+
+// ─── IP Resolution via DoH ────────────────────────────────────────────────────
+
+async function resolveHostname(hostname, type = 'A') {
+  try {
+    const resp = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(hostname)}&type=${type}`);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (data.Answer && data.Answer.length > 0) {
+      const record = data.Answer.find(a => a.type === (type === 'A' ? 1 : 28));
+      return record ? record.data : null;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+// ─── Bulk IP Resolution ───────────────────────────────────────────────────────
+
+async function resolveAllIPs(results, onProgress) {
+  const ok = results.filter(r => r.status === 'ok');
+  const hostnames = new Map(); // hostname -> { qtype, indices[] }
+
+  // Group results by unique hostname+qtype
+  ok.forEach((r, idx) => {
+    const qtype = r.family === 'IPv6' ? 'AAAA' : 'A';
+    const key = r.hostname + '|' + qtype;
+    if (!hostnames.has(key)) {
+      hostnames.set(key, { hostname: r.hostname, qtype, indices: [] });
+    }
+    hostnames.get(key).indices.push(idx);
+  });
+
+  const jobs = [...hostnames.values()];
+  let completed = 0;
+
+  // Resolve in batches of 8
+  for (let i = 0; i < jobs.length; i += 8) {
+    const batch = jobs.slice(i, i + 8);
+    const batchResults = await Promise.all(
+      batch.map(j => resolveHostname(j.hostname, j.qtype))
+    );
+    batch.forEach((j, bi) => {
+      const ip = batchResults[bi];
+      if (ip) {
+        for (const idx of j.indices) {
+          ok[idx].resolvedIP = ip;
+        }
+      }
+    });
+    completed += batch.length;
+    onProgress(completed, jobs.length);
+  }
+}
+
+// ─── Config Generation ────────────────────────────────────────────────────────
+
+function generateConfig(ranked, configId) {
+  const ok = ranked.filter(r => r.status === 'ok');
+  const ipv4 = ok.filter(r => r.family === 'IPv4');
+  const ipv6 = ok.filter(r => r.family === 'IPv6');
+
+  const bestV4 = ipv4[0] || null;
+  const secondV4 = ipv4[1] || null;
+  const bestV6 = ipv6[0] || null;
+  const secondV6 = ipv6[1] || null;
+
+  const anycastV4 = ipv4.filter(r => r.type === 'anycast');
+  const anycastV6 = ipv6.filter(r => r.type === 'anycast');
+
+  // Use already-resolved IPs from the bulk resolution phase
+  const primaryIP = (bestV4 && bestV4.resolvedIP) || ANYCAST_FALLBACK.ipv4.dns1;
+  const secondaryIP = (secondV4 && secondV4.resolvedIP) || ANYCAST_FALLBACK.ipv4.dns2;
+
+  const anycastIP1 = (anycastV4[0] && anycastV4[0].resolvedIP) || ANYCAST_FALLBACK.ipv4.dns1;
+  const anycastIP2 = (anycastV4[1] && anycastV4[1].resolvedIP) || ANYCAST_FALLBACK.ipv4.dns2;
+
+  const bestV6IP = (bestV6 && bestV6.resolvedIP) || ANYCAST_FALLBACK.ipv6.dns1;
+  const secondV6IP = (secondV6 && secondV6.resolvedIP) || ANYCAST_FALLBACK.ipv6.dns2;
+  const anycastV6IP1 = (anycastV6[0] && anycastV6[0].resolvedIP) || ANYCAST_FALLBACK.ipv6.dns1;
+  const anycastV6IP2 = (anycastV6[1] && anycastV6[1].resolvedIP) || ANYCAST_FALLBACK.ipv6.dns2;
+
+  const dotHostname = `${configId}.dns1.nextdns.io`;
+  const dotHostname2 = `${configId}.dns2.nextdns.io`;
+
+  return {
+    ipv4: {
+      best:     { ip: primaryIP,   hostname: dotHostname,  result: bestV4 },
+      backup:   { ip: secondaryIP, hostname: dotHostname2, result: secondV4 },
+      anycast1: { ip: anycastIP1,  hostname: dotHostname },
+      anycast2: { ip: anycastIP2,  hostname: dotHostname2 },
+    },
+    ipv6: {
+      best:     { ip: bestV6IP,      hostname: dotHostname,  result: bestV6 },
+      backup:   { ip: secondV6IP,    hostname: dotHostname2, result: secondV6 },
+      anycast1: { ip: anycastV6IP1,  hostname: dotHostname },
+      anycast2: { ip: anycastV6IP2,  hostname: dotHostname2 },
+    },
+    doh: {
+      primary:   `https://dns1.nextdns.io/${configId}`,
+      secondary: `https://dns2.nextdns.io/${configId}`,
+    },
+    dot: {
+      primary:   dotHostname,
+      secondary: dotHostname2,
+    },
+    bestV4, secondV4, bestV6, secondV6,
+    anycastV4Best: anycastV4[0] || null,
+    improvementMs: (bestV4 && anycastV4[0] && bestV4.type !== 'anycast')
+      ? Math.round((anycastV4[0].avgMs - bestV4.avgMs) * 100) / 100
+      : null,
+  };
+}
+
+// ─── Render Results ───────────────────────────────────────────────────────────
+
+function serverLabel(r) {
+  return r.nodeId || r.hostname;
+}
+
+function renderTable(tableId, servers) {
+  const table = document.getElementById(tableId);
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+
+  thead.innerHTML = `<tr>
+    <th>#</th><th>Node ID</th><th>Location</th><th>Type</th>
+    <th>Hostname</th><th>IP</th>
+    <th>Avg</th><th>Min</th><th>Jitter</th><th>OK%</th>
+  </tr>`;
+
+  tbody.innerHTML = '';
+  servers.forEach((r, i) => {
+    const rank = i === 0
+      ? '<span class="rank-star">&#9733;</span>'
+      : `<span class="text-dim">${i + 1}</span>`;
+
+    const loc = r.location || r.pop || '';
+    const ip = r.resolvedIP || '';
+    const typeLabel = r.type === 'server' ? '' : r.type;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${rank}</td>
+      <td>${escHtml(serverLabel(r))}</td>
+      <td class="text-dim">${escHtml(loc)}</td>
+      <td class="${typeClass(r.type)}">${typeLabel}</td>
+      <td class="text-dim" style="font-size:0.75rem">${escHtml(r.hostname)}</td>
+      <td>${ip ? escHtml(ip) : '<span class="text-dim">-</span>'}</td>
+      <td class="${latencyClass(r.avgMs)}">${r.avgMs}ms</td>
+      <td class="text-dim">${r.minMs}ms</td>
+      <td class="text-dim">${r.jitter}ms</td>
+      <td>${r.successRate === 100 ? '<span class="lat-green">100%</span>' : '<span class="lat-yellow">' + r.successRate + '%</span>'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function resultNote(result) {
+  if (!result) return '';
+  const label = result.nodeId || result.type;
+  return `(${result.avgMs}ms ${label})`;
+}
+
+function renderRecSection(entry, label) {
+  const r = entry.result;
+  const nodeLabel = r ? (r.nodeId || r.type) : '';
+  const badge = r
+    ? ' <span class="' + latencyClass(r.avgMs) + '">' + r.avgMs + 'ms</span> <span class="text-dim">' + escHtml(nodeLabel) + '</span>'
+    : '';
+  return `<div style="margin-bottom:0.6rem">
+    <div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">${escHtml(label)}${badge}</div>
+    ${configLine('IP:', entry.ip)}
+    ${configLine('Hostname:', entry.hostname)}
+  </div>`;
+}
+
+function renderConfig(config, configId) {
+  const section = document.getElementById('configSection');
+  section.style.display = 'block';
+
+  // IPv4 Recommendation
+  let v4Html = renderRecSection(config.ipv4.best, 'Best');
+  v4Html += renderRecSection(config.ipv4.backup, 'Backup');
+  v4Html += '<hr style="border-color:var(--border);margin:0.5rem 0">';
+  v4Html += `<div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">Anycast Fallback</div>`;
+  v4Html += configLine('IP 1:', config.ipv4.anycast1.ip, true);
+  v4Html += configLine('IP 2:', config.ipv4.anycast2.ip, true);
+  document.getElementById('ipv4RecConfig').innerHTML = v4Html;
+
+  // IPv6 Recommendation
+  if (config.bestV6) {
+    document.getElementById('ipv6RecBlock').style.display = 'block';
+    let v6Html = renderRecSection(config.ipv6.best, 'Best');
+    v6Html += renderRecSection(config.ipv6.backup, 'Backup');
+    v6Html += '<hr style="border-color:var(--border);margin:0.5rem 0">';
+    v6Html += `<div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">Anycast Fallback</div>`;
+    v6Html += configLine('IP 1:', config.ipv6.anycast1.ip, true);
+    v6Html += configLine('IP 2:', config.ipv6.anycast2.ip, true);
+    document.getElementById('ipv6RecConfig').innerHTML = v6Html;
+  }
+
+  // Asus DoT — separate IP and Hostname fields per entry
+  let asus = '';
+  const asusEntries = [
+    { label: 'Primary (IPv4 Best)', entry: config.ipv4.best },
+    { label: 'Secondary (IPv4 Backup)', entry: config.ipv4.backup },
+  ];
+  if (config.bestV6) {
+    asusEntries.push({ label: 'Primary IPv6', entry: config.ipv6.best });
+    asusEntries.push({ label: 'Secondary IPv6', entry: config.ipv6.backup });
+  }
+  asusEntries.push({ label: 'Fallback 1 (Anycast)', entry: config.ipv4.anycast1 });
+  asusEntries.push({ label: 'Fallback 2 (Anycast)', entry: config.ipv4.anycast2 });
+
+  for (const { label, entry } of asusEntries) {
+    asus += `<div style="margin-bottom:0.6rem">
+      <div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">${escHtml(label)}</div>
+      ${configLine('IP:', entry.ip)}
+      ${configLine('Hostname:', entry.hostname)}
+    </div>`;
+  }
+  document.getElementById('asusConfig').innerHTML = asus;
+
+  // DoH
+  document.getElementById('dohConfig').innerHTML =
+    configLine('Primary:', config.doh.primary)
+    + configLine('Secondary:', config.doh.secondary);
+
+  // DoT
+  document.getElementById('dotConfig').innerHTML =
+    configLine('Primary:', config.dot.primary)
+    + configLine('Secondary:', config.dot.secondary);
+
+  // Plain DNS
+  let plain = configLine('IPv4 Best:', config.ipv4.best.ip,
+    false, resultNote(config.bestV4));
+  plain += configLine('IPv4 Backup:', config.ipv4.backup.ip,
+    true, resultNote(config.secondV4));
+  plain += configLine('IPv4 Anycast:', config.ipv4.anycast1.ip + ' / ' + config.ipv4.anycast2.ip, true);
+
+  if (config.bestV6) {
+    plain += '<hr style="border-color:var(--border);margin:0.5rem 0">';
+    plain += configLine('IPv6 Best:', config.ipv6.best.ip);
+    plain += configLine('IPv6 Backup:', config.ipv6.backup.ip, true);
+    plain += configLine('IPv6 Anycast:', config.ipv6.anycast1.ip + ' / ' + config.ipv6.anycast2.ip, true);
+  }
+  document.getElementById('plainConfig').innerHTML = plain;
+}
+
+function configLine(label, value, dim = false, note = '') {
+  const safeValue = value.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  return `<div class="config-line">
+    <span class="config-label">${label}</span>
+    <span class="config-value${dim ? ' dim' : ''}">${escHtml(value)}</span>
+    ${note ? '<span class="config-note">' + escHtml(note) + '</span>' : ''}
+    <button class="copy-btn" data-copy="${safeValue}" onclick="copyToClipboard(this.dataset.copy, this)">copy</button>
+  </div>`;
+}
+
+// ─── Main Entry ───────────────────────────────────────────────────────────────
+
+async function runBenchmark() {
+  const configId = document.getElementById('configId').value.trim();
+  const rounds = parseInt(document.getElementById('rounds').value);
+  const preference = document.getElementById('preference').value;
+
+  if (!configId || configId.length < 4) {
+    showError('Please enter a valid NextDNS config ID (at least 4 characters). Find it at my.nextdns.io → Setup.');
+    return;
+  }
+
+  hideError();
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+
+  const progressSection = document.getElementById('progressSection');
+  const resultsSection = document.getElementById('resultsSection');
+  const configSection = document.getElementById('configSection');
+  progressSection.style.display = 'block';
+  resultsSection.style.display = 'none';
+  configSection.style.display = 'none';
+
+  try {
+    // Phase 1: Discovery
+    setProgress('Discovering servers...', 0);
+    const servers = await discoverServers(msg => setProgress(msg, 5));
+
+    if (servers.length === 0) {
+      showError('No servers discovered. Check your internet connection.');
+      return;
+    }
+
+    setProgress(`Discovered ${servers.length} servers. Benchmarking...`, 10);
+
+    // Phase 2: Benchmark
+    const results = await runFullBenchmark(servers, rounds, (cur, tot) => {
+      const pct = Math.round(10 + (cur / tot) * 80);
+      setProgress(`Benchmarking: ${cur}/${tot} servers...`, pct);
+    });
+
+    // Phase 3: Resolve IPs
+    setProgress('Resolving DNS for all servers...', 90);
+    await resolveAllIPs(results, (cur, tot) => {
+      const pct = Math.round(90 + (cur / tot) * 5);
+      setProgress(`Resolving IPs: ${cur}/${tot} hostnames...`, pct);
+    });
+
+    // Phase 4: Rank
+    setProgress('Ranking results...', 96);
+    const ranked = rankResults(results, preference);
+
+    const ok = ranked.filter(r => r.status === 'ok');
+    const errors = ranked.filter(r => r.status === 'error');
+    const ipv4 = ok.filter(r => r.family === 'IPv4');
+    const ipv6 = ok.filter(r => r.family === 'IPv6');
+
+    // Render results
+    resultsSection.style.display = 'block';
+
+    // Insight box
+    const insightBox = document.getElementById('insightBox');
+    const anycastV4 = ipv4.filter(r => r.type === 'anycast');
+    let insightHtml = `<span class="text-dim">Tested ${ranked.length} servers &mdash; ${ok.length} reachable, ${errors.length} unreachable</span>`;
+    if (ipv4[0] && anycastV4[0] && ipv4[0].type !== 'anycast') {
+      const imp = Math.round((anycastV4[0].avgMs - ipv4[0].avgMs) * 100) / 100;
+      if (imp > 0) {
+        insightHtml += `<br><span class="stat">Best server is ${imp}ms faster than anycast!</span>`;
+        insightHtml += `<br><span class="text-dim">${serverLabel(ipv4[0])} `;
+        insightHtml += `<span class="lat-green">${ipv4[0].avgMs}ms</span> vs anycast `;
+        insightHtml += `<span class="lat-yellow">${anycastV4[0].avgMs}ms</span></span>`;
+      } else {
+        insightHtml += `<br><span style="color:var(--blue)">Anycast is currently optimal. No change needed.</span>`;
+      }
+    }
+    if (preference !== 'auto') {
+      insightHtml += `<br><span class="text-dim">Ranking boosted ${preference} servers within 10ms tolerance</span>`;
+    }
+    insightBox.innerHTML = insightHtml;
+
+    // IPv4 table
+    if (ipv4.length > 0) {
+      document.getElementById('ipv4Section').style.display = 'block';
+      document.getElementById('ipv4Header').textContent = `IPv4 Servers (${ipv4.length} reachable)`;
+      renderTable('ipv4Table', ipv4);
+    }
+
+    // IPv6 table
+    if (ipv6.length > 0) {
+      document.getElementById('ipv6Section').style.display = 'block';
+      document.getElementById('ipv6Header').textContent = `IPv6 Servers (${ipv6.length} reachable)`;
+      renderTable('ipv6Table', ipv6);
+    } else {
+      document.getElementById('ipv6Section').style.display = 'none';
+    }
+
+    // Error servers
+    if (errors.length > 0) {
+      document.getElementById('errorServersSection').style.display = 'block';
+      const list = errors.slice(0, 10).map(r => serverLabel(r) + ` (${r.family})`).join(', ');
+      document.getElementById('errorServersList').textContent =
+        list + (errors.length > 10 ? ` ... and ${errors.length - 10} more` : '');
+    } else {
+      document.getElementById('errorServersSection').style.display = 'none';
+    }
+
+    // Phase 5: Config
+    setProgress('Generating config...', 98);
+    const config = generateConfig(ranked, configId);
+    renderConfig(config, configId);
+
+    setProgress('Done!', 100);
+  } catch (e) {
+    showError('Benchmark failed: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Benchmark';
+    setTimeout(() => { progressSection.style.display = 'none'; }, 1000);
+  }
+}
+
+// Allow Enter key on config ID input
+document.getElementById('configId').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runBenchmark();
+});
+</script>
+</body>
+</html>
