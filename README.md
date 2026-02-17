@@ -99,10 +99,14 @@ Raw IPs for non-encrypted fallback or IoT devices. IPv4 + IPv6, best + backup + 
 
 Hostnames that work with `/info`: anycast (`ipv4-anycast.dns1.nextdns.io`), ultralow (`ipv4.dns1.nextdns.io`), and PoP servers (`ipv4-{server}.edge.nextdns.io`).
 
-## CLI Version
+## Status
 
-Looking for the CLI version with TCP SYN benchmarking and sub-ms precision? See [nextdns-dns-switcher](https://github.com/tracerman/nextdns-dns-switcher).
+Work in progress.
 
 ## License
 
-MIT — AM Design & Consulting LLC
+MIT — AMDC
+
+---
+
+Made with Love, Blood, and Coffee.
