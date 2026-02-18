@@ -41,9 +41,10 @@ The tool needs a DoH (DNS-over-HTTPS) resolver to translate server hostnames int
 |----------|----------|
 | **Google** (default) | `dns.google/resolve` |
 | **Cloudflare** | `cloudflare-dns.com/dns-query` |
-| **AdGuard** | `dns.adguard-dns.com/resolve` |
 
-All three support browser CORS and return the same JSON format. The resolver choice doesn't affect benchmarking accuracy — it only matters for IP resolution.
+Both support browser CORS (`Access-Control-Allow-Origin: *`) and return the same JSON format. Use Cloudflare if Google is restricted on your network. The resolver choice doesn't affect benchmarking accuracy — it only matters for IP resolution.
+
+> **Why only two?** Browsers require `Access-Control-Allow-Origin: *` for cross-origin fetch calls. When the tool is opened as a local file, the origin is `null`, which most providers reject. Google and Cloudflare are the only major public DoH providers that reliably send this header and support the JSON query API (`?name=&type=`).
 
 ## Server Preference Modes
 

@@ -329,7 +329,6 @@ tr:hover td { background: rgba(88,166,255,0.04); }
         <select id="dohResolver">
           <option value="google">Google</option>
           <option value="cloudflare">Cloudflare</option>
-          <option value="adguard">AdGuard</option>
         </select>
       </div>
       <div class="form-group">
@@ -677,7 +676,6 @@ function rankResults(results, preference, toleranceMs = 10) {
 const DOH_RESOLVERS = {
   google:     { label: 'Google',     url: 'https://dns.google/resolve',             batch: 8, delayMs: 0 },
   cloudflare: { label: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query',   batch: 4, delayMs: 150, headers: { 'Accept': 'application/dns-json' } },
-  adguard:    { label: 'AdGuard',    url: 'https://dns.adguard-dns.com/resolve',     batch: 8, delayMs: 0 },
 };
 
 async function resolveHostname(hostname, type = 'A', resolver = 'google') {

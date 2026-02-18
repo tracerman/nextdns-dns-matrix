@@ -5,10 +5,10 @@ All notable changes to NextDNS DNS Matrix are documented here.
 ## [1.1.0] — 2026-02-18
 
 ### Added
-- **DoH resolver selection** — choose between Google, Cloudflare, or AdGuard for IP resolution. Useful when one provider is blocked or restricted on your network.
+- **DoH resolver selection** — choose between Google and Cloudflare for IP resolution. Useful when one provider is restricted on your network.
 
 ### Fixed
-- **Replaced Quad9 with AdGuard DNS** — Quad9 retired their browser-compatible JSON API (port 5053) on May 5, 2025. Their standard DoH endpoint lacks CORS headers, making it unusable from browsers. Replaced with AdGuard DNS (`dns.adguard-dns.com/resolve`), which uses the same JSON response format and supports browser CORS.
+- **Removed non-functional resolvers** — Quad9 retired their browser-compatible JSON API (port 5053) on May 5, 2025; their standard DoH endpoint and AdGuard DNS both lack `Access-Control-Allow-Origin: *` headers, causing silent failures when the tool is opened as a local file (`origin: null`). Only Google and Cloudflare reliably support browser CORS for this use case.
 - **Cloudflare rate limiting** — reduced batch size and added inter-batch delay to prevent 429 errors from the Cloudflare resolver.
 
 ### Changed
