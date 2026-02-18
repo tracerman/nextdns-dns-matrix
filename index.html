@@ -278,17 +278,6 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   display: none;
 }
 
-/* Warning display */
-.warning-box {
-  background: rgba(210,153,34,0.1);
-  border: 1px solid var(--yellow);
-  border-radius: 6px;
-  padding: 1rem;
-  color: var(--yellow);
-  margin-bottom: 1rem;
-  display: none;
-  font-size: 0.85rem;
-}
 
 /* Footer */
 .footer {
@@ -340,7 +329,7 @@ tr:hover td { background: rgba(88,166,255,0.04); }
         <select id="dohResolver">
           <option value="google">Google</option>
           <option value="cloudflare">Cloudflare</option>
-          <option value="quad9">Quad9</option>
+          <option value="adguard">AdGuard</option>
         </select>
       </div>
       <div class="form-group">
@@ -359,7 +348,6 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   </div>
 
   <div class="error-box" id="errorBox"></div>
-  <div class="warning-box" id="warningBox"></div>
 
   <div class="progress-section" id="progressSection">
     <div class="progress-status" id="progressStatus">Discovering servers...</div>
@@ -478,15 +466,6 @@ function hideError() {
   document.getElementById('errorBox').style.display = 'none';
 }
 
-function showWarning(msg) {
-  const box = document.getElementById('warningBox');
-  box.textContent = msg;
-  box.style.display = 'block';
-}
-
-function hideWarning() {
-  document.getElementById('warningBox').style.display = 'none';
-}
 
 function setProgress(status, pct) {
   document.getElementById('progressStatus').textContent = status;
@@ -698,10 +677,7 @@ function rankResults(results, preference, toleranceMs = 10) {
 const DOH_RESOLVERS = {
   google:     { label: 'Google',     url: 'https://dns.google/resolve',             batch: 8, delayMs: 0 },
   cloudflare: { label: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query',   batch: 4, delayMs: 150, headers: { 'Accept': 'application/dns-json' } },
-  // Quad9's standard DoH endpoint does not send CORS headers — browser fetch() is blocked.
-  // Their browser-compatible JSON API (port 5053) was permanently retired May 5, 2025.
-  // noCors: true triggers auto-fallback to Google during IP resolution.
-  quad9:      { label: 'Quad9',      url: 'https://dns.quad9.net/dns-query',         batch: 4, delayMs: 150, headers: { 'Accept': 'application/dns-json' }, noCors: true },
+  adguard:    { label: 'AdGuard',    url: 'https://dns.adguard-dns.com/resolve',     batch: 8, delayMs: 0 },
 };
 
 async function resolveHostname(hostname, type = 'A', resolver = 'google') {
@@ -980,7 +956,6 @@ async function runBenchmark() {
   }
 
   hideError();
-  hideWarning();
   const btn = document.getElementById('runBtn');
   btn.disabled = true;
   btn.textContent = 'Running...';
@@ -1011,21 +986,11 @@ async function runBenchmark() {
     });
 
     // Phase 3: Resolve IPs
-    // If the chosen resolver doesn't support browser CORS, fall back to Google.
-    let activeResolver = resolver;
-    if (DOH_RESOLVERS[resolver] && DOH_RESOLVERS[resolver].noCors) {
-      activeResolver = 'google';
-      showWarning(
-        `${DOH_RESOLVERS[resolver].label} does not support browser CORS requests — ` +
-        `its browser-compatible JSON API (port 5053) was permanently retired May 2025. ` +
-        `IP resolution has automatically fallen back to Google.`
-      );
-    }
-    setProgress(`Resolving DNS via ${DOH_RESOLVERS[activeResolver].label}...`, 90);
+    setProgress(`Resolving DNS via ${DOH_RESOLVERS[resolver].label}...`, 90);
     await resolveAllIPs(results, (cur, tot) => {
       const pct = Math.round(90 + (cur / tot) * 5);
       setProgress(`Resolving IPs: ${cur}/${tot} hostnames...`, pct);
-    }, activeResolver);
+    }, resolver);
 
     // Phase 4: Rank
     setProgress('Ranking results...', 96);

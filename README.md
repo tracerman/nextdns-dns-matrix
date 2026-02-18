@@ -37,15 +37,13 @@ NextDNS gives you a default DNS config, but it's not always the fastest. Their i
 
 The tool needs a DoH (DNS-over-HTTPS) resolver to translate server hostnames into IPs. Choose whichever isn't blocked on your network:
 
-| Resolver | Endpoint | Browser CORS |
-|----------|----------|--------------|
-| **Google** (default) | `dns.google/resolve` | ✓ |
-| **Cloudflare** | `cloudflare-dns.com/dns-query` | ✓ |
-| **Quad9** | `dns.quad9.net/dns-query` | ✗ — auto-falls back to Google |
+| Resolver | Endpoint |
+|----------|----------|
+| **Google** (default) | `dns.google/resolve` |
+| **Cloudflare** | `cloudflare-dns.com/dns-query` |
+| **AdGuard** | `dns.adguard-dns.com/resolve` |
 
-> **Quad9 note:** Quad9's browser-compatible JSON API (port 5053) was permanently retired May 5, 2025. Their standard DoH endpoint does not send CORS headers, so browsers block the response. Selecting Quad9 shows a warning and automatically uses Google for IP resolution. The option is retained for when Quad9 adds CORS support.
-
-The resolver choice doesn't affect benchmarking accuracy — it only matters for IP resolution.
+All three support browser CORS and return the same JSON format. The resolver choice doesn't affect benchmarking accuracy — it only matters for IP resolution.
 
 ## Server Preference Modes
 
