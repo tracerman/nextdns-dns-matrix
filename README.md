@@ -41,7 +41,7 @@ The tool needs a DoH (DNS-over-HTTPS) resolver to translate server hostnames int
 |----------|----------|
 | **Google** (default) | `dns.google/resolve` |
 | **Cloudflare** | `cloudflare-dns.com/dns-query` |
-| **Quad9** | `dns.quad9.net:5053/dns-query` |
+| **Quad9** | `dns.quad9.net/dns-query` |
 
 All three return the same JSON wire format. The resolver choice doesn't affect benchmarking accuracy — it only matters for IP resolution.
 

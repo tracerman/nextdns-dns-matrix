@@ -675,7 +675,7 @@ function rankResults(results, preference, toleranceMs = 10) {
 const DOH_RESOLVERS = {
   google:     { label: 'Google',     url: 'https://dns.google/resolve',             batch: 8, delayMs: 0 },
   cloudflare: { label: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query',   batch: 4, delayMs: 150, headers: { 'Accept': 'application/dns-json' } },
-  quad9:      { label: 'Quad9',      url: 'https://dns.quad9.net:5053/dns-query',   batch: 3, delayMs: 250, headers: { 'Accept': 'application/dns-json' } },
+  quad9:      { label: 'Quad9',      url: 'https://dns.quad9.net/dns-query',         batch: 4, delayMs: 150, headers: { 'Accept': 'application/dns-json' } },
 };
 
 async function resolveHostname(hostname, type = 'A', resolver = 'google') {

@@ -2,13 +2,18 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
-## [Unreleased]
+## [1.1.0] — 2026-02-18
 
 ### Added
 - **DoH resolver selection** — choose between Google, Cloudflare, or Quad9 for IP resolution. Useful when Google services are blocked on your network.
 
+### Fixed
+- **Quad9 DoH endpoint updated** — Quad9 permanently retired their JSON-over-HTTPS service on port 5053 (May 5, 2025). Quad9 resolver now uses the standard DoH endpoint `dns.quad9.net/dns-query` (port 443) which supports the same `application/dns-json` GET format.
+- **Quad9/Cloudflare rate limiting** — reduced batch size and added inter-batch delay to prevent 429 errors from Cloudflare and Quad9 resolvers.
+
 ### Changed
 - Progress status now shows which DoH resolver is being used during IP resolution.
+- Quad9 batch size increased from 3→4 and delay reduced from 250ms→150ms now that the production endpoint is used instead of the deprecated port 5053 service.
 
 ## [1.0.0] — 2025-05-01
 
