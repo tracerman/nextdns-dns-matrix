@@ -2,6 +2,15 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
+## [1.4.0] — 2026-02-18
+
+### Added
+- **Animated banner header** — gradient title text (cyan → white → magenta), animated cycling gradient border via CSS mask technique, ambient radial glow from bottom, and a pulsing green "live" dot.
+- **Footer pill links** — NextDNS, yokoffing/NextDNS-Config, and repo links are now styled pill buttons with hover states. Note and credit lines have clear typographic hierarchy.
+
+### Changed
+- **Bento equal-height rows** — removed `align-items: start` from the config grid; cards in the same row now stretch to equal height (default CSS grid behavior).
+
 ## [1.3.0] — 2026-02-18
 
 ### Fixed
