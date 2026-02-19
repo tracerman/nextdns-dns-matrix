@@ -15,6 +15,16 @@ Benchmarks all available NextDNS PoPs (anycast, ultralow, and individual servers
 
 That's it. No server, no build step, no dependencies.
 
+### Pre-fill your Config ID via URL
+
+Pass your config ID as a URL parameter to skip the input step:
+
+```
+https://tracerman.github.io/nextdns-dns-matrix/?id=abc123
+```
+
+Useful for bookmarking or sharing a direct link. The field is pre-filled on load — just hit **Run Benchmark**.
+
 ## Why?
 
 NextDNS gives you a default DNS config, but it's not always optimal. Their infrastructure has three tiers:
