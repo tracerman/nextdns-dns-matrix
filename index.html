@@ -171,12 +171,15 @@ body {
 }
 .insight-box .stat {
   color: var(--green);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 /* Table */
 .results-table-wrap {
   margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 table {
   width: 100%;
@@ -291,6 +294,11 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .footer a { color: var(--cyan); text-decoration: none; }
 
 /* Responsive */
+@media (max-width: 960px) {
+  /* Prevent fit-content container from overflowing viewport */
+  .container { max-width: 100%; }
+}
+
 @media (max-width: 600px) {
   body { padding: 1rem 0.5rem; font-size: 13px; }
   .form-row { flex-direction: column; }
@@ -298,6 +306,11 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   .btn { width: 100%; }
   table { font-size: 0.75rem; }
   td, th { padding: 0.3rem 0.4rem; }
+  /* Hide Hostname (col 5) and Jitter (col 9) — table scrolls horizontally */
+  table th:nth-child(5), table td:nth-child(5) { display: none; }
+  table th:nth-child(9), table td:nth-child(9) { display: none; }
+  /* Config lines stack */
+  .config-label { min-width: 70px; }
 }
 </style>
 </head>
@@ -312,7 +325,7 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   <div class="form-section">
     <div class="form-row">
       <div class="form-group" style="flex:1;min-width:140px">
-        <label for="configId">NextDNS Config ID</label>
+        <label for="configId">NextDNS Config ID &mdash; <a href="https://my.nextdns.io" target="_blank" rel="noopener" style="color:var(--text-dim);font-size:0.75rem">my.nextdns.io</a></label>
         <input type="text" id="configId" placeholder="e.g. abc123" spellcheck="false" autocomplete="off">
       </div>
       <div class="form-group">
@@ -419,7 +432,12 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 
   <div class="footer">
     Edge server IPs rotate. Re-run when DNS starts timing out.<br>
-    <a href="https://github.com/tracerman/nextdns-dns-matrix" target="_blank">NextDNS DNS Matrix</a> &mdash; Made with Love, Blood, and Coffee
+    <a href="https://nextdns.io/" target="_blank" rel="noopener">NextDNS</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/yokoffing/NextDNS-Config" target="_blank" rel="noopener">yokoffing/NextDNS-Config</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://github.com/tracerman/nextdns-dns-matrix" target="_blank" rel="noopener">NextDNS DNS Matrix</a><br>
+    Made with Love, Blood, and Coffee
   </div>
 </div>
 
