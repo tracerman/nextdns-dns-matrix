@@ -508,11 +508,10 @@ tbody tr {
   padding: 1px 5px;
   border-radius: 3px;
   margin-left: 0.3rem;
-  background: rgba(188,140,255,0.1);
-  border: 1px solid rgba(188,140,255,0.25);
-  color: var(--magenta);
   vertical-align: middle;
 }
+.via-badge--anycast  { background: rgba(88,166,255,0.1);  border: 1px solid rgba(88,166,255,0.25);  color: var(--cyan); }
+.via-badge--ultralow { background: rgba(188,140,255,0.1); border: 1px solid rgba(188,140,255,0.25); color: var(--magenta); }
 
 /* Current anycast routing line */
 .insight-routing {
@@ -1186,12 +1185,12 @@ function renderTable(tableId, servers, currentPop = null) {
     <th>Avg</th><th>Min</th><th>Jitter</th><th>OK%</th>
   </tr>`;
 
-  // Build map: edge nodeId → routing labels that resolve to it
+  // Build map: edge nodeId → routing entries { label, type } that resolve to it
   const routingTo = {};
   for (const r of servers) {
     if (r.resolvedToEdge) {
       if (!routingTo[r.resolvedToEdge]) routingTo[r.resolvedToEdge] = [];
-      routingTo[r.resolvedToEdge].push(serverLabel(r));
+      routingTo[r.resolvedToEdge].push({ label: serverLabel(r), type: r.type });
     }
   }
 
@@ -1209,8 +1208,10 @@ function renderTable(tableId, servers, currentPop = null) {
       ? '<span class="current-marker" title="Anycast currently routes here">&#9658;</span>'
       : '';
 
-    const viaLabels = routingTo[r.nodeId] || [];
-    const viaBadges = viaLabels.map(v => `<span class="via-badge">${escHtml(v)}</span>`).join('');
+    const viaEntries = routingTo[r.nodeId] || [];
+    const viaBadges = viaEntries.map(v =>
+      `<span class="via-badge via-badge--${v.type}">${escHtml(v.label)}</span>`
+    ).join('');
 
     const { flag, city } = parseLocation(r.location || r.pop || '');
     const locCell = flag
