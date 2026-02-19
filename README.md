@@ -2,15 +2,16 @@
 
 **Find the lowest-latency NextDNS servers for your network.** Open a single HTML file in any browser — no install, no dependencies, no backend.
 
+**[→ Open the live tool](https://tracerman.github.io/nextdns-dns-matrix/)**
+
 Benchmarks all available NextDNS PoPs (anycast, ultralow, and individual servers) and recommends the optimal DNS configuration with ready-to-paste strings for Asus routers, DoH, DoT, and plain DNS.
 
 ## Quick Start
 
-1. Download [`index.html`](index.html) (or clone this repo)
-2. Open it in any modern browser
-3. Enter your NextDNS config ID (from [my.nextdns.io](https://my.nextdns.io) → Setup)
-4. Click **Run Benchmark**
-5. Copy the recommended config strings
+1. **[Open the live tool](https://tracerman.github.io/nextdns-dns-matrix/)** — or download [`index.html`](index.html) to run locally
+2. Enter your NextDNS config ID (from [my.nextdns.io](https://my.nextdns.io) → Setup)
+3. Click **Run Benchmark**
+4. Copy the recommended config strings
 
 That's it. No server, no build step, no dependencies.
 
