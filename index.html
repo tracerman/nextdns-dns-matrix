@@ -228,6 +228,18 @@ body {
   background: currentColor;
   opacity: 0.4;
 }
+.cc-badge {
+  display: inline-block;
+  background: rgba(88,166,255,0.12);
+  border: 1px solid rgba(88,166,255,0.22);
+  border-radius: 2px;
+  padding: 0 4px;
+  font-size: 0.65rem;
+  color: var(--cyan);
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  vertical-align: 1px;
+}
 
 /* Table */
 .results-table-wrap {
@@ -272,17 +284,17 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   margin-bottom: 1rem;
 }
 .config-block h3 {
   font-size: 0.9rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 .config-block .desc {
   color: var(--text-dim);
   font-size: 0.78rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 .config-line {
   display: flex;
@@ -418,7 +430,13 @@ tbody tr {
 .config-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 1rem;
+  gap: 0.75rem;
+  align-items: start;
+}
+.asus-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
 }
 .config-ipv4      { grid-column: span 3; }
 .config-ipv4.solo { grid-column: span 6; }
@@ -429,7 +447,7 @@ tbody tr {
 .config-plain     { grid-column: span 2; }
 
 @media (max-width: 860px) {
-  .config-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .config-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
   .config-ipv4, .config-ipv4.solo, .config-ipv6,
   .config-asus  { grid-column: span 2; }
   .config-doh, .config-dot  { grid-column: span 1; }
@@ -465,6 +483,7 @@ tbody tr {
   table th:nth-child(9), table td:nth-child(9) { display: none; }
   /* Config grid collapses to single column */
   .config-grid { grid-template-columns: 1fr; }
+  .asus-grid { grid-template-columns: 1fr; }
   .config-ipv4, .config-ipv4.solo, .config-ipv6,
   .config-asus, .config-doh, .config-dot, .config-plain { grid-column: span 1; }
   /* Config lines stack */
@@ -675,11 +694,7 @@ function parseLocation(loc) {
     const code = loc.slice(0, 2).toUpperCase();
     const rest = loc.slice(3);
     const city = rest.includes(',') ? rest.slice(0, rest.indexOf(',')) : rest;
-    const flag = String.fromCodePoint(
-      0x1F1E6 + code.charCodeAt(0) - 65,
-      0x1F1E6 + code.charCodeAt(1) - 65
-    );
-    return { flag, city };
+    return { flag: code, city };
   }
   return { flag: '', city: loc };
 }
@@ -1016,7 +1031,9 @@ function renderTable(tableId, servers) {
       : `<span class="text-dim">${i + 1}</span>`;
 
     const { flag, city } = parseLocation(r.location || r.pop || '');
-    const locCell = flag ? `${flag} ${escHtml(city)}` : escHtml(city || r.pop || '');
+    const locCell = flag
+      ? `<span class="cc-badge">${escHtml(flag)}</span> ${escHtml(city)}`
+      : escHtml(city || r.pop || '');
     const ip = r.resolvedIP || '';
     const typeLabel = r.type === 'server' ? '' : r.type;
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
@@ -1050,8 +1067,8 @@ function renderRecSection(entry, label) {
   const badge = r
     ? ' <span class="' + latencyClass(r.avgMs) + '">' + r.avgMs + 'ms</span> <span class="text-dim">' + escHtml(nodeLabel) + '</span>'
     : '';
-  return `<div style="margin-bottom:0.6rem">
-    <div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">${escHtml(label)}${badge}</div>
+  return `<div style="margin-bottom:0.4rem">
+    <div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">${escHtml(label)}${badge}</div>
     ${configLine('IP:', entry.ip)}
     ${configLine('Hostname:', entry.hostname)}
   </div>`;
@@ -1064,8 +1081,8 @@ function renderConfig(config, configId) {
   // IPv4 Recommendation
   let v4Html = renderRecSection(config.ipv4.best, 'Best');
   v4Html += renderRecSection(config.ipv4.backup, 'Backup');
-  v4Html += '<hr style="border-color:var(--border);margin:0.5rem 0">';
-  v4Html += `<div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">Anycast Fallback</div>`;
+  v4Html += '<hr style="border-color:var(--border);margin:0.35rem 0">';
+  v4Html += `<div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">Anycast Fallback</div>`;
   v4Html += configLine('IP 1:', config.ipv4.anycast1.ip, true);
   v4Html += configLine('IP 2:', config.ipv4.anycast2.ip, true);
   document.getElementById('ipv4RecConfig').innerHTML = v4Html;
@@ -1083,8 +1100,8 @@ function renderConfig(config, configId) {
     ipv4Block.classList.remove('solo');
     let v6Html = renderRecSection(config.ipv6.best, 'Best');
     v6Html += renderRecSection(config.ipv6.backup, 'Backup');
-    v6Html += '<hr style="border-color:var(--border);margin:0.5rem 0">';
-    v6Html += `<div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">Anycast Fallback</div>`;
+    v6Html += '<hr style="border-color:var(--border);margin:0.35rem 0">';
+    v6Html += `<div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">Anycast Fallback</div>`;
     v6Html += configLine('IP 1:', config.ipv6.anycast1.ip, true);
     v6Html += configLine('IP 2:', config.ipv6.anycast2.ip, true);
     document.getElementById('ipv6RecConfig').innerHTML = v6Html;
@@ -1092,8 +1109,7 @@ function renderConfig(config, configId) {
     ipv4Block.classList.add('solo');
   }
 
-  // Asus DoT — separate IP and Hostname fields per entry
-  let asus = '';
+  // Asus DoT — 2-column grid layout
   const asusEntries = [
     { label: 'Primary (IPv4 Best)', entry: config.ipv4.best },
     { label: 'Secondary (IPv4 Backup)', entry: config.ipv4.backup },
@@ -1105,13 +1121,15 @@ function renderConfig(config, configId) {
   asusEntries.push({ label: 'Fallback 1 (Anycast)', entry: config.ipv4.anycast1 });
   asusEntries.push({ label: 'Fallback 2 (Anycast)', entry: config.ipv4.anycast2 });
 
+  let asus = '<div class="asus-grid">';
   for (const { label, entry } of asusEntries) {
-    asus += `<div style="margin-bottom:0.6rem">
-      <div style="color:var(--text-dim);font-size:0.78rem;margin-bottom:0.2rem">${escHtml(label)}</div>
+    asus += `<div>
+      <div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">${escHtml(label)}</div>
       ${configLine('IP:', entry.ip)}
       ${configLine('Hostname:', entry.hostname)}
     </div>`;
   }
+  asus += '</div>';
   document.getElementById('asusConfig').innerHTML = asus;
 
   // DoH

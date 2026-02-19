@@ -2,6 +2,15 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
+## [1.3.0] — 2026-02-18
+
+### Fixed
+- **Country code badges** — replaced Regional Indicator emoji (broken on Windows) with styled CSS `<span class="cc-badge">` badges showing the 2-letter ISO code next to the city name. Works cross-platform.
+- **Bento whitespace** — Asus Router card now uses an internal 2-column CSS grid, halving its vertical height. Config block padding reduced (`1rem 1.25rem` → `0.75rem 1rem`). Grid gap reduced to `0.75rem`. Entry margins tightened throughout recommendation cards.
+
+### Changed
+- Config grid now uses `align-items: start` so cards only expand to their content height.
+
 ## [1.2.0] — 2026-02-18
 
 ### Added
