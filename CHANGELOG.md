@@ -2,6 +2,15 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
+## [1.2.0] — 2026-02-18
+
+### Added
+- **Flag emojis in location column** — ISO country codes from the `/info` API are converted to Regional Indicator flag emoji (e.g. 🇺🇸 Ashburn). Falls back gracefully for non-standard location strings.
+- **Insight box stat pills** — tested / reachable / unreachable counts are now styled pill badges with color coding (green = reachable, red = unreachable). The main insight and note lines are structured divs instead of `<br>` concatenation.
+- **Inline latency sparkbars** — each row in the Avg column now shows a 2px proportional bar beneath the latency number, scaled relative to the slowest server in the table. Inherits the green/yellow/red latency color.
+- **Styled server badges** for unreachable servers — the error list now renders each server as a small red badge instead of comma-separated plain text.
+- **Section header cyan accent** — "Benchmark Results" and "Recommended Configuration" headers now have a 3px cyan left-border accent via `::before`.
+
 ## [1.1.0] — 2026-02-18
 
 ### Added

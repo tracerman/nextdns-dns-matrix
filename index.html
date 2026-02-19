@@ -155,6 +155,18 @@ body {
   margin-bottom: 0.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  padding-left: 0.75rem;
+}
+.section-header::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  bottom: 0.3em;
+  width: 3px;
+  background: var(--cyan);
+  border-radius: 2px;
 }
 .sub-header {
   font-size: 0.9rem;
@@ -173,6 +185,48 @@ body {
   color: var(--green);
   font-weight: 700;
   font-size: 1rem;
+}
+.insight-stats {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.insight-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(139,148,158,0.1);
+  border: 1px solid rgba(139,148,158,0.2);
+  color: var(--text-dim);
+}
+.insight-pill.ok  { background: rgba(63,185,80,0.1);  border-color: rgba(63,185,80,0.25);  color: var(--green); }
+.insight-pill.err { background: rgba(248,81,73,0.1);  border-color: rgba(248,81,73,0.25);  color: var(--red);   }
+.insight-main { font-size: 0.92rem; margin-bottom: 0.2rem; }
+.insight-note { font-size: 0.8rem; color: var(--text-dim); }
+.server-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  background: rgba(248,81,73,0.08);
+  border: 1px solid rgba(248,81,73,0.18);
+  color: var(--red);
+  margin: 0.1rem 0.1rem;
+}
+.spark-bar {
+  display: block;
+  height: 2px;
+  border-radius: 1px;
+  margin-top: 3px;
+  background: currentColor;
+  opacity: 0.4;
 }
 
 /* Table */
@@ -614,6 +668,22 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
+function parseLocation(loc) {
+  if (!loc) return { flag: '', city: '' };
+  // Format from /info API: "us Ashburn, United States" — 2-char ISO code + space + city
+  if (loc.length >= 3 && /^[a-z]{2} /i.test(loc)) {
+    const code = loc.slice(0, 2).toUpperCase();
+    const rest = loc.slice(3);
+    const city = rest.includes(',') ? rest.slice(0, rest.indexOf(',')) : rest;
+    const flag = String.fromCodePoint(
+      0x1F1E6 + code.charCodeAt(0) - 65,
+      0x1F1E6 + code.charCodeAt(1) - 65
+    );
+    return { flag, city };
+  }
+  return { flag: '', city: loc };
+}
+
 async function copyToClipboard(text, btn) {
   try {
     await navigator.clipboard.writeText(text);
@@ -939,23 +1009,26 @@ function renderTable(tableId, servers) {
   </tr>`;
 
   tbody.innerHTML = '';
+  const maxMs = servers.length > 0 ? Math.max(...servers.map(s => s.avgMs)) : 1;
   servers.forEach((r, i) => {
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
 
-    const loc = r.location || r.pop || '';
+    const { flag, city } = parseLocation(r.location || r.pop || '');
+    const locCell = flag ? `${flag} ${escHtml(city)}` : escHtml(city || r.pop || '');
     const ip = r.resolvedIP || '';
     const typeLabel = r.type === 'server' ? '' : r.type;
+    const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${rank}</td>
       <td>${escHtml(serverLabel(r))}</td>
-      <td class="text-dim">${escHtml(loc)}</td>
+      <td class="text-dim">${locCell}</td>
       <td class="${typeClass(r.type)}">${typeLabel}</td>
       <td class="text-dim" style="font-size:0.75rem">${escHtml(r.hostname)}</td>
       <td>${ip ? escHtml(ip) : '<span class="text-dim">-</span>'}</td>
-      <td class="${latencyClass(r.avgMs)}">${r.avgMs}ms</td>
+      <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span><span class="spark-bar" style="width:${barWidth}px"></span></td>
       <td class="text-dim">${r.minMs}ms</td>
       <td class="text-dim">${r.jitter}ms</td>
       <td>${r.successRate === 100 ? '<span class="lat-green">100%</span>' : '<span class="lat-yellow">' + r.successRate + '%</span>'}</td>
@@ -1141,20 +1214,24 @@ async function runBenchmark() {
     // Insight box
     const insightBox = document.getElementById('insightBox');
     const anycastV4 = ipv4.filter(r => r.type === 'anycast');
-    let insightHtml = `<span class="text-dim">Tested ${ranked.length} servers &mdash; ${ok.length} reachable, ${errors.length} unreachable</span>`;
+    let insightHtml = `<div class="insight-stats">
+      <span class="insight-pill">${ranked.length} tested</span>
+      <span class="insight-pill ok">${ok.length} reachable</span>
+      ${errors.length > 0 ? `<span class="insight-pill err">${errors.length} unreachable</span>` : ''}
+    </div>`;
     if (ipv4[0] && anycastV4[0] && ipv4[0].type !== 'anycast') {
       const imp = Math.round((anycastV4[0].avgMs - ipv4[0].avgMs) * 100) / 100;
       if (imp > 0) {
-        insightHtml += `<br><span class="stat">Best server has ${imp}ms lower latency than anycast</span>`;
-        insightHtml += `<br><span class="text-dim">${serverLabel(ipv4[0])} `;
-        insightHtml += `<span class="lat-green">${ipv4[0].avgMs}ms</span> vs anycast `;
-        insightHtml += `<span class="lat-yellow">${anycastV4[0].avgMs}ms</span></span>`;
+        insightHtml += `<div class="insight-main"><span class="stat">${imp}ms lower latency</span> <span class="text-dim">vs anycast</span></div>`;
+        insightHtml += `<div class="insight-note">${escHtml(serverLabel(ipv4[0]))} <span class="lat-green">${ipv4[0].avgMs}ms</span> <span class="text-dim">vs anycast</span> <span class="lat-yellow">${anycastV4[0].avgMs}ms</span></div>`;
       } else {
-        insightHtml += `<br><span style="color:var(--blue)">Anycast is currently optimal. No change needed.</span>`;
+        insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is currently optimal &mdash; no change needed.</div>`;
       }
+    } else if (ipv4[0]) {
+      insightHtml += `<div class="insight-main"><span class="stat">${ipv4[0].avgMs}ms</span> <span class="text-dim">best IPv4 &mdash; ${escHtml(serverLabel(ipv4[0]))}</span></div>`;
     }
     if (preference !== 'auto') {
-      insightHtml += `<br><span class="text-dim">Ranking boosted ${preference} servers within 10ms tolerance</span>`;
+      insightHtml += `<div class="insight-note">Ranking boosted <strong>${preference}</strong> servers within 10ms tolerance</div>`;
     }
     insightBox.innerHTML = insightHtml;
 
@@ -1177,9 +1254,14 @@ async function runBenchmark() {
     // Error servers
     if (errors.length > 0) {
       document.getElementById('errorServersSection').style.display = 'block';
-      const list = errors.slice(0, 10).map(r => serverLabel(r) + ` (${r.family})`).join(', ');
-      document.getElementById('errorServersList').textContent =
-        list + (errors.length > 10 ? ` ... and ${errors.length - 10} more` : '');
+      const shown = errors.slice(0, 15);
+      const badges = shown.map(r =>
+        `<span class="server-badge">${escHtml(serverLabel(r))} <span style="opacity:0.55">${r.family}</span></span>`
+      ).join('');
+      const extra = errors.length > 15
+        ? `<span class="text-dim" style="font-size:0.75rem;vertical-align:middle"> +${errors.length - 15} more</span>`
+        : '';
+      document.getElementById('errorServersList').innerHTML = badges + extra;
     } else {
       document.getElementById('errorServersSection').style.display = 'none';
     }
