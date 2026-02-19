@@ -501,6 +501,13 @@ tbody tr {
 }
 .insight-box.pop .stat { animation: statPulse 0.9s ease-out forwards; }
 
+/* Anycast/ultralow → edge overlap annotation */
+.routes-to {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+
 /* Current anycast routing line */
 .insight-routing {
   margin-top: 0.3rem;
@@ -1193,9 +1200,11 @@ function renderTable(tableId, servers, currentPop = null) {
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     if (isCurrent) tr.classList.add('current-pop-row');
+    const nodeIdCell = escHtml(serverLabel(r)) +
+      (r.resolvedToEdge ? ` <span class="routes-to">&#8594; ${escHtml(r.resolvedToEdge)}</span>` : '');
     tr.innerHTML = `
       <td>${rank}${currentMarker}</td>
-      <td>${escHtml(serverLabel(r))}</td>
+      <td>${nodeIdCell}</td>
       <td class="text-dim">${locCell}</td>
       <td class="${typeClass(r.type)}">${typeLabel}</td>
       <td class="text-dim" style="font-size:0.75rem">${escHtml(r.hostname)}</td>
@@ -1380,6 +1389,19 @@ async function runBenchmark() {
     const errors = ranked.filter(r => r.status === 'error');
     const ipv4 = ok.filter(r => r.family === 'IPv4');
     const ipv6 = ok.filter(r => r.family === 'IPv6');
+
+    // Cross-reference: mark anycast/ultralow rows whose resolved IP matches an edge server
+    for (const family of [ipv4, ipv6]) {
+      const edgeIpMap = {};
+      for (const r of family) {
+        if (r.type === 'server' && r.resolvedIP) edgeIpMap[r.resolvedIP] = r.nodeId;
+      }
+      for (const r of family) {
+        if ((r.type === 'anycast' || r.type === 'ultralow') && r.resolvedIP) {
+          r.resolvedToEdge = edgeIpMap[r.resolvedIP] || null;
+        }
+      }
+    }
 
     // Render results
     resultsSection.style.display = 'block';
