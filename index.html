@@ -310,6 +310,24 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .type-edge { color: var(--cyan); }
 .type-anycast { color: var(--blue); }
 .type-ultralow { color: var(--magenta); }
+
+/* Type legend */
+.type-legend {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.type-legend-item { display: flex; align-items: baseline; gap: 0.35rem; }
+.type-legend-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative; top: 0.5px;
+}
 .lat-green { color: var(--green); }
 .lat-yellow { color: var(--yellow); }
 .lat-red { color: var(--red); }
@@ -642,6 +660,21 @@ tbody tr {
     <div class="section-header">Benchmark Results</div>
 
     <div class="insight-box" id="insightBox"></div>
+
+    <div class="type-legend">
+      <span class="type-legend-item">
+        <span class="type-legend-dot" style="background:var(--cyan)"></span>
+        <span><span class="type-edge">edge</span> &mdash; individual PoP servers, lowest latency, IPs rotate</span>
+      </span>
+      <span class="type-legend-item">
+        <span class="type-legend-dot" style="background:var(--magenta)"></span>
+        <span><span class="type-ultralow">ultralow</span> &mdash; DNS-steered unicast, requires DoT/DoH</span>
+      </span>
+      <span class="type-legend-item">
+        <span class="type-legend-dot" style="background:var(--blue)"></span>
+        <span><span class="type-anycast">anycast</span> &mdash; global BGP IPs, stable, auto-failover</span>
+      </span>
+    </div>
 
     <div id="ipv4Section">
       <div class="sub-header" id="ipv4Header">IPv4 Servers</div>
@@ -1136,7 +1169,7 @@ function renderTable(tableId, servers, currentPop = null) {
       ? `<span class="cc-badge">${escHtml(flag)}</span> ${escHtml(city)}`
       : escHtml(city || r.pop || '');
     const ip = r.resolvedIP || '';
-    const typeLabel = r.type === 'server' ? '' : r.type;
+    const typeLabel = r.type === 'server' ? 'edge' : r.type;
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     if (isCurrent) tr.classList.add('current-pop-row');
