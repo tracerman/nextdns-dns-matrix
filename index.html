@@ -472,6 +472,25 @@ tbody tr {
 }
 .insight-box.pop .stat { animation: statPulse 0.9s ease-out forwards; }
 
+/* Current anycast routing line */
+.insight-routing {
+  margin-top: 0.3rem;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.insight-routing strong { color: var(--cyan); font-weight: 600; }
+
+/* Current-PoP row in result table */
+.current-pop-row { background: rgba(88,166,255,0.05); }
+.current-marker {
+  display: inline-block;
+  color: var(--cyan);
+  font-size: 0.65rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+
 /* ── Bento config grid ───────────────────────────────────────────────── */
 .config-grid {
   display: grid;
@@ -1090,7 +1109,7 @@ function serverLabel(r) {
   return r.nodeId || r.hostname;
 }
 
-function renderTable(tableId, servers) {
+function renderTable(tableId, servers, currentPop = null) {
   const table = document.getElementById(tableId);
   const thead = table.querySelector('thead');
   const tbody = table.querySelector('tbody');
@@ -1104,9 +1123,13 @@ function renderTable(tableId, servers) {
   tbody.innerHTML = '';
   const maxMs = servers.length > 0 ? Math.max(...servers.map(s => s.avgMs)) : 1;
   servers.forEach((r, i) => {
+    const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
+    const currentMarker = isCurrent
+      ? '<span class="current-marker" title="Anycast currently routes here">&#9658;</span>'
+      : '';
 
     const { flag, city } = parseLocation(r.location || r.pop || '');
     const locCell = flag
@@ -1116,8 +1139,9 @@ function renderTable(tableId, servers) {
     const typeLabel = r.type === 'server' ? '' : r.type;
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
+    if (isCurrent) tr.classList.add('current-pop-row');
     tr.innerHTML = `
-      <td>${rank}</td>
+      <td>${rank}${currentMarker}</td>
       <td>${escHtml(serverLabel(r))}</td>
       <td class="text-dim">${locCell}</td>
       <td class="${typeClass(r.type)}">${typeLabel}</td>
@@ -1310,6 +1334,7 @@ async function runBenchmark() {
     // Insight box
     const insightBox = document.getElementById('insightBox');
     const anycastV4 = ipv4.filter(r => r.type === 'anycast');
+    const currentAnycastPop = anycastV4[0] ? anycastV4[0].pop : null;
     let insightHtml = `<div class="insight-stats">
       <span class="insight-pill">${ranked.length} tested</span>
       <span class="insight-pill ok">${ok.length} reachable</span>
@@ -1326,6 +1351,11 @@ async function runBenchmark() {
     } else if (ipv4[0]) {
       insightHtml += `<div class="insight-main"><span class="stat">${ipv4[0].avgMs}ms</span> <span class="text-dim">best IPv4 &mdash; ${escHtml(serverLabel(ipv4[0]))}</span></div>`;
     }
+    if (currentAnycastPop) {
+      const { flag, city } = parseLocation(anycastV4[0].location || '');
+      const locStr = city ? (flag ? `[${flag}] ${city}` : city) : currentAnycastPop;
+      insightHtml += `<div class="insight-routing">Anycast routes you to: <strong>${escHtml(currentAnycastPop)}</strong> <span class="text-dim">${escHtml(locStr)} &middot; ${anycastV4[0].avgMs}ms</span></div>`;
+    }
     if (preference !== 'auto') {
       insightHtml += `<div class="insight-note">Ranking boosted <strong>${preference}</strong> servers within 10ms tolerance</div>`;
     }
@@ -1335,14 +1365,16 @@ async function runBenchmark() {
     if (ipv4.length > 0) {
       document.getElementById('ipv4Section').style.display = 'block';
       document.getElementById('ipv4Header').textContent = `IPv4 Servers (${ipv4.length} reachable)`;
-      renderTable('ipv4Table', ipv4);
+      renderTable('ipv4Table', ipv4, currentAnycastPop);
     }
 
     // IPv6 table
     if (ipv6.length > 0) {
       document.getElementById('ipv6Section').style.display = 'block';
       document.getElementById('ipv6Header').textContent = `IPv6 Servers (${ipv6.length} reachable)`;
-      renderTable('ipv6Table', ipv6);
+      const anycastV6 = ipv6.filter(r => r.type === 'anycast');
+      const currentAnycastV6Pop = anycastV6[0] ? anycastV6[0].pop : null;
+      renderTable('ipv6Table', ipv6, currentAnycastV6Pop);
     } else {
       document.getElementById('ipv6Section').style.display = 'none';
     }

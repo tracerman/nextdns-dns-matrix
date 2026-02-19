@@ -2,6 +2,12 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
+## [1.5.0] — 2026-02-18
+
+### Added
+- **Current PoP indicator** — the insight box now shows which PoP anycast is currently routing you to (e.g., "Anycast routes you to: **hetzner-iad** [US] Ashburn · 19ms"). The `/info` API response for the anycast endpoint reveals the active PoP, which is the same routing path DNS uses.
+- **Table row highlight** — the edge server row matching your current anycast PoP is highlighted with a subtle cyan tint and a `▶` marker in the rank column, making it easy to spot where you are in the ranking.
+
 ## [1.4.0] — 2026-02-18
 
 ### Added
