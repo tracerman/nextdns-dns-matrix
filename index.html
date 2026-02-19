@@ -282,6 +282,67 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 }
 
 
+/* ── Animations ─────────────────────────────────────────────────────── */
+
+/* Progress bar moving stripes while benchmark runs */
+@keyframes progressStripe {
+  to { background-position: -1rem 0; }
+}
+.progress-bar-fill.running {
+  background-image: repeating-linear-gradient(
+    -45deg, transparent 0, transparent 6px,
+    rgba(0,0,0,0.15) 6px, rgba(0,0,0,0.15) 12px
+  );
+  background-size: 1rem 1rem;
+  animation: progressStripe 0.4s linear infinite;
+}
+
+/* Table rows slide in with stagger (delay set per-row via JS) */
+@keyframes rowIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+tbody tr {
+  opacity: 0;
+  animation: rowIn 0.2s ease-out forwards;
+}
+
+/* Rank ★ slow glow pulse */
+@keyframes starGlow {
+  0%, 100% { text-shadow: 0 0 6px rgba(63,185,80,0.5); }
+  50%       { text-shadow: 0 0 18px rgba(63,185,80,0.95), 0 0 36px rgba(63,185,80,0.3); }
+}
+.rank-star { animation: starGlow 2.5s ease-in-out infinite; }
+
+/* Insight box pops in each run */
+@keyframes insightPop {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.insight-box.pop { animation: insightPop 0.3s ease-out; }
+
+/* ── Bento config grid ───────────────────────────────────────────────── */
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+}
+.config-ipv4      { grid-column: span 3; }
+.config-ipv4.solo { grid-column: span 6; }
+.config-ipv6      { grid-column: span 3; }
+.config-asus      { grid-column: span 6; }
+.config-doh       { grid-column: span 2; }
+.config-dot       { grid-column: span 2; }
+.config-plain     { grid-column: span 2; }
+
+@media (max-width: 860px) {
+  .config-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .config-ipv4, .config-ipv4.solo, .config-ipv6,
+  .config-asus  { grid-column: span 2; }
+  .config-doh, .config-dot  { grid-column: span 1; }
+  .config-plain { grid-column: span 2; }
+}
+
 /* Footer */
 .footer {
   margin-top: 2rem;
@@ -309,6 +370,10 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   /* Hide Hostname (col 5) and Jitter (col 9) — table scrolls horizontally */
   table th:nth-child(5), table td:nth-child(5) { display: none; }
   table th:nth-child(9), table td:nth-child(9) { display: none; }
+  /* Config grid collapses to single column */
+  .config-grid { grid-template-columns: 1fr; }
+  .config-ipv4, .config-ipv4.solo, .config-ipv6,
+  .config-asus, .config-doh, .config-dot, .config-plain { grid-column: span 1; }
   /* Config lines stack */
   .config-label { min-width: 70px; }
 }
@@ -396,37 +461,39 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   <div class="config-section" id="configSection">
     <div class="section-header">Recommended Configuration</div>
 
-    <div class="config-block">
-      <h3>IPv4 Recommendation</h3>
-      <div id="ipv4RecConfig"></div>
-    </div>
+    <div class="config-grid">
+      <div class="config-block config-ipv4" id="configBlockIpv4">
+        <h3>IPv4 Recommendation</h3>
+        <div id="ipv4RecConfig"></div>
+      </div>
 
-    <div class="config-block" id="ipv6RecBlock" style="display:none">
-      <h3>IPv6 Recommendation</h3>
-      <div id="ipv6RecConfig"></div>
-    </div>
+      <div class="config-block config-ipv6" id="ipv6RecBlock" style="display:none">
+        <h3>IPv6 Recommendation</h3>
+        <div id="ipv6RecConfig"></div>
+      </div>
 
-    <div class="config-block">
-      <h3>Asus Router (DoT)</h3>
-      <div class="desc">WAN &rarr; DNS &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS &rarr; add each server (IP + Hostname, leave port blank)</div>
-      <div id="asusConfig"></div>
-    </div>
+      <div class="config-block config-asus">
+        <h3>Asus Router (DoT)</h3>
+        <div class="desc">WAN &rarr; DNS &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS &rarr; add each server (IP + Hostname, leave port blank)</div>
+        <div id="asusConfig"></div>
+      </div>
 
-    <div class="config-block">
-      <h3>DNS-over-HTTPS (DoH)</h3>
-      <div id="dohConfig"></div>
-    </div>
+      <div class="config-block config-doh">
+        <h3>DNS-over-HTTPS (DoH)</h3>
+        <div id="dohConfig"></div>
+      </div>
 
-    <div class="config-block">
-      <h3>DNS-over-TLS Hostnames</h3>
-      <div class="desc">Generic hostnames &mdash; DNS steering picks the IP</div>
-      <div id="dotConfig"></div>
-    </div>
+      <div class="config-block config-dot">
+        <h3>DNS-over-TLS Hostnames</h3>
+        <div class="desc">Generic hostnames &mdash; DNS steering picks the IP</div>
+        <div id="dotConfig"></div>
+      </div>
 
-    <div class="config-block">
-      <h3>Plain DNS IPs</h3>
-      <div class="desc">For non-encrypted fallback / IoT devices</div>
-      <div id="plainConfig"></div>
+      <div class="config-block config-plain">
+        <h3>Plain DNS IPs</h3>
+        <div class="desc">For non-encrypted fallback / IoT devices</div>
+        <div id="plainConfig"></div>
+      </div>
     </div>
   </div>
 
@@ -854,6 +921,7 @@ function renderTable(tableId, servers) {
       <td class="text-dim">${r.jitter}ms</td>
       <td>${r.successRate === 100 ? '<span class="lat-green">100%</span>' : '<span class="lat-yellow">' + r.successRate + '%</span>'}</td>
     `;
+    tr.style.animationDelay = (i * 25) + 'ms';
     tbody.appendChild(tr);
   });
 }
@@ -890,9 +958,17 @@ function renderConfig(config, configId) {
   v4Html += configLine('IP 2:', config.ipv4.anycast2.ip, true);
   document.getElementById('ipv4RecConfig').innerHTML = v4Html;
 
+  // Insight pop re-trigger on each run
+  const insightEl = document.getElementById('insightBox');
+  insightEl.classList.remove('pop');
+  void insightEl.offsetWidth;
+  insightEl.classList.add('pop');
+
   // IPv6 Recommendation
+  const ipv4Block = document.getElementById('configBlockIpv4');
   if (config.bestV6) {
     document.getElementById('ipv6RecBlock').style.display = 'block';
+    ipv4Block.classList.remove('solo');
     let v6Html = renderRecSection(config.ipv6.best, 'Best');
     v6Html += renderRecSection(config.ipv6.backup, 'Backup');
     v6Html += '<hr style="border-color:var(--border);margin:0.5rem 0">';
@@ -900,6 +976,8 @@ function renderConfig(config, configId) {
     v6Html += configLine('IP 1:', config.ipv6.anycast1.ip, true);
     v6Html += configLine('IP 2:', config.ipv6.anycast2.ip, true);
     document.getElementById('ipv6RecConfig').innerHTML = v6Html;
+  } else {
+    ipv4Block.classList.add('solo');
   }
 
   // Asus DoT — separate IP and Hostname fields per entry
@@ -982,6 +1060,7 @@ async function runBenchmark() {
   progressSection.style.display = 'block';
   resultsSection.style.display = 'none';
   configSection.style.display = 'none';
+  document.getElementById('progressFill').classList.add('running');
 
   try {
     // Phase 1: Discovery
@@ -1078,6 +1157,7 @@ async function runBenchmark() {
   } finally {
     btn.disabled = false;
     btn.textContent = 'Run Benchmark';
+    document.getElementById('progressFill').classList.remove('running');
     setTimeout(() => { progressSection.style.display = 'none'; }, 1000);
   }
 }
