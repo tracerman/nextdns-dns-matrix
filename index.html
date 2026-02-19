@@ -343,17 +343,27 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0.75rem 1rem;
+  padding: 0;
   margin-bottom: 1rem;
+  overflow: hidden;
 }
-.config-block h3 {
+.card-header {
+  padding: 0.6rem 1rem;
+  background: rgba(255,255,255,0.025);
+  border-bottom: 1px solid var(--border);
+}
+.card-header h3 {
   font-size: 0.9rem;
-  margin-bottom: 0.2rem;
+  font-weight: 700;
+  margin: 0;
 }
-.config-block .desc {
+.card-header .desc {
   color: var(--text-dim);
-  font-size: 0.78rem;
-  margin-bottom: 0.6rem;
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+}
+.card-body {
+  padding: 0.75rem 1rem;
 }
 .config-line {
   display: flex;
@@ -702,36 +712,45 @@ tbody tr {
 
     <div class="config-grid">
       <div class="config-block config-ipv4" id="configBlockIpv4">
-        <h3>IPv4 Recommendation</h3>
-        <div id="ipv4RecConfig"></div>
+        <div class="card-header"><h3>IPv4 Recommendation</h3></div>
+        <div class="card-body" id="ipv4RecConfig"></div>
       </div>
 
       <div class="config-block config-ipv6" id="ipv6RecBlock" style="display:none">
-        <h3>IPv6 Recommendation</h3>
-        <div id="ipv6RecConfig"></div>
+        <div class="card-header"><h3>IPv6 Recommendation</h3></div>
+        <div class="card-body" id="ipv6RecConfig"></div>
       </div>
 
       <div class="config-block config-asus">
-        <h3>Asus Router (DoT)</h3>
-        <div class="desc">WAN &rarr; DNS &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS &rarr; add each server (IP + Hostname, leave port blank)</div>
-        <div id="asusConfig"></div>
+        <div class="card-header">
+          <h3>Asus Router (DoT)</h3>
+          <div class="desc">WAN &rarr; DNS &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS &rarr; add each server (IP + Hostname, leave port blank)</div>
+        </div>
+        <div class="card-body" id="asusConfig"></div>
       </div>
 
       <div class="config-block config-doh">
-        <h3>DNS-over-HTTPS (DoH)</h3>
-        <div id="dohConfig"></div>
+        <div class="card-header">
+          <h3>DNS-over-HTTPS (DoH)</h3>
+          <div class="desc">Use this URL in any DoH-compatible client or browser</div>
+        </div>
+        <div class="card-body" id="dohConfig"></div>
       </div>
 
       <div class="config-block config-dot">
-        <h3>DNS-over-TLS Hostnames</h3>
-        <div class="desc">Generic hostnames &mdash; DNS steering picks the IP</div>
-        <div id="dotConfig"></div>
+        <div class="card-header">
+          <h3>DNS-over-TLS (DoT)</h3>
+          <div class="desc">DNS steering resolves the hostname to your nearest PoP</div>
+        </div>
+        <div class="card-body" id="dotConfig"></div>
       </div>
 
       <div class="config-block config-plain">
-        <h3>Plain DNS IPs</h3>
-        <div class="desc">For non-encrypted fallback / IoT devices</div>
-        <div id="plainConfig"></div>
+        <div class="card-header">
+          <h3>Plain DNS IPs</h3>
+          <div class="desc">Unencrypted fallback &mdash; for routers or IoT devices without DoH/DoT support</div>
+        </div>
+        <div class="card-body" id="plainConfig"></div>
       </div>
     </div>
   </div>
