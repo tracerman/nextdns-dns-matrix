@@ -1506,7 +1506,7 @@ async function runBenchmark() {
           insightHtml += `<div class="insight-main"><span class="stat">${imp}ms lower latency</span> <span class="text-dim">vs anycast</span></div>`;
           insightHtml += `<div class="insight-note">${escHtml(serverLabel(ipv4[0]))} <span class="lat-green">${ipv4[0].avgMs}ms</span> <span class="text-dim">vs anycast</span> <span class="lat-yellow">${anycastV4[0].avgMs}ms</span></div>`;
         } else {
-          insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is currently your fastest option &mdash; no change needed.</div>`;
+          insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is currently your lowest-latency option &mdash; no change needed.</div>`;
         }
       }
     } else if (ipv4[0]) {
