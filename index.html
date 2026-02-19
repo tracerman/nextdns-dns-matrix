@@ -1596,6 +1596,16 @@ document.addEventListener('mousemove', e => {
   card.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
   card.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
 });
+
+// ─── URL Parameter Pre-fill ───────────────────────────────────────────────────
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || params.get('ID') || params.get('configId') || params.get('config');
+  if (id) {
+    const input = document.getElementById('configId');
+    input.value = id.replace(/['"]/g, '').trim();
+  }
+})();
 </script>
 </body>
 </html>
