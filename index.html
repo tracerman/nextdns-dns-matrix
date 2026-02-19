@@ -1493,9 +1493,9 @@ async function runBenchmark() {
     const anycastV4 = ipv4.filter(r => r.type === 'anycast');
     const currentAnycastPop = anycastV4[0] ? anycastV4[0].pop : null;
     let insightHtml = `<div class="insight-stats">
-      <span class="insight-pill"><span data-count="${ranked.length}">0</span> tested</span>
-      <span class="insight-pill ok"><span data-count="${ok.length}">0</span> reachable</span>
-      ${errors.length > 0 ? `<span class="insight-pill err"><span data-count="${errors.length}">0</span> unreachable</span>` : ''}
+      <span class="insight-pill"><span data-count="${ranked.length}">0</span>&nbsp;tested</span>
+      <span class="insight-pill ok"><span data-count="${ok.length}">0</span>&nbsp;reachable</span>
+      ${errors.length > 0 ? `<span class="insight-pill err"><span data-count="${errors.length}">0</span>&nbsp;unreachable</span>` : ''}
     </div>`;
     if (ipv4[0] && anycastV4[0]) {
       if (ipv4[0].type === 'anycast') {
