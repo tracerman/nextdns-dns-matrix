@@ -321,6 +321,45 @@ tbody tr {
 }
 .insight-box.pop { animation: insightPop 0.3s ease-out; }
 
+/* Card spotlight hover — radial gradient follows cursor (Magic UI style) */
+.config-block {
+  position: relative;
+  overflow: hidden;
+}
+.config-grid .config-block { margin-bottom: 0; }
+.config-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    500px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
+    rgba(88, 166, 255, 0.07),
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.config-block:hover::after { opacity: 1; }
+
+/* Gradient border on recommendation cards to distinguish them as "the answer" */
+.config-ipv4, .config-ipv6 {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, rgba(88,166,255,0.5), rgba(188,140,255,0.35), rgba(63,185,80,0.4)) border-box;
+}
+
+/* Insight stat: bright glow that settles into normal green */
+@keyframes statPulse {
+  0%   { color: #fff; text-shadow: 0 0 20px rgba(63,185,80,0.9); }
+  60%  { color: #7ee787; text-shadow: 0 0 8px rgba(63,185,80,0.35); }
+  100% { color: var(--green); text-shadow: none; }
+}
+.insight-box.pop .stat { animation: statPulse 0.9s ease-out forwards; }
+
 /* ── Bento config grid ───────────────────────────────────────────────── */
 .config-grid {
   display: grid;
@@ -384,7 +423,7 @@ tbody tr {
 <div class="container">
   <div class="banner">
     <h1>NextDNS DNS Matrix</h1>
-    <p>Benchmark NextDNS servers and find the fastest DNS for your network</p>
+    <p>Benchmark NextDNS servers and find the lowest-latency DNS server for your network</p>
   </div>
 
   <div class="form-section">
@@ -412,7 +451,7 @@ tbody tr {
       <div class="form-group">
         <label for="preference">Preference</label>
         <select id="preference">
-          <option value="auto">auto (fastest wins)</option>
+          <option value="auto">auto (lowest latency)</option>
           <option value="ultralow">ultralow</option>
           <option value="anycast">anycast</option>
         </select>
@@ -1106,7 +1145,7 @@ async function runBenchmark() {
     if (ipv4[0] && anycastV4[0] && ipv4[0].type !== 'anycast') {
       const imp = Math.round((anycastV4[0].avgMs - ipv4[0].avgMs) * 100) / 100;
       if (imp > 0) {
-        insightHtml += `<br><span class="stat">Best server is ${imp}ms faster than anycast!</span>`;
+        insightHtml += `<br><span class="stat">Best server has ${imp}ms lower latency than anycast</span>`;
         insightHtml += `<br><span class="text-dim">${serverLabel(ipv4[0])} `;
         insightHtml += `<span class="lat-green">${ipv4[0].avgMs}ms</span> vs anycast `;
         insightHtml += `<span class="lat-yellow">${anycastV4[0].avgMs}ms</span></span>`;
@@ -1165,6 +1204,15 @@ async function runBenchmark() {
 // Allow Enter key on config ID input
 document.getElementById('configId').addEventListener('keydown', e => {
   if (e.key === 'Enter') runBenchmark();
+});
+
+// Card spotlight: track cursor position for radial gradient on config blocks
+document.addEventListener('mousemove', e => {
+  const card = e.target.closest('.config-block');
+  if (!card) return;
+  const r = card.getBoundingClientRect();
+  card.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
+  card.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
 });
 </script>
 </body>
