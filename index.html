@@ -501,11 +501,17 @@ tbody tr {
 }
 .insight-box.pop .stat { animation: statPulse 0.9s ease-out forwards; }
 
-/* Anycast/ultralow → edge overlap annotation */
-.routes-to {
-  font-size: 0.72rem;
+/* Routing via-badges on absorbed edge rows */
+.via-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 0.3rem;
+  background: rgba(139,148,158,0.1);
+  border: 1px solid rgba(139,148,158,0.2);
   color: var(--text-dim);
-  opacity: 0.7;
+  vertical-align: middle;
 }
 
 /* Current anycast routing line */
@@ -1180,9 +1186,21 @@ function renderTable(tableId, servers, currentPop = null) {
     <th>Avg</th><th>Min</th><th>Jitter</th><th>OK%</th>
   </tr>`;
 
+  // Build map: edge nodeId → routing labels that resolve to it
+  const routingTo = {};
+  for (const r of servers) {
+    if (r.resolvedToEdge) {
+      if (!routingTo[r.resolvedToEdge]) routingTo[r.resolvedToEdge] = [];
+      routingTo[r.resolvedToEdge].push(serverLabel(r));
+    }
+  }
+
+  // Remove anycast/ultralow rows that are absorbed by an edge row
+  const displayed = servers.filter(r => !r.resolvedToEdge);
+
   tbody.innerHTML = '';
-  const maxMs = servers.length > 0 ? Math.max(...servers.map(s => s.avgMs)) : 1;
-  servers.forEach((r, i) => {
+  const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.avgMs)) : 1;
+  displayed.forEach((r, i) => {
     const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
@@ -1190,6 +1208,9 @@ function renderTable(tableId, servers, currentPop = null) {
     const currentMarker = isCurrent
       ? '<span class="current-marker" title="Anycast currently routes here">&#9658;</span>'
       : '';
+
+    const viaLabels = routingTo[r.nodeId] || [];
+    const viaBadges = viaLabels.map(v => `<span class="via-badge">${escHtml(v)}</span>`).join('');
 
     const { flag, city } = parseLocation(r.location || r.pop || '');
     const locCell = flag
@@ -1200,11 +1221,9 @@ function renderTable(tableId, servers, currentPop = null) {
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     if (isCurrent) tr.classList.add('current-pop-row');
-    const nodeIdCell = escHtml(serverLabel(r)) +
-      (r.resolvedToEdge ? ` <span class="routes-to">&#8594; ${escHtml(r.resolvedToEdge)}</span>` : '');
     tr.innerHTML = `
       <td>${rank}${currentMarker}</td>
-      <td>${nodeIdCell}</td>
+      <td>${escHtml(serverLabel(r))}${viaBadges}</td>
       <td class="text-dim">${locCell}</td>
       <td class="${typeClass(r.type)}">${typeLabel}</td>
       <td class="text-dim" style="font-size:0.75rem">${escHtml(r.hostname)}</td>
