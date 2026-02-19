@@ -508,9 +508,9 @@ tbody tr {
   padding: 1px 5px;
   border-radius: 3px;
   margin-left: 0.3rem;
-  background: rgba(139,148,158,0.1);
-  border: 1px solid rgba(139,148,158,0.2);
-  color: var(--text-dim);
+  background: rgba(188,140,255,0.1);
+  border: 1px solid rgba(188,140,255,0.25);
+  color: var(--magenta);
   vertical-align: middle;
 }
 
@@ -1409,15 +1409,25 @@ async function runBenchmark() {
     const ipv4 = ok.filter(r => r.family === 'IPv4');
     const ipv6 = ok.filter(r => r.family === 'IPv6');
 
-    // Cross-reference: mark anycast/ultralow rows whose resolved IP matches an edge server
+    // Cross-reference: mark anycast/ultralow rows that map to the same edge server
     for (const family of [ipv4, ipv6]) {
+      // Build map by IP for ultralow (unicast IPs match edge servers directly)
       const edgeIpMap = {};
+      // Build map by pop/nodeId for anycast (BGP IPs differ; link is via .pop field)
+      const edgePopMap = {};
       for (const r of family) {
-        if (r.type === 'server' && r.resolvedIP) edgeIpMap[r.resolvedIP] = r.nodeId;
+        if (r.type === 'server') {
+          if (r.resolvedIP) edgeIpMap[r.resolvedIP] = r.nodeId;
+          if (r.nodeId)     edgePopMap[r.nodeId]    = r.nodeId;
+          if (r.pop)        edgePopMap[r.pop]        = r.nodeId;
+        }
       }
       for (const r of family) {
-        if ((r.type === 'anycast' || r.type === 'ultralow') && r.resolvedIP) {
+        if (r.type === 'ultralow' && r.resolvedIP) {
           r.resolvedToEdge = edgeIpMap[r.resolvedIP] || null;
+        }
+        if (r.type === 'anycast' && r.pop) {
+          r.resolvedToEdge = edgePopMap[r.pop] || null;
         }
       }
     }
