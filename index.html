@@ -146,6 +146,21 @@ body {
   border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -75%;
+  width: 50%; height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transform: skewX(-20deg);
+  animation: btnShimmer 3s ease-in-out infinite;
+}
+@keyframes btnShimmer {
+  0%       { left: -75%; }
+  45%, 100% { left: 125%; }
 }
 .btn:hover { opacity: 0.9; }
 .btn:disabled {
@@ -485,12 +500,33 @@ tbody tr {
 }
 .config-block:hover::after { opacity: 1; }
 
-/* Gradient border on recommendation cards to distinguish them as "the answer" */
-.config-ipv4, .config-ipv6 {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--surface), var(--surface)) padding-box,
-    linear-gradient(135deg, rgba(88,166,255,0.5), rgba(188,140,255,0.35), rgba(63,185,80,0.4)) border-box;
+/* Animated border beam on recommendation cards */
+@property --beam-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes beamRotate { to { --beam-angle: 360deg; } }
+
+.config-ipv4::before, .config-ipv6::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--beam-angle),
+    transparent 0%,
+    rgba(88,166,255,0.9) 6%,
+    rgba(188,140,255,0.6) 11%,
+    transparent 15%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: beamRotate 4s linear infinite;
+  pointer-events: none;
 }
 
 /* Insight stat: bright glow that settles into normal green */
@@ -512,6 +548,21 @@ tbody tr {
 }
 .via-badge--anycast  { background: rgba(88,166,255,0.1);  border: 1px solid rgba(88,166,255,0.25);  color: var(--cyan); }
 .via-badge--ultralow { background: rgba(188,140,255,0.1); border: 1px solid rgba(188,140,255,0.25); color: var(--magenta); }
+
+/* Current PoP marker — CSS triangle (avoids unicode font rendering issues) */
+.current-marker {
+  display: inline-block;
+  width: 0; height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid var(--cyan);
+  margin-left: 5px;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+
+/* Best row subtle highlight */
+.best-row { background: rgba(63,185,80,0.03); }
 
 /* Current anycast routing line */
 .insight-routing {
@@ -1205,7 +1256,7 @@ function renderTable(tableId, servers, currentPop = null) {
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
     const currentMarker = isCurrent
-      ? '<span class="current-marker" title="Anycast currently routes here">&#9658;</span>'
+      ? '<span class="current-marker" title="Anycast currently routes here"></span>'
       : '';
 
     const viaEntries = routingTo[r.nodeId] || [];
@@ -1222,6 +1273,7 @@ function renderTable(tableId, servers, currentPop = null) {
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     if (isCurrent) tr.classList.add('current-pop-row');
+    if (i === 0) tr.classList.add('best-row');
     tr.innerHTML = `
       <td>${rank}${currentMarker}</td>
       <td>${escHtml(serverLabel(r))}${viaBadges}</td>
@@ -1247,7 +1299,7 @@ function resultNote(result) {
 
 function renderRecSection(entry, label) {
   const r = entry.result;
-  const nodeLabel = r ? (r.nodeId || r.type) : '';
+  const nodeLabel = r ? (r.type === 'anycast' || r.type === 'ultralow' ? r.type : (r.nodeId || r.type)) : '';
   const badge = r
     ? ' <span class="' + latencyClass(r.avgMs) + '">' + r.avgMs + 'ms</span> <span class="text-dim">' + escHtml(nodeLabel) + '</span>'
     : '';
@@ -1441,17 +1493,21 @@ async function runBenchmark() {
     const anycastV4 = ipv4.filter(r => r.type === 'anycast');
     const currentAnycastPop = anycastV4[0] ? anycastV4[0].pop : null;
     let insightHtml = `<div class="insight-stats">
-      <span class="insight-pill">${ranked.length} tested</span>
-      <span class="insight-pill ok">${ok.length} reachable</span>
-      ${errors.length > 0 ? `<span class="insight-pill err">${errors.length} unreachable</span>` : ''}
+      <span class="insight-pill"><span data-count="${ranked.length}">0</span> tested</span>
+      <span class="insight-pill ok"><span data-count="${ok.length}">0</span> reachable</span>
+      ${errors.length > 0 ? `<span class="insight-pill err"><span data-count="${errors.length}">0</span> unreachable</span>` : ''}
     </div>`;
-    if (ipv4[0] && anycastV4[0] && ipv4[0].type !== 'anycast') {
-      const imp = Math.round((anycastV4[0].avgMs - ipv4[0].avgMs) * 100) / 100;
-      if (imp > 0) {
-        insightHtml += `<div class="insight-main"><span class="stat">${imp}ms lower latency</span> <span class="text-dim">vs anycast</span></div>`;
-        insightHtml += `<div class="insight-note">${escHtml(serverLabel(ipv4[0]))} <span class="lat-green">${ipv4[0].avgMs}ms</span> <span class="text-dim">vs anycast</span> <span class="lat-yellow">${anycastV4[0].avgMs}ms</span></div>`;
+    if (ipv4[0] && anycastV4[0]) {
+      if (ipv4[0].type === 'anycast') {
+        insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is your lowest-latency option &mdash; no server pinning needed.</div>`;
       } else {
-        insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is currently optimal &mdash; no change needed.</div>`;
+        const imp = Math.round((anycastV4[0].avgMs - ipv4[0].avgMs) * 100) / 100;
+        if (imp > 0) {
+          insightHtml += `<div class="insight-main"><span class="stat">${imp}ms lower latency</span> <span class="text-dim">vs anycast</span></div>`;
+          insightHtml += `<div class="insight-note">${escHtml(serverLabel(ipv4[0]))} <span class="lat-green">${ipv4[0].avgMs}ms</span> <span class="text-dim">vs anycast</span> <span class="lat-yellow">${anycastV4[0].avgMs}ms</span></div>`;
+        } else {
+          insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is currently your fastest option &mdash; no change needed.</div>`;
+        }
       }
     } else if (ipv4[0]) {
       insightHtml += `<div class="insight-main"><span class="stat">${ipv4[0].avgMs}ms</span> <span class="text-dim">best IPv4 &mdash; ${escHtml(serverLabel(ipv4[0]))}</span></div>`;
@@ -1465,6 +1521,17 @@ async function runBenchmark() {
       insightHtml += `<div class="insight-note">Ranking boosted <strong>${preference}</strong> servers within 10ms tolerance</div>`;
     }
     insightBox.innerHTML = insightHtml;
+
+    // Animate stat pill counters
+    insightBox.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseInt(el.dataset.count);
+      const t0 = performance.now();
+      (function tick(now) {
+        const p = Math.min((now - t0) / 500, 1);
+        el.textContent = Math.round(p * target);
+        if (p < 1) requestAnimationFrame(tick);
+      })(performance.now());
+    });
 
     // IPv4 table
     if (ipv4.length > 0) {
