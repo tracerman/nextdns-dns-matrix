@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NextDNS DNS Matrix — Benchmark &amp; Recommend</title>
+<title>NextDNS DNS Matrix v2 — Benchmark &amp; Recommend</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,7 +18,6 @@
   --yellow: #d29922;
   --red: #f85149;
   --magenta: #bc8cff;
-  --blue: #58a6ff;
   --mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
 }
 
@@ -317,13 +316,13 @@ th {
 }
 td {
   padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid #21262d;
+  border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 tr:hover td { background: rgba(88,166,255,0.04); }
 .rank-star { color: var(--green); font-weight: 700; }
 .type-edge { color: var(--text); }
-.type-anycast { color: var(--blue); }
+.type-anycast { color: var(--cyan); }
 .type-ultralow { color: var(--magenta); }
 
 /* Type legend */
@@ -549,18 +548,6 @@ tbody tr {
 .via-badge--anycast  { background: rgba(88,166,255,0.1);  border: 1px solid rgba(88,166,255,0.25);  color: var(--cyan); }
 .via-badge--ultralow { background: rgba(188,140,255,0.1); border: 1px solid rgba(188,140,255,0.25); color: var(--magenta); }
 
-/* Current PoP marker — CSS triangle (avoids unicode font rendering issues) */
-.current-marker {
-  display: inline-block;
-  width: 0; height: 0;
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  border-left: 6px solid var(--cyan);
-  margin-left: 5px;
-  vertical-align: middle;
-  opacity: 0.85;
-}
-
 /* Best row subtle highlight */
 .best-row { background: rgba(63,185,80,0.03); }
 
@@ -650,6 +637,41 @@ tbody tr {
   font-size: 0.7rem;
 }
 
+/* Focus states (keyboard a11y) */
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+.form-group input:focus-visible,
+.form-group select:focus-visible {
+  border-color: var(--cyan);
+  outline: 2px solid var(--cyan);
+  outline-offset: -1px;
+}
+.btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+.copy-btn:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 1px;
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.footer-link:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 /* Responsive */
 @media (max-width: 960px) {
   /* Prevent fit-content container from overflowing viewport */
@@ -673,6 +695,28 @@ tbody tr {
   .config-asus, .config-doh, .config-dot, .config-plain { grid-column: span 1; }
   /* Config lines stack */
   .config-label { min-width: 70px; }
+  /* Banner scales down */
+  .banner { padding: 1.25rem 1rem; }
+  .banner h1 { font-size: 1.1rem; }
+  .banner p { font-size: 0.78rem; }
+  /* Insight box */
+  .insight-main { font-size: 0.82rem; }
+  .insight-routing { font-size: 0.75rem; }
+  /* Type legend stacks */
+  .type-legend { flex-direction: column; gap: 0.4rem; align-items: flex-start; }
+  /* Footer pills wrap tighter */
+  .footer-links { gap: 0.35rem; }
+  .footer-link { font-size: 0.72rem; padding: 0.2rem 0.6rem; }
+}
+
+@media (max-width: 400px) {
+  /* Extra-narrow: config lines stack label above value */
+  .config-line { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+  .config-label { min-width: unset; }
+  /* Smaller banner for very narrow screens */
+  .banner h1 { font-size: 1rem; letter-spacing: 0; }
+  /* Form section tighter padding */
+  .form-section { padding: 1rem; }
 }
 </style>
 </head>
@@ -745,7 +789,7 @@ tbody tr {
         <span><span class="type-ultralow">ultralow</span> &mdash; DNS-steered to best PoP, requires DoH/DoT/DoQ</span>
       </span>
       <span class="type-legend-item">
-        <span class="type-legend-dot" style="background:var(--blue)"></span>
+        <span class="type-legend-dot" style="background:var(--cyan)"></span>
         <span><span class="type-anycast">anycast</span> &mdash; BGP-routed global IPs, any protocol, automatic failover</span>
       </span>
     </div>
@@ -1077,17 +1121,35 @@ async function runFullBenchmark(servers, rounds, onProgress) {
 
 // ─── Ranking ──────────────────────────────────────────────────────────────────
 
+// rankResults: sort servers by latency with optional type preference boost.
+//
+// (a) When preference === 'auto', pure latency sort applies (a.avgMs - b.avgMs).
+//     No type boost — the fastest server always wins regardless of type.
+//
+// (b) When a preference is set (e.g. 'ultralow' or 'anycast'), the tolerance window
+//     applies: a preferred-type server is promoted ONLY if the latency penalty for
+//     choosing it is less than `toleranceMs` (default 10ms). For example, if ultralow
+//     is 8ms slower than edge, ultralow wins. If ultralow is 12ms slower, edge wins.
+//
+// (c) Preference NEVER overrides a latency gap >= toleranceMs. Outside the tolerance
+//     window, pure latency sort decides. This prevents recommending a preferred server
+//     that is significantly slower than a non-preferred one.
 function rankResults(results, preference, toleranceMs = 10) {
   const sorted = [...results];
   sorted.sort((a, b) => {
+    // Error results always sort to the bottom
     if (a.status !== b.status) return a.status === 'ok' ? -1 : 1;
+    // (a) Auto mode: pure latency sort, no preference boost
     if (preference === 'auto') return a.avgMs - b.avgMs;
 
-    const diff = a.avgMs - b.avgMs;
-    const aP = a.type === preference;
-    const bP = b.type === preference;
+    const diff = a.avgMs - b.avgMs; // positive = a is slower
+    const aP = a.type === preference; // a is preferred type
+    const bP = b.type === preference; // b is preferred type
+    // (b) Promote a if it's preferred AND its latency penalty is within tolerance
     if (aP && !bP && diff < toleranceMs) return -1;
+    // (b) Promote b if it's preferred AND its latency penalty is within tolerance
     if (!aP && bP && -diff < toleranceMs) return 1;
+    // (c) Outside tolerance window: fall back to pure latency sort
     return a.avgMs - b.avgMs;
   });
   return sorted;
@@ -1212,16 +1274,16 @@ function generateConfig(ranked, configId) {
     doh: `https://dns.nextdns.io/${configId}`,
     dot: dotHostname,
     bestV4, secondV4, bestV6, secondV6,
-    anycastV4Best: anycastV4[0] || null,
-    improvementMs: (bestV4 && anycastV4[0] && bestV4.type !== 'anycast')
-      ? Math.round((anycastV4[0].avgMs - bestV4.avgMs) * 100) / 100
-      : null,
   };
 }
 
 // ─── Render Results ───────────────────────────────────────────────────────────
 
 function serverLabel(r) {
+  // For anycast/ultralow, prefer actual PoP name from /info over hardcoded placeholder
+  if ((r.type === 'anycast' || r.type === 'ultralow') && r.pop) {
+    return r.pop;
+  }
   return r.nodeId || r.hostname;
 }
 
@@ -1241,7 +1303,7 @@ function renderTable(tableId, servers, currentPop = null) {
   for (const r of servers) {
     if (r.resolvedToEdge) {
       if (!routingTo[r.resolvedToEdge]) routingTo[r.resolvedToEdge] = [];
-      routingTo[r.resolvedToEdge].push({ label: serverLabel(r), type: r.type });
+      routingTo[r.resolvedToEdge].push({ label: r.nodeId, type: r.type });
     }
   }
 
@@ -1269,7 +1331,10 @@ function renderTable(tableId, servers, currentPop = null) {
       ? `<span class="cc-badge">${escHtml(flag)}</span> ${escHtml(city)}`
       : escHtml(city || r.pop || '');
     const ip = r.resolvedIP || '';
-    const typeLabel = r.type === 'server' ? 'edge' : r.type;
+    // If edge row has absorbed anycast/ultralow, show that type instead of 'edge'
+    const absorbedType = viaEntries.length > 0 ? viaEntries[0].type : null;
+    const effectiveType = absorbedType || r.type;
+    const typeLabel = effectiveType === 'server' ? 'edge' : effectiveType;
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     if (isCurrent) tr.classList.add('current-pop-row');
@@ -1278,7 +1343,7 @@ function renderTable(tableId, servers, currentPop = null) {
       <td>${rank}${currentMarker}</td>
       <td>${escHtml(serverLabel(r))}${viaBadges}</td>
       <td class="text-dim">${locCell}</td>
-      <td class="${typeClass(r.type)}">${typeLabel}</td>
+      <td class="${typeClass(effectiveType)}">${typeLabel}</td>
       <td class="text-dim" style="font-size:0.75rem">${escHtml(r.hostname)}</td>
       <td>${ip ? escHtml(ip) : '<span class="text-dim">-</span>'}</td>
       <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span><span class="spark-bar" style="width:${barWidth}px"></span></td>
@@ -1393,13 +1458,113 @@ function renderConfig(config, configId) {
 }
 
 function configLine(label, value, dim = false, note = '') {
-  const safeValue = value.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const safeValue = value.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   return `<div class="config-line">
     <span class="config-label">${label}</span>
     <span class="config-value${dim ? ' dim' : ''}">${escHtml(value)}</span>
     ${note ? '<span class="config-note">' + escHtml(note) + '</span>' : ''}
     <button class="copy-btn" data-copy="${safeValue}" onclick="copyToClipboard(this.dataset.copy, this)">copy</button>
   </div>`;
+}
+
+// ─── Cross-Reference Servers ──────────────────────────────────────────────────
+
+function crossReferenceServers(servers) {
+  const edgeIpMap = {};
+  const edgePopMap = {};
+  for (const r of servers) {
+    if (r.type === 'server') {
+      if (r.resolvedIP) edgeIpMap[r.resolvedIP] = r.nodeId;
+      if (r.nodeId)     edgePopMap[r.nodeId]    = r.nodeId;
+      if (r.pop)        edgePopMap[r.pop]        = r.nodeId;
+    }
+  }
+  return servers.map(r => {
+    if (r.type === 'ultralow' && r.resolvedIP) {
+      return { ...r, resolvedToEdge: edgeIpMap[r.resolvedIP] || null };
+    }
+    if (r.type === 'anycast' && r.pop) {
+      return { ...r, resolvedToEdge: edgePopMap[r.pop] || null };
+    }
+    return r;
+  });
+}
+
+// ─── Insight Box ─────────────────────────────────────────────────────────────
+
+function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
+  const visible = ipv4.filter(r => !r.resolvedToEdge);
+  const visibleV6 = ipv6.filter(r => !r.resolvedToEdge);
+  // Use ALL anycast (including absorbed) for comparison baseline — best anycast latency matters
+  const allAnycastV4 = ipv4.filter(r => r.type === 'anycast').sort((a, b) => a.avgMs - b.avgMs);
+  const bestAnycastV4 = allAnycastV4[0] || null;
+  const currentAnycastPop = bestAnycastV4 ? bestAnycastV4.pop : null;
+
+  let html = `<div class="insight-stats">
+    <span class="insight-pill"><span data-count="${ranked.length}">0</span>&nbsp;tested</span>
+    <span class="insight-pill ok"><span data-count="${ok.length}">0</span>&nbsp;reachable</span>
+    ${errors.length > 0 ? `<span class="insight-pill err"><span data-count="${errors.length}">0</span>&nbsp;unreachable</span>` : ''}
+  </div>`;
+
+  // IPv4 insight — adapts to preference
+  if (preference === 'anycast') {
+    if (bestAnycastV4) {
+      html += `<div class="insight-main" style="color:var(--cyan)">Best anycast: <span class="stat">${bestAnycastV4.avgMs}ms</span> <span class="text-dim">&mdash; ${escHtml(serverLabel(bestAnycastV4))}</span></div>`;
+      if (visible[0] && visible[0].type !== 'anycast' && visible[0].avgMs < bestAnycastV4.avgMs) {
+        const gap = Math.round((bestAnycastV4.avgMs - visible[0].avgMs) * 100) / 100;
+        html += `<div class="insight-note"><span class="text-dim">Edge server ${escHtml(serverLabel(visible[0]))} is</span> <span class="lat-green">${gap}ms faster</span> <span class="text-dim">but anycast preferred</span></div>`;
+      }
+    } else {
+      html += `<div class="insight-main"><span class="text-dim">No anycast IPv4 servers responded</span></div>`;
+    }
+  } else if (preference === 'ultralow') {
+    const bestUltralow = ipv4.filter(r => r.type === 'ultralow').sort((a, b) => a.avgMs - b.avgMs)[0];
+    if (bestUltralow) {
+      html += `<div class="insight-main" style="color:var(--cyan)">Best ultralow: <span class="stat">${bestUltralow.avgMs}ms</span> <span class="text-dim">&mdash; ${escHtml(serverLabel(bestUltralow))}</span></div>`;
+      if (visible[0] && visible[0].type !== 'ultralow' && visible[0].avgMs < bestUltralow.avgMs) {
+        const gap = Math.round((bestUltralow.avgMs - visible[0].avgMs) * 100) / 100;
+        html += `<div class="insight-note"><span class="text-dim">Edge server ${escHtml(serverLabel(visible[0]))} is</span> <span class="lat-green">${gap}ms faster</span> <span class="text-dim">but ultralow preferred</span></div>`;
+      }
+    } else {
+      html += `<div class="insight-main"><span class="text-dim">No ultralow IPv4 servers responded</span></div>`;
+    }
+  } else {
+    // auto — show best overall vs best anycast comparison
+    if (visible[0] && bestAnycastV4) {
+      if (visible[0].type === 'anycast') {
+        html += `<div class="insight-main" style="color:var(--cyan)">Anycast is your lowest-latency option &mdash; no server pinning needed.</div>`;
+      } else {
+        const imp = Math.round((bestAnycastV4.avgMs - visible[0].avgMs) * 100) / 100;
+        if (imp > 0) {
+          html += `<div class="insight-main"><span class="stat">${imp}ms lower latency</span> <span class="text-dim">vs anycast</span></div>`;
+          html += `<div class="insight-note">${escHtml(serverLabel(visible[0]))} <span class="lat-green">${visible[0].avgMs}ms</span> <span class="text-dim">vs anycast</span> <span class="lat-yellow">${bestAnycastV4.avgMs}ms</span></div>`;
+        } else {
+          html += `<div class="insight-main" style="color:var(--cyan)">Anycast is currently your lowest-latency option &mdash; no change needed.</div>`;
+        }
+      }
+    } else if (visible[0]) {
+      html += `<div class="insight-main"><span class="stat">${visible[0].avgMs}ms</span> <span class="text-dim">best IPv4 &mdash; ${escHtml(serverLabel(visible[0]))}</span></div>`;
+    }
+  }
+
+  // Anycast routing info
+  if (currentAnycastPop) {
+    const { flag, city } = parseLocation(bestAnycastV4.location || '');
+    const locStr = city ? (flag ? `[${flag}] ${city}` : city) : currentAnycastPop;
+    html += `<div class="insight-routing">Anycast routes you to: <strong>${escHtml(currentAnycastPop)}</strong> <span class="text-dim">${escHtml(locStr)} &middot; ${bestAnycastV4.avgMs}ms</span></div>`;
+  }
+
+  // IPv6 summary
+  if (visibleV6.length > 0) {
+    const bestV6 = visibleV6[0];
+    html += `<div class="insight-note">Best IPv6: <span class="${latencyClass(bestV6.avgMs)}">${bestV6.avgMs}ms</span> <span class="text-dim">${escHtml(serverLabel(bestV6))}</span></div>`;
+  }
+
+  if (preference !== 'auto') {
+    html += `<div class="insight-note">Ranking boosted <strong>${preference}</strong> servers within 10ms tolerance</div>`;
+  }
+
+  return { html, currentAnycastPop };
 }
 
 // ─── Main Entry ───────────────────────────────────────────────────────────────
@@ -1459,72 +1624,38 @@ async function runBenchmark() {
 
     const ok = ranked.filter(r => r.status === 'ok');
     const errors = ranked.filter(r => r.status === 'error');
+
+    // Guard: if every server timed out / errored, show error and bail out.
+    // Without this, empty arrays propagate into buildInsightHtml, renderTable,
+    // and generateConfig — producing a misleading empty UI instead of a clear error.
+    if (ok.length === 0) {
+      showError('All servers timed out or returned errors. Check your internet connection and try again.');
+      return;
+    }
+
     const ipv4 = ok.filter(r => r.family === 'IPv4');
     const ipv6 = ok.filter(r => r.family === 'IPv6');
 
-    // Cross-reference: mark anycast/ultralow rows that map to the same edge server
-    for (const family of [ipv4, ipv6]) {
-      // Build map by IP for ultralow (unicast IPs match edge servers directly)
-      const edgeIpMap = {};
-      // Build map by pop/nodeId for anycast (BGP IPs differ; link is via .pop field)
-      const edgePopMap = {};
-      for (const r of family) {
-        if (r.type === 'server') {
-          if (r.resolvedIP) edgeIpMap[r.resolvedIP] = r.nodeId;
-          if (r.nodeId)     edgePopMap[r.nodeId]    = r.nodeId;
-          if (r.pop)        edgePopMap[r.pop]        = r.nodeId;
-        }
-      }
-      for (const r of family) {
-        if (r.type === 'ultralow' && r.resolvedIP) {
-          r.resolvedToEdge = edgeIpMap[r.resolvedIP] || null;
-        }
-        if (r.type === 'anycast' && r.pop) {
-          r.resolvedToEdge = edgePopMap[r.pop] || null;
-        }
-      }
-    }
+    // Cross-reference: mark anycast/ultralow rows that resolve to the same edge server
+    const ipv4Xref = crossReferenceServers(ipv4);
+    const ipv6Xref = crossReferenceServers(ipv6);
 
     // Render results
     resultsSection.style.display = 'block';
 
     // Insight box
     const insightBox = document.getElementById('insightBox');
-    const anycastV4 = ipv4.filter(r => r.type === 'anycast');
-    const currentAnycastPop = anycastV4[0] ? anycastV4[0].pop : null;
-    let insightHtml = `<div class="insight-stats">
-      <span class="insight-pill"><span data-count="${ranked.length}">0</span>&nbsp;tested</span>
-      <span class="insight-pill ok"><span data-count="${ok.length}">0</span>&nbsp;reachable</span>
-      ${errors.length > 0 ? `<span class="insight-pill err"><span data-count="${errors.length}">0</span>&nbsp;unreachable</span>` : ''}
-    </div>`;
-    if (ipv4[0] && anycastV4[0]) {
-      if (ipv4[0].type === 'anycast') {
-        insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is your lowest-latency option &mdash; no server pinning needed.</div>`;
-      } else {
-        const imp = Math.round((anycastV4[0].avgMs - ipv4[0].avgMs) * 100) / 100;
-        if (imp > 0) {
-          insightHtml += `<div class="insight-main"><span class="stat">${imp}ms lower latency</span> <span class="text-dim">vs anycast</span></div>`;
-          insightHtml += `<div class="insight-note">${escHtml(serverLabel(ipv4[0]))} <span class="lat-green">${ipv4[0].avgMs}ms</span> <span class="text-dim">vs anycast</span> <span class="lat-yellow">${anycastV4[0].avgMs}ms</span></div>`;
-        } else {
-          insightHtml += `<div class="insight-main" style="color:var(--blue)">Anycast is currently your lowest-latency option &mdash; no change needed.</div>`;
-        }
-      }
-    } else if (ipv4[0]) {
-      insightHtml += `<div class="insight-main"><span class="stat">${ipv4[0].avgMs}ms</span> <span class="text-dim">best IPv4 &mdash; ${escHtml(serverLabel(ipv4[0]))}</span></div>`;
-    }
-    if (currentAnycastPop) {
-      const { flag, city } = parseLocation(anycastV4[0].location || '');
-      const locStr = city ? (flag ? `[${flag}] ${city}` : city) : currentAnycastPop;
-      insightHtml += `<div class="insight-routing">Anycast routes you to: <strong>${escHtml(currentAnycastPop)}</strong> <span class="text-dim">${escHtml(locStr)} &middot; ${anycastV4[0].avgMs}ms</span></div>`;
-    }
-    if (preference !== 'auto') {
-      insightHtml += `<div class="insight-note">Ranking boosted <strong>${preference}</strong> servers within 10ms tolerance</div>`;
-    }
+    const { html: insightHtml, currentAnycastPop } = buildInsightHtml(ranked, ok, errors, ipv4Xref, ipv6Xref, preference);
     insightBox.innerHTML = insightHtml;
 
-    // Animate stat pill counters
+    // Animate stat pill counters (skip animation if reduced motion preferred)
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     insightBox.querySelectorAll('[data-count]').forEach(el => {
       const target = parseInt(el.dataset.count);
+      if (prefersReducedMotion) {
+        el.textContent = target;
+        return;
+      }
       const t0 = performance.now();
       (function tick(now) {
         const p = Math.min((now - t0) / 500, 1);
@@ -1534,19 +1665,21 @@ async function runBenchmark() {
     });
 
     // IPv4 table
-    if (ipv4.length > 0) {
+    if (ipv4Xref.length > 0) {
       document.getElementById('ipv4Section').style.display = 'block';
-      document.getElementById('ipv4Header').textContent = `IPv4 Servers (${ipv4.length} reachable)`;
-      renderTable('ipv4Table', ipv4, currentAnycastPop);
+      const ipv4Displayed = ipv4Xref.filter(r => !r.resolvedToEdge).length;
+      document.getElementById('ipv4Header').textContent = `IPv4 Servers (${ipv4Displayed} reachable)`;
+      renderTable('ipv4Table', ipv4Xref, currentAnycastPop);
     }
 
     // IPv6 table
-    if (ipv6.length > 0) {
+    if (ipv6Xref.length > 0) {
       document.getElementById('ipv6Section').style.display = 'block';
-      document.getElementById('ipv6Header').textContent = `IPv6 Servers (${ipv6.length} reachable)`;
-      const anycastV6 = ipv6.filter(r => r.type === 'anycast');
+      const ipv6Displayed = ipv6Xref.filter(r => !r.resolvedToEdge).length;
+      document.getElementById('ipv6Header').textContent = `IPv6 Servers (${ipv6Displayed} reachable)`;
+      const anycastV6 = ipv6Xref.filter(r => r.type === 'anycast' && !r.resolvedToEdge);
       const currentAnycastV6Pop = anycastV6[0] ? anycastV6[0].pop : null;
-      renderTable('ipv6Table', ipv6, currentAnycastV6Pop);
+      renderTable('ipv6Table', ipv6Xref, currentAnycastV6Pop);
     } else {
       document.getElementById('ipv6Section').style.display = 'none';
     }
@@ -1567,11 +1700,22 @@ async function runBenchmark() {
     }
 
     // Phase 5: Config
+    // generateConfig intentionally receives `ranked` (pre-xref data), NOT xref'd arrays.
+    // Reason: anycast IPs are globally stable BGP addresses (45.90.28.0 / 45.90.30.0).
+    // Filtering absorbed anycast/ultralow entries from config would give users unstable
+    // edge IPs that rotate. The xref boundary applies to DISPLAY only (insight box, table,
+    // headers) — config recommendations need the full ranked set. (DA-4-001)
     setProgress('Generating config...', 98);
     const config = generateConfig(ranked, configId);
     renderConfig(config, configId);
 
     setProgress('Done!', 100);
+
+    // Auto-scroll to results
+    resultsSection.scrollIntoView({
+      behavior: prefersReducedMotion ? 'instant' : 'smooth',
+      block: 'start',
+    });
   } catch (e) {
     showError('Benchmark failed: ' + e.message);
     console.error(e);
