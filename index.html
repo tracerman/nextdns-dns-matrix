@@ -1961,6 +1961,10 @@ let hasIPv6 = false;       // Global: IPv6 connectivity to NextDNS
   resize();
   requestAnimationFrame(draw);
   window.addEventListener('resize', resize);
+  /* Re-fit canvas when banner content changes size (e.g. benchmark results load) */
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(resize).observe(banner);
+  }
 })();
 
 /* Title scramble-decode effect */
