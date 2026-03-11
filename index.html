@@ -391,7 +391,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
-  table-layout: fixed;
+  min-width: 800px;
 }
 th {
   text-align: left;
@@ -483,13 +483,17 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   white-space: nowrap;
   flex-shrink: 0;
 }
+.config-value, .copyable {
+  cursor: pointer;
+}
 .config-value {
   color: var(--cyan);
   font-weight: 600;
   word-break: break-all;
   font-size: 0.85rem;
-  cursor: pointer;
 }
+.copyable:hover { text-decoration: underline; text-underline-offset: 2px; }
+.copyable.copied { color: var(--green) !important; }
 .config-value:hover { text-decoration: underline; text-underline-offset: 2px; }
 .config-value.dim { color: var(--text-dim); font-weight: 400; }
 .config-value.copied { color: var(--green) !important; }
@@ -613,6 +617,58 @@ tbody tr {
 }
 .insight-routing strong { color: var(--cyan); font-weight: 600; }
 
+/* Connection status indicator */
+.connection-status {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  padding: 0.5rem 0.8rem;
+  margin-top: -0.3rem;
+  margin-bottom: 0.6rem;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.connection-status.visible { opacity: 1; }
+.connection-status .status-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.connection-status .status-dot.active { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.connection-status .status-dot.inactive { background: var(--text-dim); }
+.connection-status strong { color: var(--text); font-weight: 600; }
+.connection-status .status-protocol {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(88,166,255,0.12);
+  color: var(--cyan);
+  margin-left: 4px;
+  vertical-align: middle;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.connection-status .status-server {
+  color: var(--cyan);
+  font-weight: 600;
+}
+
+/* Detected-server row highlight in result table */
+.detected-server-row { background: rgba(88,166,255,0.05); }
+.detected-server-row td:first-child::after {
+  content: '';
+  display: inline-block;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 4px var(--green);
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 /* Current-PoP row in result table */
 .current-pop-row { background: rgba(88,166,255,0.05); }
 .current-marker {
@@ -727,6 +783,8 @@ tbody tr {
   body { padding: 1rem 0.5rem; font-size: 13px; }
   .form-row { flex-direction: column; }
   .form-group { width: 100%; }
+  /* Prevent iOS Safari auto-zoom on focus (triggers at <16px) */
+  .form-group input, .form-group select { font-size: 16px; }
   .btn { width: 100%; }
   table { font-size: 0.75rem; }
   td, th { padding: 0.3rem 0.4rem; }
@@ -808,6 +866,8 @@ tbody tr {
       </div>
     </div>
   </div>
+
+  <div class="connection-status" id="connectionStatus"></div>
 
   <div class="error-box" id="errorBox"></div>
 
@@ -1338,6 +1398,11 @@ function renderTable(tableId, servers, currentPop = null) {
   const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.avgMs)) : 1;
   displayed.forEach((r, i) => {
     const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
+    // Match against auto-detected server from test.nextdns.io
+    const isDetected = detectedServer && (
+      r.hostname.includes(detectedServer) ||
+      detectedServer.startsWith(r.nodeId)
+    );
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
@@ -1366,14 +1431,15 @@ function renderTable(tableId, servers, currentPop = null) {
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     if (isCurrent) tr.classList.add('current-pop-row');
+    if (isDetected) tr.classList.add('detected-server-row');
     if (i === 0) tr.classList.add('best-row');
     tr.innerHTML = `
       <td>${rank}${currentMarker}</td>
       <td>${escHtml(serverLabel(r))}${viaBadges}</td>
       <td class="text-dim">${locCell}</td>
       <td class="${typeClass(effectiveType)}">${typeLabel}</td>
-      <td class="text-dim" style="font-size:0.75rem">${escHtml(r.hostname)}</td>
-      <td>${ip ? escHtml(ip) : '<span class="text-dim">-</span>'}</td>
+      <td class="text-dim" style="font-size:0.75rem"><span class="copyable" data-copy="${escHtml(r.hostname)}" onclick="clickCopy(this)" title="Click to copy">${escHtml(r.hostname)}</span></td>
+      <td>${ip ? '<span class="copyable" data-copy="' + escHtml(ip) + '" onclick="clickCopy(this)" title="Click to copy">' + escHtml(ip) + '</span>' : '<span class="text-dim">-</span>'}</td>
       <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span><span class="spark-bar" style="width:${barWidth}px"></span></td>
       <td class="text-dim">${r.minMs}ms</td>
       <td class="text-dim">${r.jitter}ms</td>
@@ -1724,6 +1790,36 @@ document.getElementById('configId').addEventListener('keydown', e => {
     const input = document.getElementById('configId');
     input.value = id.replace(/['"]/g, '').trim();
   }
+})();
+
+/* Auto-detect NextDNS connection via test.nextdns.io */
+let detectedServer = null; // Global: server name from test.nextdns.io (e.g. "zepto-xrs-1")
+(function detectNextDNS() {
+  const el = document.getElementById('connectionStatus');
+  if (!el) return;
+  const rnd = Math.random().toString(36).substring(2, 10);
+  fetch('https://' + rnd + '.test.nextdns.io/', { mode: 'cors' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'ok' && data.server) {
+        detectedServer = data.server; // e.g. "zepto-xrs-1"
+        const serverBase = data.server.replace(/-\d+$/, ''); // "zepto-xrs"
+        const proto = (data.protocol || '').toUpperCase();
+        const isAnycast = data.anycast;
+        const typeLabel = isAnycast ? 'anycast' : 'ultralow';
+        el.innerHTML = '<span class="status-dot active"></span>'
+          + 'Connected to NextDNS via <span class="status-server">' + escHtml(serverBase) + '</span>'
+          + (proto ? ' <span class="status-protocol">' + escHtml(proto) + '</span>' : '')
+          + ' <span class="text-dim">(' + typeLabel + ')</span>';
+      } else {
+        el.innerHTML = '<span class="status-dot inactive"></span>'
+          + 'Not connected to NextDNS &mdash; enter your Config ID to benchmark';
+      }
+      el.classList.add('visible');
+    })
+    .catch(() => {
+      // Network error or CORS — silently skip
+    });
 })();
 
 /* Matrix rain canvas effect for banner */
