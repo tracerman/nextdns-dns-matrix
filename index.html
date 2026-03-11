@@ -1398,11 +1398,8 @@ function renderTable(tableId, servers, currentPop = null) {
   const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.avgMs)) : 1;
   displayed.forEach((r, i) => {
     const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
-    // Match against auto-detected server from test.nextdns.io
-    const isDetected = detectedServer && (
-      r.hostname.includes(detectedServer) ||
-      detectedServer.startsWith(r.nodeId)
-    );
+    // Match against auto-detected server from test.nextdns.io (pop name e.g. "zepto-xrs")
+    const isDetected = detectedServer && (r.nodeId === detectedServer || r.pop === detectedServer);
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
@@ -1793,24 +1790,25 @@ document.getElementById('configId').addEventListener('keydown', e => {
 })();
 
 /* Auto-detect NextDNS connection via test.nextdns.io */
-let detectedServer = null; // Global: server name from test.nextdns.io (e.g. "zepto-xrs-1")
+let detectedServer = null; // Global: server pop from test.nextdns.io (e.g. "zepto-xrs")
 (function detectNextDNS() {
   const el = document.getElementById('connectionStatus');
   if (!el) return;
+  // Random subdomain triggers DNS lookup — NextDNS sees the query if user is on NextDNS.
+  // The root path returns { profile } if connected; /info returns { pop, locationName }.
   const rnd = Math.random().toString(36).substring(2, 10);
-  fetch('https://' + rnd + '.test.nextdns.io/', { mode: 'cors' })
-    .then(r => r.json())
-    .then(data => {
-      if (data.status === 'ok' && data.server) {
-        detectedServer = data.server; // e.g. "zepto-xrs-1"
-        const serverBase = data.server.replace(/-\d+$/, ''); // "zepto-xrs"
-        const proto = (data.protocol || '').toUpperCase();
-        const isAnycast = data.anycast;
-        const typeLabel = isAnycast ? 'anycast' : 'ultralow';
+  const base = 'https://' + rnd + '.test.nextdns.io';
+  Promise.all([
+    fetch(base + '/', { mode: 'cors' }).then(r => r.json()),
+    fetch(base + '/info', { mode: 'cors' }).then(r => r.json()),
+  ])
+    .then(([test, info]) => {
+      if (test.profile && info.pop) {
+        detectedServer = info.pop; // e.g. "zepto-xrs"
+        const loc = (info.locationName || '').replace(/^[\p{Emoji}\s]+/u, '').trim();
         el.innerHTML = '<span class="status-dot active"></span>'
-          + 'Connected to NextDNS via <span class="status-server">' + escHtml(serverBase) + '</span>'
-          + (proto ? ' <span class="status-protocol">' + escHtml(proto) + '</span>' : '')
-          + ' <span class="text-dim">(' + typeLabel + ')</span>';
+          + 'Connected to NextDNS via <span class="status-server">' + escHtml(info.pop) + '</span>'
+          + (loc ? ' <span class="text-dim">' + escHtml(loc) + '</span>' : '');
       } else {
         el.innerHTML = '<span class="status-dot inactive"></span>'
           + 'Not connected to NextDNS &mdash; enter your Config ID to benchmark';
