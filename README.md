@@ -9,9 +9,11 @@ Benchmarks all available NextDNS PoPs (anycast, ultralow, and individual servers
 ## Quick Start
 
 1. **[Open the live tool](https://tracerman.github.io/nextdns-dns-matrix/)** — or download [`index.html`](index.html) to run locally
-2. Enter your NextDNS config ID (from [my.nextdns.io](https://my.nextdns.io) → Setup)
-3. Click **Run Benchmark**
-4. Copy the recommended config strings
+2. If you're on NextDNS, the tool auto-detects your connection, server, and protocol
+3. Enter your NextDNS config ID (from [my.nextdns.io](https://my.nextdns.io) → Setup)
+4. Click **Run Benchmark**
+5. Your current server is highlighted in the results — see instantly if you're on the best node
+6. Copy the recommended config strings
 
 That's it. No server, no build step, no dependencies.
 
@@ -37,11 +39,26 @@ NextDNS gives you a default DNS config, but it's not always optimal. Their infra
 
 **The problem:** These IPs rotate, servers go down, and the "best" option changes based on your ISP routing. This tool benchmarks them all and tells you which to use *right now*.
 
+## Auto-Detection
+
+On page load, the tool detects whether you're connected to NextDNS — no input needed. It shows:
+
+- **Connection status** — which server and PoP you're connected to
+- **Pre-benchmark RTT** — your current latency before running a full benchmark
+- **IPv6 connectivity** — whether your connection to NextDNS supports IPv6
+- **Protocol-scoped highlighting** — after benchmarking, your detected server is highlighted with a golden row in the correct table (IPv4 or IPv6, based on your active protocol)
+- **Latency delta badge** — if your current server isn't the lowest-latency option, a `+Xms` badge shows the gap
+- **Optimization insight** — actionable recommendation if a lower-latency server is available
+
+Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns.io` — both CORS-enabled, no config ID required.
+
 ## What It Shows
 
-**Results table** — Rank, Node ID, Location (country code badge + city), Type, Hostname, IP, Avg latency (with inline sparkbar), Min, Jitter, Success rate
+**Results table** — Rank, Node ID, Location (country code badge + city), Type, Hostname, IP, Avg latency (with inline sparkbar), Min, Jitter, Success rate. Click any hostname or IP to copy it.
 
-**Insight box** — stat pills showing tested / reachable / unreachable counts, plus a latency comparison vs anycast
+**Detected server** — highlighted with a golden row background and green dot. If it's not rank #1, a latency delta badge shows how much slower it is than the best option.
+
+**Insight box** — stat pills showing visible / reachable / unreachable counts, optimization insight comparing your current server to the best, and a smart preference suggestion (anycast vs pinned server trade-offs)
 
 **IPv4 and IPv6 recommendations** — best + backup server for each family, with resolved IPs and anycast fallbacks
 
@@ -127,8 +144,13 @@ Raw IPs for non-encrypted fallback or IoT devices. IPv4 + IPv6, best + backup + 
 |----------|---------|------|
 | `GET https://router.nextdns.io/?source=ping` | `[{ pop, server, ipv4, ipv6 }]` — geo-tailored server list | `*` |
 | `GET https://{hostname}/info` | `{ pop, rtt, locationName }` — `rtt` in microseconds | `*` |
+| `GET https://{random}.test.nextdns.io/` | `{ type, profile, lists }` — `profile` present = connected to NextDNS | `*` |
+| `GET https://{random}.test.nextdns.io/info` | `{ pop, rtt, locationName }` — detected server details, `rtt` in microseconds | `*` |
+| `GET https://test-ipv6.nextdns.io/` | Plain text `OK` if IPv6 connectivity exists | `*` |
 
 Hostnames that work with `/info`: anycast (`ipv4-anycast.dns1.nextdns.io`), ultralow (`ipv4.dns1.nextdns.io`), and PoP servers (`ipv4-{server}.edge.nextdns.io`).
+
+The `test.nextdns.io` endpoints use a random subdomain prefix to trigger a fresh DNS lookup (the root domain 302-redirects, which fails CORS in browsers).
 
 ## License
 
