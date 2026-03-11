@@ -66,12 +66,98 @@ body {
 .banner h1, .banner p { position: relative; z-index: 1; }
 .banner h1 {
   font-size: 1.4rem;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.03em;
+  animation: titleGlow 4s ease-in-out infinite;
+}
+@keyframes titleGlow {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 0px transparent); }
+  50%      { filter: brightness(1.15) drop-shadow(0 0 6px rgba(88,166,255,0.3)); }
+}
+/* Per-character title spans */
+.banner h1 .t-char {
+  display: inline-block;
   background: linear-gradient(90deg, var(--cyan) 0%, #e6edf3 45%, var(--magenta) 100%);
+  background-size: 800% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 0.35rem;
-  letter-spacing: 0.03em;
+  animation: charGradient 8s linear infinite;
+  transition: transform 0.15s ease;
+}
+.banner h1 .t-space { display: inline; width: 0.3em; }
+/* Staggered wave — applied via JS inline animation-delay */
+@keyframes charWave {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-2px); }
+}
+@keyframes charGradient {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 800% 50%; }
+}
+/* Glitch flash class toggled by JS */
+.banner h1 .t-char.glitch-flash {
+  -webkit-text-fill-color: var(--cyan);
+  text-shadow: -1px 0 var(--magenta), 1px 0 var(--cyan);
+  filter: brightness(1.8);
+}
+/* RGB split glitch on the whole h1, toggled briefly */
+.banner h1.rgb-split {
+  text-shadow: -2px 0 rgba(255,0,80,0.5), 2px 0 rgba(0,200,255,0.5);
+}
+/* CRT scanlines overlay */
+.banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+/* Horizontal light sweep */
+.banner-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.banner-sweep::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(88,166,255,0.06), rgba(255,255,255,0.04), transparent);
+  animation: sweepBeam 10s ease-in-out infinite;
+}
+@keyframes sweepBeam {
+  0%, 100% { left: -60%; }
+  50%      { left: 100%; }
+}
+/* Blinking terminal cursor */
+.title-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--cyan);
+  margin-left: 3px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 1s step-end infinite;
+  opacity: 0.8;
+}
+@keyframes cursorBlink {
+  0%, 100% { opacity: 0.8; }
+  50%      { opacity: 0; }
 }
 .banner p {
   color: var(--text-dim);
@@ -680,7 +766,9 @@ tbody tr {
 
 <div class="container">
   <div class="banner">
-    <h1><span class="pulse-dot"></span>NextDNS DNS Matrix</h1>
+    <canvas id="matrixRain" style="position:absolute;inset:0;z-index:0;opacity:0.2;pointer-events:none;"></canvas>
+    <div class="banner-sweep"></div>
+    <h1><span class="pulse-dot"></span><span id="bannerTitle" data-text="NextDNS DNS Matrix"></span><span class="title-cursor"></span></h1>
     <p>Benchmark NextDNS servers and find the lowest-latency DNS server for your network</p>
   </div>
 
@@ -1635,6 +1723,161 @@ document.getElementById('configId').addEventListener('keydown', e => {
   if (id) {
     const input = document.getElementById('configId');
     input.value = id.replace(/['"]/g, '').trim();
+  }
+})();
+
+/* Matrix rain canvas effect for banner */
+/* Matrix rain — slowed down */
+(function initMatrixRain() {
+  const canvas = document.getElementById('matrixRain');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const banner = canvas.parentElement;
+  const chars = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω0123456789ABCDEF.:;=+*#@%&';
+  const fontSize = 11;
+  const interval = 80; // ms between frames (higher = slower)
+  let columns, drops, last = 0;
+
+  function resize() {
+    canvas.width = banner.offsetWidth;
+    canvas.height = banner.offsetHeight;
+    columns = Math.floor(canvas.width / fontSize);
+    drops = Array(columns).fill(0).map(() => Math.random() * -20 | 0);
+  }
+
+  function draw(now) {
+    requestAnimationFrame(draw);
+    if (now - last < interval) return;
+    last = now;
+    ctx.fillStyle = 'rgba(13, 17, 23, 0.18)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < columns; i++) {
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      if (drops[i] >= 0) {
+        const char = chars[Math.random() * chars.length | 0];
+        const hue = [160, 140, 300, 120][Math.random() * 4 | 0];
+        ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, ' + (0.5 + Math.random() * 0.5) + ')';
+        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+      }
+      drops[i]++;
+    }
+  }
+
+  resize();
+  requestAnimationFrame(draw);
+  window.addEventListener('resize', resize);
+})();
+
+/* Title scramble-decode effect */
+/* Advanced title animation: per-char decode, wave, glitch, RGB split */
+(function initTitleFX() {
+  const el = document.getElementById('bannerTitle');
+  if (!el) return;
+  const target = el.dataset.text;
+  const glyphs = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδ0123456789@#$%&+=.:;';
+  const h1 = el.closest('h1');
+  const len = target.length;
+
+  // Build per-character spans
+  const spans = [];
+  el.innerHTML = '';
+  for (let i = 0; i < len; i++) {
+    if (target[i] === ' ') {
+      const sp = document.createElement('span');
+      sp.className = 't-space';
+      sp.innerHTML = '&nbsp;';
+      el.appendChild(sp);
+      spans.push(null); // null = space, skip in animations
+    } else {
+      const sp = document.createElement('span');
+      sp.className = 't-char';
+      sp.textContent = glyphs[Math.random() * glyphs.length | 0];
+      el.appendChild(sp);
+      spans.push(sp);
+    }
+  }
+
+  // Phase 1: Per-character independent decode
+  // Each char scrambles for a random duration (staggered, not left-to-right)
+  const lockTimes = spans.map((sp, i) => {
+    if (!sp) return 0;
+    // Random lock time: 400ms-1800ms, with slight left-bias so it roughly flows L→R
+    return 400 + i * 40 + Math.random() * 800;
+  });
+  const startTime = performance.now();
+  let allLocked = false;
+
+  function animateDecode() {
+    const now = performance.now();
+    const elapsed = now - startTime;
+    let done = true;
+    for (let i = 0; i < len; i++) {
+      if (!spans[i]) continue;
+      if (elapsed >= lockTimes[i]) {
+        spans[i].textContent = target[i];
+      } else {
+        spans[i].textContent = glyphs[Math.random() * glyphs.length | 0];
+        done = false;
+      }
+    }
+    if (!done) {
+      requestAnimationFrame(animateDecode);
+    } else if (!allLocked) {
+      allLocked = true;
+      startIdleEffects();
+    }
+  }
+  requestAnimationFrame(animateDecode);
+
+  // Phase 2: Idle effects after decode completes
+  function startIdleEffects() {
+    // Start wave animation with staggered delays
+    spans.forEach((sp, i) => {
+      if (!sp) return;
+      sp.style.animation = 'charWave 3s ease-in-out infinite, charGradient 8s linear infinite';
+      sp.style.animationDelay = (i * 0.12) + 's, 0s';
+    });
+
+    // Random single-char glitch (flip to glyph + flash)
+    function charGlitch() {
+      const indices = spans.map((s, i) => s ? i : -1).filter(i => i >= 0);
+      const count = 1 + (Math.random() > 0.5 ? 1 : 0);
+      for (let c = 0; c < count; c++) {
+        const idx = indices[Math.random() * indices.length | 0];
+        const sp = spans[idx];
+        sp.textContent = glyphs[Math.random() * glyphs.length | 0];
+        sp.classList.add('glitch-flash');
+        setTimeout(() => {
+          sp.textContent = target[idx];
+          sp.classList.remove('glitch-flash');
+        }, 80 + Math.random() * 70);
+      }
+      setTimeout(charGlitch, 3000 + Math.random() * 5000);
+    }
+    setTimeout(charGlitch, 2500);
+
+    // Rare RGB chromatic aberration split on entire title
+    function rgbSplit() {
+      h1.classList.add('rgb-split');
+      setTimeout(() => h1.classList.remove('rgb-split'), 120 + Math.random() * 80);
+      setTimeout(rgbSplit, 8000 + Math.random() * 12000);
+    }
+    setTimeout(rgbSplit, 6000 + Math.random() * 4000);
+
+    // Random brightness flicker on individual chars
+    function charFlicker() {
+      const indices = spans.map((s, i) => s ? i : -1).filter(i => i >= 0);
+      const idx = indices[Math.random() * indices.length | 0];
+      const sp = spans[idx];
+      sp.style.filter = 'brightness(2)';
+      setTimeout(() => { sp.style.filter = ''; }, 60);
+      setTimeout(charFlicker, 1500 + Math.random() * 3000);
+    }
+    setTimeout(charFlicker, 3000);
   }
 })();
 </script>
