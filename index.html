@@ -655,19 +655,61 @@ tbody tr {
   color: var(--cyan);
   font-weight: 600;
 }
+.connection-status .status-rtt {
+  color: var(--green);
+  font-weight: 600;
+}
+.connection-status .status-ipv6 {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(63,185,80,0.15);
+  color: var(--green);
+  margin-left: 4px;
+  vertical-align: middle;
+  font-weight: 600;
+}
 
 /* Detected-server row highlight in result table */
-.detected-server-row { background: rgba(88,166,255,0.05); }
+.detected-server-row { background: rgba(210,170,50,0.08); border-left: 2px solid rgba(210,170,50,0.5); }
 .detected-server-row td:first-child::after {
   content: '';
   display: inline-block;
-  width: 4px; height: 4px;
+  width: 5px; height: 5px;
   border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 4px var(--green);
+  background: #d4a830;
+  box-shadow: 0 0 6px rgba(212,168,48,0.6);
   margin-left: 4px;
   vertical-align: middle;
 }
+/* Latency delta badge on detected row */
+.delta-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin-left: 4px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.delta-badge.slower { background: rgba(210,153,34,0.15); color: var(--yellow); }
+.delta-badge.optimal { background: rgba(63,185,80,0.15); color: var(--green); }
+
+/* Optimization insight after benchmark */
+.optimization-insight {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  border-left: 3px solid var(--cyan);
+  background: rgba(88,166,255,0.04);
+  color: var(--text-dim);
+}
+.optimization-insight strong { color: var(--text); }
+.optimization-insight .opt-gain { color: var(--green); font-weight: 600; }
+.optimization-insight .opt-current { color: var(--yellow); }
+.optimization-insight .opt-suggestion { color: var(--cyan); }
 
 /* Current-PoP row in result table */
 .current-pop-row { background: rgba(88,166,255,0.05); }
@@ -1398,8 +1440,9 @@ function renderTable(tableId, servers, currentPop = null) {
   const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.avgMs)) : 1;
   displayed.forEach((r, i) => {
     const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
-    // Match against auto-detected server from test.nextdns.io (pop name e.g. "zepto-xrs")
-    const isDetected = detectedServer && (r.nodeId === detectedServer || r.pop === detectedServer);
+    // Match against auto-detected server — only in the table matching the detected protocol
+    const detectedProto = hasIPv6 ? 'ipv6Table' : 'ipv4Table';
+    const isDetected = detectedServer && tableId === detectedProto && (r.nodeId === detectedServer || r.pop === detectedServer);
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
@@ -1437,7 +1480,7 @@ function renderTable(tableId, servers, currentPop = null) {
       <td class="${typeClass(effectiveType)}">${typeLabel}</td>
       <td class="text-dim" style="font-size:0.75rem"><span class="copyable" data-copy="${escHtml(r.hostname)}" onclick="clickCopy(this)" title="Click to copy">${escHtml(r.hostname)}</span></td>
       <td>${ip ? '<span class="copyable" data-copy="' + escHtml(ip) + '" onclick="clickCopy(this)" title="Click to copy">' + escHtml(ip) + '</span>' : '<span class="text-dim">-</span>'}</td>
-      <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span><span class="spark-bar" style="width:${barWidth}px"></span></td>
+      <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span>${isDetected ? (i === 0 ? '<span class="delta-badge optimal">optimal</span>' : '<span class="delta-badge slower">+' + Math.round((r.avgMs - displayed[0].avgMs) * 100) / 100 + 'ms</span>') : ''}<span class="spark-bar" style="width:${barWidth}px"></span></td>
       <td class="text-dim">${r.minMs}ms</td>
       <td class="text-dim">${r.jitter}ms</td>
       <td>${r.successRate === 100 ? '<span class="lat-green">100%</span>' : '<span class="lat-yellow">' + r.successRate + '%</span>'}</td>
@@ -1547,9 +1590,11 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
   const bestAnycastV4 = allAnycastV4[0] || null;
   const currentAnycastPop = bestAnycastV4 ? bestAnycastV4.pop : null;
 
+  const visibleTotal = visible.length + visibleV6.length;
   let html = `<div class="insight-stats">
-    <span class="insight-pill"><span data-count="${ranked.length}">0</span>&nbsp;tested</span>
-    <span class="insight-pill ok"><span data-count="${ok.length}">0</span>&nbsp;reachable</span>
+    <span class="insight-pill"><span data-count="${visibleTotal}">0</span>&nbsp;servers</span>
+    <span class="insight-pill ok"><span data-count="${visible.length}">0</span>&nbsp;IPv4</span>
+    ${visibleV6.length > 0 ? `<span class="insight-pill ok"><span data-count="${visibleV6.length}">0</span>&nbsp;IPv6</span>` : ''}
     ${errors.length > 0 ? `<span class="insight-pill err"><span data-count="${errors.length}">0</span>&nbsp;unreachable</span>` : ''}
   </div>`;
 
@@ -1609,6 +1654,47 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
 
   if (preference !== 'auto') {
     html += `<div class="insight-note">Ranking boosted <strong>${preference}</strong> servers within 10ms tolerance</div>`;
+  }
+
+  // ── Detected-server optimization insight ───────────────────────────────────
+  // Use the protocol-matched list: if connected via IPv6, compare against IPv6 results
+  const detectedList = hasIPv6 ? visibleV6 : visible;
+  if (detectedServer && detectedList.length > 0) {
+    const detectedRow = detectedList.find(r => r.nodeId === detectedServer || r.pop === detectedServer);
+    const bestRow = detectedList[0];
+    if (detectedRow && bestRow) {
+      const delta = Math.round((detectedRow.avgMs - bestRow.avgMs) * 100) / 100;
+      if (delta > 1 && detectedRow !== bestRow) {
+        html += `<div class="optimization-insight">`
+          + `<strong>You could have lower latency.</strong> `
+          + `Your current server <span class="opt-current">${escHtml(serverLabel(detectedRow))} (${detectedRow.avgMs}ms)</span> `
+          + `is <span class="opt-gain">${delta}ms slower</span> than `
+          + `<span class="opt-suggestion">${escHtml(serverLabel(bestRow))} (${bestRow.avgMs}ms)</span>.`
+          + `</div>`;
+      } else {
+        html += `<div class="optimization-insight" style="border-left-color:var(--green)">`
+          + `<strong>Optimal setup.</strong> `
+          + `Your current server <span class="opt-suggestion">${escHtml(serverLabel(detectedRow))} (${detectedRow.avgMs}ms)</span> `
+          + `is already the lowest-latency option.`
+          + `</div>`;
+      }
+    }
+  }
+
+  // ── Smart preference suggestion ────────────────────────────────────────────
+  if (visible.length > 0 && bestAnycastV4) {
+    const bestEdge = visible.find(r => r.type === 'server');
+    const bestUltralow = ipv4.filter(r => r.type === 'ultralow').sort((a, b) => a.avgMs - b.avgMs)[0];
+    const anycastMs = bestAnycastV4.avgMs;
+    const edgeMs = bestEdge ? bestEdge.avgMs : Infinity;
+    const ultralowMs = bestUltralow ? bestUltralow.avgMs : Infinity;
+    const bestMs = Math.min(anycastMs, edgeMs, ultralowMs);
+    // Only suggest if there's a meaningful gap (>3ms) between anycast and best alternative
+    if (anycastMs - bestMs > 3 && bestMs < anycastMs) {
+      html += `<div class="insight-note"><span class="opt-suggestion">Tip:</span> <span class="text-dim">Pin to <strong>${bestMs === edgeMs ? escHtml(serverLabel(bestEdge)) : escHtml(serverLabel(bestUltralow))}</strong> for ~${Math.round(anycastMs - bestMs)}ms improvement over anycast. Trade-off: anycast auto-failovers; pinned servers need manual fallback.</span></div>`;
+    } else if (bestMs >= anycastMs) {
+      html += `<div class="insight-note"><span class="opt-suggestion">Tip:</span> <span class="text-dim">Anycast is optimal for your location &mdash; no server pinning needed.</span></div>`;
+    }
   }
 
   return { html, currentAnycastPop };
@@ -1791,27 +1877,38 @@ document.getElementById('configId').addEventListener('keydown', e => {
 
 /* Auto-detect NextDNS connection via test.nextdns.io */
 let detectedServer = null; // Global: server pop from test.nextdns.io (e.g. "zepto-xrs")
+let detectedRtt = null;    // Global: RTT in ms from /info
+let hasIPv6 = false;       // Global: IPv6 connectivity to NextDNS
 (function detectNextDNS() {
   const el = document.getElementById('connectionStatus');
   if (!el) return;
   // Random subdomain triggers DNS lookup — NextDNS sees the query if user is on NextDNS.
-  // The root path returns { profile } if connected; /info returns { pop, locationName }.
+  // The root path returns { profile } if connected; /info returns { pop, locationName, rtt }.
   const rnd = Math.random().toString(36).substring(2, 10);
   const base = 'https://' + rnd + '.test.nextdns.io';
+  // Also check IPv6 connectivity
+  const ipv6Check = fetch('https://test-ipv6.nextdns.io/', { mode: 'cors' })
+    .then(r => r.text()).then(t => t.trim() === 'OK').catch(() => false);
   Promise.all([
     fetch(base + '/', { mode: 'cors' }).then(r => r.json()),
     fetch(base + '/info', { mode: 'cors' }).then(r => r.json()),
+    ipv6Check,
   ])
-    .then(([test, info]) => {
+    .then(([test, info, v6]) => {
+      hasIPv6 = v6;
       if (test.profile && info.pop) {
         detectedServer = info.pop; // e.g. "zepto-xrs"
+        detectedRtt = info.rtt ? Math.round(info.rtt / 1000 * 100) / 100 : null; // μs → ms
         const loc = (info.locationName || '').replace(/^[\p{Emoji}\s]+/u, '').trim();
         el.innerHTML = '<span class="status-dot active"></span>'
           + 'Connected to NextDNS via <span class="status-server">' + escHtml(info.pop) + '</span>'
-          + (loc ? ' <span class="text-dim">' + escHtml(loc) + '</span>' : '');
+          + (loc ? ' <span class="text-dim">' + escHtml(loc) + '</span>' : '')
+          + (detectedRtt ? ' &middot; <span class="status-rtt">~' + detectedRtt + 'ms</span>' : '')
+          + (v6 ? ' <span class="status-ipv6">IPv6</span>' : '');
       } else {
         el.innerHTML = '<span class="status-dot inactive"></span>'
-          + 'Not connected to NextDNS &mdash; enter your Config ID to benchmark';
+          + 'Not connected to NextDNS &mdash; enter your Config ID to benchmark'
+          + (v6 ? ' <span class="status-ipv6">IPv6 ready</span>' : '');
       }
       el.classList.add('visible');
     })
