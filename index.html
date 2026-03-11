@@ -305,6 +305,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
+  table-layout: fixed;
 }
 th {
   text-align: left;
@@ -318,6 +319,8 @@ td {
   padding: 0.4rem 0.6rem;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 tr:hover td { background: rgba(88,166,255,0.04); }
 .rank-star { color: var(--green); font-weight: 700; }
@@ -348,76 +351,63 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .lat-red { color: var(--red); }
 .text-dim { color: var(--text-dim); }
 
-/* Config section */
-.config-section {
-  display: none;
-  margin-top: 2rem;
+/* Summary row: insight + config side by side */
+.summary-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
-.config-block {
+.summary-row > .insight-box {
+  flex: 1;
+  margin-bottom: 0;
+}
+.summary-row > .config-inline {
+  flex: 1;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0;
-  margin-bottom: 1rem;
-  overflow: hidden;
+  padding: 0.6rem 0.75rem;
+  display: none;
 }
-.card-header {
-  padding: 0.6rem 1rem;
-  background: rgba(255,255,255,0.025);
-  border-bottom: 1px solid var(--border);
+.config-inline .config-table {
+  grid-template-columns: 1fr;
+  gap: 0;
 }
-.card-header h3 {
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin: 0;
+.config-inline .config-cell.span2 {
+  grid-column: span 1;
 }
-.card-header .desc {
+.config-inline-header {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35rem;
+}
+
+.config-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  line-height: 1.4;
+}
+.config-entry-label {
   color: var(--text-dim);
   font-size: 0.75rem;
-  margin-top: 0.2rem;
-}
-.card-body {
-  padding: 0.75rem 1rem;
-}
-.config-line {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.35rem;
-  flex-wrap: wrap;
-}
-.config-label {
-  color: var(--text-dim);
-  min-width: 90px;
-  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .config-value {
   color: var(--cyan);
   font-weight: 600;
   word-break: break-all;
-}
-.config-value.dim {
-  color: var(--text-dim);
-  font-weight: 400;
-}
-.config-note {
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  font-weight: 400;
-}
-.copy-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 3px;
+  font-size: 0.85rem;
   cursor: pointer;
-  white-space: nowrap;
 }
-.copy-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-.copy-btn.copied { border-color: var(--green); color: var(--green); }
+.config-value:hover { text-decoration: underline; text-underline-offset: 2px; }
+.config-value.dim { color: var(--text-dim); font-weight: 400; }
+.config-value.copied { color: var(--green) !important; }
+.config-sep { color: var(--text-dim); font-size: 0.75rem; }
 
 /* Error display */
 .error-box {
@@ -476,28 +466,6 @@ tbody tr {
 }
 .insight-box.pop { animation: insightPop 0.3s ease-out; }
 
-/* Card spotlight hover — radial gradient follows cursor (Magic UI style) */
-.config-block {
-  position: relative;
-  overflow: hidden;
-}
-.config-grid .config-block { margin-bottom: 0; }
-.config-block::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(
-    500px circle at var(--mouse-x, -500px) var(--mouse-y, -500px),
-    rgba(88, 166, 255, 0.07),
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.config-block:hover::after { opacity: 1; }
 
 /* Animated border beam on recommendation cards */
 @property --beam-angle {
@@ -570,36 +538,27 @@ tbody tr {
   opacity: 0.85;
 }
 
-/* ── Bento config grid ───────────────────────────────────────────────── */
-.config-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.75rem;
-}
-.asus-grid {
+/* ── Config table ────────────────────────────────────────────────────── */
+.config-table {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.5rem 1rem;
+  gap: 0 1.5rem;
 }
-.config-ipv4      { grid-column: span 3; }
-.config-ipv4.solo { grid-column: span 6; }
-.config-ipv6      { grid-column: span 3; }
-.config-asus      { grid-column: span 6; }
-.config-doh       { grid-column: span 2; }
-.config-dot       { grid-column: span 2; }
-.config-plain     { grid-column: span 2; }
+.config-cell.span2 {
+  grid-column: span 2;
+}
 
 @media (max-width: 860px) {
-  .config-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-  .config-ipv4, .config-ipv4.solo, .config-ipv6,
-  .config-asus  { grid-column: span 2; }
-  .config-doh, .config-dot  { grid-column: span 1; }
-  .config-plain { grid-column: span 2; }
+  .summary-row { flex-direction: column; }
+}
+@media (max-width: 600px) {
+  .config-table { grid-template-columns: 1fr; gap: 0.15rem 0; }
+  .config-cell.span2 { grid-column: span 1; }
 }
 
 /* Footer */
 .footer {
-  margin-top: 3rem;
+  margin-top: 2rem;
   padding: 1.75rem 0 0.75rem;
   border-top: 1px solid var(--border);
   text-align: center;
@@ -688,13 +647,13 @@ tbody tr {
   /* Hide Hostname (col 5) and Jitter (col 9) — table scrolls horizontally */
   table th:nth-child(5), table td:nth-child(5) { display: none; }
   table th:nth-child(9), table td:nth-child(9) { display: none; }
+  /* Config entries stack label above value on mobile */
+  .config-entry { flex-wrap: wrap; }
+  .config-entry-label { width: 100%; }
   /* Config grid collapses to single column */
   .config-grid { grid-template-columns: 1fr; }
-  .asus-grid { grid-template-columns: 1fr; }
   .config-ipv4, .config-ipv4.solo, .config-ipv6,
-  .config-asus, .config-doh, .config-dot, .config-plain { grid-column: span 1; }
-  /* Config lines stack */
-  .config-label { min-width: 70px; }
+  .config-encrypted, .config-fallback { grid-column: span 1; }
   /* Banner scales down */
   .banner { padding: 1.25rem 1rem; }
   .banner h1 { font-size: 1.1rem; }
@@ -710,9 +669,6 @@ tbody tr {
 }
 
 @media (max-width: 400px) {
-  /* Extra-narrow: config lines stack label above value */
-  .config-line { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
-  .config-label { min-width: unset; }
   /* Smaller banner for very narrow screens */
   .banner h1 { font-size: 1rem; letter-spacing: 0; }
   /* Form section tighter padding */
@@ -777,7 +733,13 @@ tbody tr {
   <div class="results-section" id="resultsSection">
     <div class="section-header">Benchmark Results</div>
 
-    <div class="insight-box" id="insightBox"></div>
+    <div class="summary-row">
+      <div class="insight-box" id="insightBox"></div>
+      <div class="config-inline" id="configInline">
+        <div class="config-inline-header">Recommended Configuration</div>
+        <div class="config-table" id="configTable"></div>
+      </div>
+    </div>
 
     <div class="type-legend">
       <span class="type-legend-item">
@@ -814,53 +776,6 @@ tbody tr {
     </div>
   </div>
 
-  <div class="config-section" id="configSection">
-    <div class="section-header">Recommended Configuration</div>
-
-    <div class="config-grid">
-      <div class="config-block config-ipv4" id="configBlockIpv4">
-        <div class="card-header"><h3>IPv4 Recommendation</h3></div>
-        <div class="card-body" id="ipv4RecConfig"></div>
-      </div>
-
-      <div class="config-block config-ipv6" id="ipv6RecBlock" style="display:none">
-        <div class="card-header"><h3>IPv6 Recommendation</h3></div>
-        <div class="card-body" id="ipv6RecConfig"></div>
-      </div>
-
-      <div class="config-block config-asus">
-        <div class="card-header">
-          <h3>Asus Router (DoT)</h3>
-          <div class="desc">WAN &rarr; DNS &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS &rarr; add each server (IP + Hostname, leave port blank)</div>
-        </div>
-        <div class="card-body" id="asusConfig"></div>
-      </div>
-
-      <div class="config-block config-doh">
-        <div class="card-header">
-          <h3>DNS-over-HTTPS (DoH)</h3>
-          <div class="desc">Use this URL in any DoH-compatible client or browser</div>
-        </div>
-        <div class="card-body" id="dohConfig"></div>
-      </div>
-
-      <div class="config-block config-dot">
-        <div class="card-header">
-          <h3>DNS-over-TLS (DoT)</h3>
-          <div class="desc">DNS steering resolves the hostname to your nearest PoP</div>
-        </div>
-        <div class="card-body" id="dotConfig"></div>
-      </div>
-
-      <div class="config-block config-plain">
-        <div class="card-header">
-          <h3>Plain DNS IPs</h3>
-          <div class="desc">Unencrypted fallback &mdash; for routers or IoT devices without DoH/DoT support</div>
-        </div>
-        <div class="card-body" id="plainConfig"></div>
-      </div>
-    </div>
-  </div>
 
   <div class="footer">
     <div class="footer-links">
@@ -962,6 +877,14 @@ async function copyToClipboard(text, btn) {
     btn.textContent = 'copied';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
+  } catch { /* ignore */ }
+}
+
+async function clickCopy(el) {
+  try {
+    await navigator.clipboard.writeText(el.dataset.copy);
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 1200);
   } catch { /* ignore */ }
 }
 
@@ -1292,6 +1215,19 @@ function renderTable(tableId, servers, currentPop = null) {
   const thead = table.querySelector('thead');
   const tbody = table.querySelector('tbody');
 
+  // Fixed column widths so IPv4 and IPv6 tables align
+  let colgroup = table.querySelector('colgroup');
+  if (!colgroup) {
+    colgroup = document.createElement('colgroup');
+    table.prepend(colgroup);
+  }
+  //          #    NodeID  Location Type  Hostname     IP       Avg   Min   Jitter OK%
+  colgroup.innerHTML = `
+    <col style="width:3.5%"><col style="width:13%"><col style="width:12%"><col style="width:7%">
+    <col style="width:22%"><col style="width:16%">
+    <col style="width:8%"><col style="width:7%"><col style="width:6%"><col style="width:5.5%">
+  `;
+
   thead.innerHTML = `<tr>
     <th>#</th><th>Node ID</th><th>Location</th><th>Type</th>
     <th>Hostname</th><th>IP</th>
@@ -1322,9 +1258,13 @@ function renderTable(tableId, servers, currentPop = null) {
       : '';
 
     const viaEntries = routingTo[r.nodeId] || [];
+    // Self-badge for non-absorbed anycast/ultralow rows
+    const selfBadge = (r.type === 'anycast' || r.type === 'ultralow') && viaEntries.length === 0
+      ? `<span class="via-badge via-badge--${r.type}">${escHtml(r.nodeId)}</span>`
+      : '';
     const viaBadges = viaEntries.map(v =>
       `<span class="via-badge via-badge--${v.type}">${escHtml(v.label)}</span>`
-    ).join('');
+    ).join('') || selfBadge;
 
     const { flag, city } = parseLocation(r.location || r.pop || '');
     const locCell = flag
@@ -1356,114 +1296,70 @@ function renderTable(tableId, servers, currentPop = null) {
   });
 }
 
-function resultNote(result) {
-  if (!result) return '';
-  const label = result.nodeId || result.type;
-  return `(${result.avgMs}ms ${label})`;
-}
-
-function renderRecSection(entry, label) {
-  const r = entry.result;
-  const nodeLabel = r ? (r.type === 'anycast' || r.type === 'ultralow' ? r.type : (r.nodeId || r.type)) : '';
-  const badge = r
-    ? ' <span class="' + latencyClass(r.avgMs) + '">' + r.avgMs + 'ms</span> <span class="text-dim">' + escHtml(nodeLabel) + '</span>'
-    : '';
-  return `<div style="margin-bottom:0.4rem">
-    <div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">${escHtml(label)}${badge}</div>
-    ${configLine('IP:', entry.ip)}
-    ${configLine('Hostname:', entry.hostname)}
-  </div>`;
-}
-
 function renderConfig(config, configId) {
-  const section = document.getElementById('configSection');
+  const section = document.getElementById('configInline');
   section.style.display = 'block';
+  const hasV6 = !!config.bestV6;
 
-  // IPv4 Recommendation
-  let v4Html = renderRecSection(config.ipv4.best, 'Best');
-  v4Html += renderRecSection(config.ipv4.backup, 'Backup');
-  v4Html += '<hr style="border-color:var(--border);margin:0.35rem 0">';
-  v4Html += `<div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">Anycast Fallback</div>`;
-  v4Html += configLine('IP 1:', config.ipv4.anycast1.ip, true);
-  v4Html += configLine('IP 2:', config.ipv4.anycast2.ip, true);
-  document.getElementById('ipv4RecConfig').innerHTML = v4Html;
+  const sp = hasV6 ? '' : ' span2';
+  function cell(label, value, dim) {
+    return `<div class="config-cell${dim ? '' : sp}">${configEntry(label, value, dim)}</div>`;
+  }
+  function cellSp2(label, value, dim) {
+    return `<div class="config-cell">${configEntry(label, value, dim)}</div>`;
+  }
+  function cellRec(entry, label) {
+    const r = entry.result;
+    const nodeLabel = r ? serverLabel(r) : '';
+    const badge = r
+      ? ' &middot; <span class="' + latencyClass(r.avgMs) + '">' + r.avgMs + 'ms</span> ' + escHtml(nodeLabel)
+      : '';
+    return `<div class="config-cell${sp}">${configEntry(escHtml(label) + badge, entry.ip)}</div>`;
+  }
+
+  let html = '';
+
+  // Row 1: Best
+  html += cellRec(config.ipv4.best, 'IPv4 Best');
+  if (hasV6) html += cellRec(config.ipv6.best, 'IPv6 Best');
+
+  // Row 2: Backup
+  html += cellRec(config.ipv4.backup, 'IPv4 Backup');
+  if (hasV6) html += cellRec(config.ipv6.backup, 'IPv6 Backup');
+
+  // Row 3: Anycast Fallback (both IPs per cell)
+  html += `<div class="config-cell${sp}">${configEntry2('IPv4 Fallback', config.ipv4.anycast1.ip, config.ipv4.anycast2.ip)}</div>`;
+  if (hasV6) html += `<div class="config-cell">${configEntry2('IPv6 Fallback', config.ipv6.anycast1.ip, config.ipv6.anycast2.ip)}</div>`;
+
+  // Row 4: Encrypted DNS
+  html += `<div class="config-cell">${configEntry('DNS-over-TLS/QUIC', config.dot)}</div>`;
+  html += `<div class="config-cell">${configEntry('DNS-over-HTTPS', config.doh)}</div>`;
+
+  document.getElementById('configTable').innerHTML = html;
 
   // Insight pop re-trigger on each run
   const insightEl = document.getElementById('insightBox');
   insightEl.classList.remove('pop');
   void insightEl.offsetWidth;
   insightEl.classList.add('pop');
-
-  // IPv6 Recommendation
-  const ipv4Block = document.getElementById('configBlockIpv4');
-  if (config.bestV6) {
-    document.getElementById('ipv6RecBlock').style.display = 'block';
-    ipv4Block.classList.remove('solo');
-    let v6Html = renderRecSection(config.ipv6.best, 'Best');
-    v6Html += renderRecSection(config.ipv6.backup, 'Backup');
-    v6Html += '<hr style="border-color:var(--border);margin:0.35rem 0">';
-    v6Html += `<div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">Anycast Fallback</div>`;
-    v6Html += configLine('IP 1:', config.ipv6.anycast1.ip, true);
-    v6Html += configLine('IP 2:', config.ipv6.anycast2.ip, true);
-    document.getElementById('ipv6RecConfig').innerHTML = v6Html;
-  } else {
-    ipv4Block.classList.add('solo');
-  }
-
-  // Asus DoT — 2-column grid layout
-  const asusEntries = [
-    { label: 'Primary (IPv4 Best)', entry: config.ipv4.best },
-    { label: 'Secondary (IPv4 Backup)', entry: config.ipv4.backup },
-  ];
-  if (config.bestV6) {
-    asusEntries.push({ label: 'Primary IPv6', entry: config.ipv6.best });
-    asusEntries.push({ label: 'Secondary IPv6', entry: config.ipv6.backup });
-  }
-  asusEntries.push({ label: 'Fallback 1 (Anycast)', entry: config.ipv4.anycast1 });
-  asusEntries.push({ label: 'Fallback 2 (Anycast)', entry: config.ipv4.anycast2 });
-
-  let asus = '<div class="asus-grid">';
-  for (const { label, entry } of asusEntries) {
-    asus += `<div>
-      <div style="color:var(--text-dim);font-size:0.75rem;margin-bottom:0.15rem">${escHtml(label)}</div>
-      ${configLine('IP:', entry.ip)}
-      ${configLine('Hostname:', entry.hostname)}
-    </div>`;
-  }
-  asus += '</div>';
-  document.getElementById('asusConfig').innerHTML = asus;
-
-  // DoH
-  document.getElementById('dohConfig').innerHTML =
-    configLine('URL:', config.doh);
-
-  // DoT
-  document.getElementById('dotConfig').innerHTML =
-    configLine('Hostname:', config.dot);
-
-  // Plain DNS
-  let plain = configLine('IPv4 Best:', config.ipv4.best.ip,
-    false, resultNote(config.bestV4));
-  plain += configLine('IPv4 Backup:', config.ipv4.backup.ip,
-    true, resultNote(config.secondV4));
-  plain += configLine('IPv4 Anycast:', config.ipv4.anycast1.ip + ' / ' + config.ipv4.anycast2.ip, true);
-
-  if (config.bestV6) {
-    plain += '<hr style="border-color:var(--border);margin:0.5rem 0">';
-    plain += configLine('IPv6 Best:', config.ipv6.best.ip);
-    plain += configLine('IPv6 Backup:', config.ipv6.backup.ip, true);
-    plain += configLine('IPv6 Anycast:', config.ipv6.anycast1.ip + ' / ' + config.ipv6.anycast2.ip, true);
-  }
-  document.getElementById('plainConfig').innerHTML = plain;
 }
 
-function configLine(label, value, dim = false, note = '') {
+function configEntry(label, value, dim = false) {
   const safeValue = value.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return `<div class="config-line">
-    <span class="config-label">${label}</span>
-    <span class="config-value${dim ? ' dim' : ''}">${escHtml(value)}</span>
-    ${note ? '<span class="config-note">' + escHtml(note) + '</span>' : ''}
-    <button class="copy-btn" data-copy="${safeValue}" onclick="copyToClipboard(this.dataset.copy, this)">copy</button>
+  return `<div class="config-entry">
+    ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
+    <span class="config-value${dim ? ' dim' : ''}" data-copy="${safeValue}" onclick="clickCopy(this)" title="Click to copy">${escHtml(value)}</span>
+  </div>`;
+}
+
+function configEntry2(label, val1, val2) {
+  const safe1 = val1.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safe2 = val2.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `<div class="config-entry">
+    ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
+    <span class="config-value" data-copy="${safe1}" onclick="clickCopy(this)" title="Click to copy">${escHtml(val1)}</span>
+    <span class="config-sep">/</span>
+    <span class="config-value dim" data-copy="${safe2}" onclick="clickCopy(this)" title="Click to copy">${escHtml(val2)}</span>
   </div>`;
 }
 
@@ -1587,10 +1483,9 @@ async function runBenchmark() {
 
   const progressSection = document.getElementById('progressSection');
   const resultsSection = document.getElementById('resultsSection');
-  const configSection = document.getElementById('configSection');
   progressSection.style.display = 'block';
   resultsSection.style.display = 'none';
-  configSection.style.display = 'none';
+  document.getElementById('configInline').style.display = 'none';
   document.getElementById('progressFill').classList.add('running');
 
   try {
@@ -1732,14 +1627,6 @@ document.getElementById('configId').addEventListener('keydown', e => {
   if (e.key === 'Enter') runBenchmark();
 });
 
-// Card spotlight: track cursor position for radial gradient on config blocks
-document.addEventListener('mousemove', e => {
-  const card = e.target.closest('.config-block');
-  if (!card) return;
-  const r = card.getBoundingClientRect();
-  card.style.setProperty('--mouse-x', (e.clientX - r.left) + 'px');
-  card.style.setProperty('--mouse-y', (e.clientY - r.top) + 'px');
-});
 
 // ─── URL Parameter Pre-fill ───────────────────────────────────────────────────
 (function () {
