@@ -391,7 +391,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
-  table-layout: fixed;
+  min-width: 800px;
 }
 th {
   text-align: left;
@@ -483,13 +483,17 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   white-space: nowrap;
   flex-shrink: 0;
 }
+.config-value, .copyable {
+  cursor: pointer;
+}
 .config-value {
   color: var(--cyan);
   font-weight: 600;
   word-break: break-all;
   font-size: 0.85rem;
-  cursor: pointer;
 }
+.copyable:hover { text-decoration: underline; text-underline-offset: 2px; }
+.copyable.copied { color: var(--green) !important; }
 .config-value:hover { text-decoration: underline; text-underline-offset: 2px; }
 .config-value.dim { color: var(--text-dim); font-weight: 400; }
 .config-value.copied { color: var(--green) !important; }
@@ -727,6 +731,8 @@ tbody tr {
   body { padding: 1rem 0.5rem; font-size: 13px; }
   .form-row { flex-direction: column; }
   .form-group { width: 100%; }
+  /* Prevent iOS Safari auto-zoom on focus (triggers at <16px) */
+  .form-group input, .form-group select { font-size: 16px; }
   .btn { width: 100%; }
   table { font-size: 0.75rem; }
   td, th { padding: 0.3rem 0.4rem; }
@@ -1372,8 +1378,8 @@ function renderTable(tableId, servers, currentPop = null) {
       <td>${escHtml(serverLabel(r))}${viaBadges}</td>
       <td class="text-dim">${locCell}</td>
       <td class="${typeClass(effectiveType)}">${typeLabel}</td>
-      <td class="text-dim" style="font-size:0.75rem">${escHtml(r.hostname)}</td>
-      <td>${ip ? escHtml(ip) : '<span class="text-dim">-</span>'}</td>
+      <td class="text-dim" style="font-size:0.75rem"><span class="copyable" data-copy="${escHtml(r.hostname)}" onclick="clickCopy(this)" title="Click to copy">${escHtml(r.hostname)}</span></td>
+      <td>${ip ? '<span class="copyable" data-copy="' + escHtml(ip) + '" onclick="clickCopy(this)" title="Click to copy">' + escHtml(ip) + '</span>' : '<span class="text-dim">-</span>'}</td>
       <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span><span class="spark-bar" style="width:${barWidth}px"></span></td>
       <td class="text-dim">${r.minMs}ms</td>
       <td class="text-dim">${r.jitter}ms</td>
