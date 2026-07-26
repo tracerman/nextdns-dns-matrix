@@ -2,6 +2,20 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
+## [1.6.0] — 2026-07-26
+
+### Added
+- **Pin to Lowest-Latency Server** — new section that closes the gap between what the benchmark finds and what you can actually configure. When a specific edge server beats both anycast and ultralow by more than 3ms, it emits the pinned DoH URL (`https://{server}.edge.nextdns.io/{configId}`) and a NextDNS CLI forwarder string with anycast failover. When pinning wouldn't help, it says so rather than recommending it anyway. Raised by [SeriousHoax on r/nextdns](https://www.reddit.com/r/nextdns/).
+- **Pinned config carries its own disclaimer** — NextDNS does not officially recommend pinning; a pinned server going offline takes your DNS with it. Stated on the card itself, alongside the failover form that mitigates it.
+- `server` (e.g. `vultr-bom-1`) is now retained from the router API alongside `pop` (`vultr-bom`). The bare `{server}.edge.nextdns.io` host is dual-stack and is the only form usable as a pinned DoH URL.
+
+### Fixed
+- **Latency could be reported lower than reality.** `benchmarkServer` decided whether to use server-reported RTT from the first round alone. If a later round returned no `rtt`, `null / 1000` evaluated to `0` — zeroing `minMs` and dragging the average down, making a server look faster than it was. Samples are now filtered individually, and the metric used (`server` vs `client`) is recorded so the two are never mixed when ranking.
+- **Detected-server highlighting landed in the wrong table on dual-stack connections.** Highlighting was scoped by `hasIPv6`, which only reports whether the *browser* can reach NextDNS over IPv6 — not which family the DNS connection uses. The detected PoP is now highlighted wherever it appears, with per-table latency deltas.
+
+### Changed
+- README: documented pinning end to end, corrected the "based on your active protocol" claim, and updated the stale bento-grid description of the config panel.
+
 ## [1.5.0] — 2026-02-18
 
 ### Added

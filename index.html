@@ -499,6 +499,53 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .config-value.copied { color: var(--green) !important; }
 .config-sep { color: var(--text-dim); font-size: 0.75rem; }
 
+/* Pin-to-server section */
+.pin-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.pin-headline {
+  font-size: 0.92rem;
+  margin-bottom: 0.15rem;
+}
+.pin-gain { color: var(--green); font-weight: 700; }
+.pin-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 0.85rem;
+}
+.pin-formats { display: grid; gap: 0.55rem; }
+.pin-format-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15rem;
+}
+.pin-format-note {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.1rem;
+}
+.pin-disclaimer {
+  margin-top: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--yellow);
+  background: rgba(210,153,34,0.06);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+.pin-disclaimer strong { color: var(--yellow); }
+.pin-ok {
+  font-size: 0.92rem;
+  color: var(--cyan);
+}
+
 /* Error display */
 .error-box {
   background: rgba(248,81,73,0.1);
@@ -931,6 +978,11 @@ tbody tr {
       </div>
     </div>
 
+    <div id="pinSection" style="display:none">
+      <div class="sub-header" id="pinHeader">Pin to Lowest-Latency Server</div>
+      <div class="pin-box" id="pinBox"></div>
+    </div>
+
     <div class="type-legend">
       <span class="type-legend-item">
         <span class="type-legend-dot" style="background:var(--text)"></span>
@@ -1095,6 +1147,10 @@ async function discoverServers(onStatus) {
           const srv = entry.server || '';
           const pop = entry.pop || srv;
           if (!srv) continue;
+          // `server` (e.g. "vultr-bom-1") is retained alongside `pop` ("vultr-bom").
+          // The bare `{server}.edge.nextdns.io` host is dual-stack and is the only
+          // form usable as a pinned DoH URL — the ipv4-/ipv6- prefixes are
+          // single-family and the pop name alone does not resolve.
           // IPv4
           if (entry.ipv4 !== false) {
             servers.push({
@@ -1102,6 +1158,7 @@ async function discoverServers(onStatus) {
               type: 'server',
               family: 'IPv4',
               nodeId: pop,
+              server: srv,
             });
           }
           // IPv6
@@ -1111,6 +1168,7 @@ async function discoverServers(onStatus) {
               type: 'server',
               family: 'IPv6',
               nodeId: pop,
+              server: srv,
             });
           }
         }
@@ -1192,11 +1250,15 @@ async function benchmarkServer(server, rounds) {
     };
   }
 
-  // Use server-reported RTT (microseconds → ms) as primary metric
-  const hasServerRtt = results[0].serverRttUs !== null;
-  const times = hasServerRtt
-    ? results.map(r => r.serverRttUs / 1000)
-    : results.map(r => r.clientMs);
+  // Use server-reported RTT (microseconds → ms) as primary metric.
+  // Filter per-sample rather than deciding from results[0]: if any later round
+  // returns no `rtt`, `null / 1000` evaluates to 0, which zeroes minMs and drags
+  // the average down — making the server look FASTER than it really is.
+  // `metric` is recorded because server RTT and clientMs are not comparable
+  // (clientMs is a full HTTPS round trip incl. TLS), so ranking must not mix them.
+  const serverRtts = results.filter(r => r.serverRttUs != null).map(r => r.serverRttUs / 1000);
+  const usedServerRtt = serverRtts.length > 0;
+  const times = usedServerRtt ? serverRtts : results.map(r => r.clientMs);
 
   const avg = times.reduce((a, b) => a + b, 0) / times.length;
   const min = Math.min(...times);
@@ -1210,6 +1272,7 @@ async function benchmarkServer(server, rounds) {
     jitter: Math.round((max - min) * 100) / 100,
     successRate: Math.round((results.length / rounds) * 100),
     status: 'ok',
+    metric: usedServerRtt ? 'server' : 'client',
     pop: results[0].pop,
     location: results[0].location,
   };
@@ -1440,9 +1503,11 @@ function renderTable(tableId, servers, currentPop = null) {
   const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.avgMs)) : 1;
   displayed.forEach((r, i) => {
     const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
-    // Match against auto-detected server — only in the table matching the detected protocol
-    const detectedProto = hasIPv6 ? 'ipv6Table' : 'ipv4Table';
-    const isDetected = detectedServer && tableId === detectedProto && (r.nodeId === detectedServer || r.pop === detectedServer);
+    // Highlight the detected PoP wherever it appears. This previously guessed the
+    // connection's address family from `hasIPv6`, but that flag only reports whether
+    // the BROWSER can reach NextDNS over IPv6 — not which family the DNS connection
+    // actually uses. On dual-stack (the common case) the guess lands in the wrong table.
+    const isDetected = detectedServer && (r.nodeId === detectedServer || r.pop === detectedServer);
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
@@ -1557,6 +1622,113 @@ function configEntry2(label, val1, val2) {
   </div>`;
 }
 
+// renderPinSection: render the pinned-server recommendation, or the
+// "you don't need to pin" state. Uses configEntry for values so they inherit its
+// quote-safe attribute escaping — escHtml alone is not safe in a data-copy="".
+function renderPinSection(pin, configId) {
+  const section = document.getElementById('pinSection');
+  const box = document.getElementById('pinBox');
+  if (!pin) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  const b = pin.best;
+  const { flag, city } = parseLocation(b.location || '');
+  const loc = city ? (flag ? `[${flag}] ${city}` : city) : (b.pop || '');
+
+  if (!pin.worthIt) {
+    // Common case: steering already lands on the same PoP the best edge server
+    // belongs to. Saying "zepto-iad is within 3ms of zepto-iad-1" reads as nonsense,
+    // so name what actually happened instead.
+    const samePop = pin.baseline && b.pop && pin.baseline.pop === b.pop;
+    box.innerHTML = samePop
+      ? `<div class="pin-ok">Already on your lowest-latency PoP &mdash; `
+        + `${escHtml(pin.baseline.type === 'anycast' ? 'anycast' : 'ultralow')} routes you to `
+        + `<strong>${escHtml(b.pop)}</strong> <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span>, `
+        + `the same PoP you would be pinning to.</div>`
+        + `<div class="pin-sub" style="margin:0.4rem 0 0">Pinning would target the same hardware while giving up automatic failover. `
+        + `Use the recommended configuration above.</div>`
+      : `<div class="pin-ok">No pinning needed &mdash; `
+        + `${escHtml(serverLabel(pin.baseline))} <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span> `
+        + `is already within ${PIN_MIN_GAIN_MS}ms of the lowest-latency edge server `
+        + `${escHtml(b.server)} <span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>.</div>`
+        + `<div class="pin-sub" style="margin:0.4rem 0 0">Steered routing keeps automatic failover, so there is nothing to gain here. `
+        + `Use the recommended configuration above.</div>`;
+    return;
+  }
+
+  const dohUrl = `https://${b.server}.edge.nextdns.io/${configId}`;
+  const bootstrap = b.resolvedIP ? `#${b.resolvedIP}` : '';
+  const forwarder = `https://${b.server}.edge.nextdns.io/${configId}${bootstrap}`
+    + `,https://anycast.dns1.nextdns.io/${configId}`;
+
+  let html =
+    `<div class="pin-headline"><strong>${escHtml(b.server)}</strong> `
+    + `<span class="text-dim">${escHtml(loc)}</span> `
+    + `<span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>`
+    + (pin.gainMs != null
+        ? ` &mdash; <span class="pin-gain">${pin.gainMs}ms lower</span> <span class="text-dim">than `
+          + `${escHtml(serverLabel(pin.baseline))} (${pin.baseline.avgMs}ms)</span>`
+        : '')
+    + `</div>`
+    + `<div class="pin-sub">Dual-stack hostname &mdash; one URL covers both IPv4 and IPv6.</div>`;
+
+  html += `<div class="pin-formats">`;
+  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>${configEntry('', dohUrl)}</div>`;
+  html += `<div><div class="pin-format-label">NextDNS CLI &mdash; pinned, with anycast failover</div>`
+    + configEntry('', forwarder)
+    + `<div class="pin-format-note">NextDNS CLI only &mdash; falls back to anycast if the pinned server stops answering. `
+    + `Router DoT setups cannot use this syntax; pin by bootstrap IP using the Asus fields above.</div></div>`;
+  html += `</div>`;
+
+  html += `<div class="pin-disclaimer"><strong>Pinning is not officially recommended.</strong> `
+    + `NextDNS steers you automatically for a reason &mdash; if a pinned server goes offline, `
+    + `your DNS stops until you change it. In practice pinning is the only way to lock the `
+    + `lowest-latency PoP, and it measurably helps. If you pin, prefer the failover form above, `
+    + `and run this benchmark fresh from time to time &mdash; edge server IPs rotate.</div>`;
+
+  box.innerHTML = html;
+}
+
+// ─── Pin Target Selection ─────────────────────────────────────────────────────
+
+// Minimum latency gain over the best steered option before pinning is worth
+// recommending. Matches the tip threshold in buildInsightHtml.
+const PIN_MIN_GAIN_MS = 3;
+
+// selectPinTarget: choose the lowest-latency edge server worth pinning to.
+//
+// Deliberately does NOT use `ranked`, for two reasons:
+//   1. ranked[0] may be an anycast or ultralow entry, which carries no `server`
+//      field — there is no pinnable hostname to build a URL from.
+//   2. ranked is skewed by the user's `preference` setting. Pinning is a separate
+//      decision from the general recommendation, so this always sorts by pure latency.
+//
+// Compares within IPv4 only: latency is measured per-family, so mixing families
+// would not be like-for-like. The pinned DoH URL itself is family-agnostic —
+// `{server}.edge.nextdns.io` is dual-stack.
+function selectPinTarget(ok) {
+  const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
+  const edges = v4
+    .filter(r => r.type === 'server' && r.server)
+    .sort((a, b) => a.avgMs - b.avgMs);
+  if (edges.length === 0) return null;
+
+  const best = edges[0];
+  // Baseline = the best thing the user would get WITHOUT pinning.
+  const baseline = v4
+    .filter(r => r.type === 'anycast' || r.type === 'ultralow')
+    .sort((a, b) => a.avgMs - b.avgMs)[0] || null;
+
+  const gainMs = baseline ? Math.round((baseline.avgMs - best.avgMs) * 100) / 100 : null;
+  // No baseline responded at all — pinning is the only option we can offer.
+  const worthIt = baseline ? gainMs > PIN_MIN_GAIN_MS : true;
+
+  // IPv6 row for the same physical server, for an optional v6 bootstrap IP.
+  const v6 = ok.find(r => r.family === 'IPv6' && r.server === best.server && r.resolvedIP) || null;
+
+  return { best, baseline, gainMs, worthIt, v6 };
+}
+
 // ─── Cross-Reference Servers ──────────────────────────────────────────────────
 
 function crossReferenceServers(servers) {
@@ -1657,8 +1829,11 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
   }
 
   // ── Detected-server optimization insight ───────────────────────────────────
-  // Use the protocol-matched list: if connected via IPv6, compare against IPv6 results
-  const detectedList = hasIPv6 ? visibleV6 : visible;
+  // Compare the detected server against the IPv4 list, falling back to IPv6 only if
+  // the detected PoP appears there and not in IPv4. `hasIPv6` is NOT a reliable signal
+  // for which family the DNS connection uses — it only reports browser reachability.
+  const inV4 = visible.some(r => r.nodeId === detectedServer || r.pop === detectedServer);
+  const detectedList = inV4 ? visible : visibleV6;
   if (detectedServer && detectedList.length > 0) {
     const detectedRow = detectedList.find(r => r.nodeId === detectedServer || r.pop === detectedServer);
     const bestRow = detectedList[0];
@@ -1840,6 +2015,11 @@ async function runBenchmark() {
     setProgress('Generating config...', 98);
     const config = generateConfig(ranked, configId);
     renderConfig(config, configId);
+
+    // Pinned-server recommendation. Takes `ok` (not ranked/xref'd) because pin
+    // selection must ignore `preference` and needs the raw edge rows that carry
+    // the `server` field.
+    renderPinSection(selectPinTarget(ok), configId);
 
     setProgress('Done!', 100);
 

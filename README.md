@@ -46,11 +46,13 @@ On page load, the tool detects whether you're connected to NextDNS — no input 
 - **Connection status** — which server and PoP you're connected to
 - **Pre-benchmark RTT** — your current latency before running a full benchmark
 - **IPv6 connectivity** — whether your connection to NextDNS supports IPv6
-- **Protocol-scoped highlighting** — after benchmarking, your detected server is highlighted with a golden row in the correct table (IPv4 or IPv6, based on your active protocol)
+- **Detected-server highlighting** — after benchmarking, your detected server is highlighted with a golden row wherever it appears in the results
 - **Latency delta badge** — if your current server isn't the lowest-latency option, a `+Xms` badge shows the gap
 - **Optimization insight** — actionable recommendation if a lower-latency server is available
 
 Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns.io` — both CORS-enabled, no config ID required.
+
+> **On IPv6:** `test-ipv6.nextdns.io` reports whether your *browser* can reach NextDNS over IPv6. It cannot tell which address family your DNS connection actually uses — browsers have no visibility into that. The IPv6 indicator is reported for what it is, and is not used to infer your DNS protocol.
 
 ## What It Shows
 
@@ -62,7 +64,9 @@ Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns
 
 **IPv4 and IPv6 recommendations** — best + backup server for each family, with resolved IPs and anycast fallbacks
 
-**Bento config grid** — six ready-to-paste config formats in a card layout:
+**Pin to Lowest-Latency Server** — when a specific edge server beats both anycast and ultralow by more than 3ms, a dedicated section gives you the pinned DoH URL and a CLI forwarder string with failover. When it doesn't, the section says so instead of inventing a reason to pin. See [Pinning to a Specific Server](#pinning-to-a-specific-server).
+
+**Config panel** — ready-to-paste config formats:
 - Asus Router DoT (2-column IP + Hostname per entry)
 - DNS-over-HTTPS URL
 - DNS-over-TLS hostname
@@ -92,6 +96,36 @@ Both support browser CORS (`Access-Control-Allow-Origin: *`) and return the same
 | **Anycast** | Maximum reliability, stable IPs |
 
 **How preference works:** Within a tolerance window (default 10ms), preferred servers win. So if you prefer ultralow and ultralow is 25ms vs another server at 20ms, ultralow wins. But if the other server is 5ms and ultralow is 25ms, latency still wins — preference doesn't override large differences.
+
+## Pinning to a Specific Server
+
+The benchmark can tell you `vultr-bom` is your lowest-latency PoP — but the standard DoH URL (`https://dns.nextdns.io/{id}`) re-steers you somewhere else, so knowing it doesn't help. Pinning closes that gap.
+
+**How to pin (DoH):** use the edge server's own hostname in place of `dns.nextdns.io`.
+
+```
+https://{server}.edge.nextdns.io/{configId}
+```
+
+e.g. `https://vultr-bom-1.edge.nextdns.io/abc123`
+
+Note it's the **server** (`vultr-bom-1`), not the PoP (`vultr-bom`). The bare hostname is dual-stack — one URL covers IPv4 and IPv6. The `ipv4-` / `ipv6-` prefixed forms shown in the results table are single-family and are used for benchmarking only.
+
+**With failover (NextDNS CLI only):**
+
+```
+forwarder https://{server}.edge.nextdns.io/{id}#{serverIP},https://anycast.dns1.nextdns.io/{id}
+```
+
+The CLI accepts a comma-separated forwarder list and falls back in order, so you get the pinned server's latency *and* an anycast safety net. `#{serverIP}` is a bootstrap IP — parsed by the CLI to skip resolving the hostname, never sent over the wire.
+
+**DoT cannot pin by hostname.** `{configId}.{server}.edge.nextdns.io` does not resolve. DoT pins by bootstrap IP instead — the edge IP paired with `{configId}.dns.nextdns.io`, which is exactly what the Asus fields in this tool already produce. Edge IPs serve certificates valid for the NextDNS hostname, so TLS validation holds.
+
+### The trade-off
+
+NextDNS does not officially recommend pinning, and the reason is sound: steering exists to route around outages. **If a pinned server goes offline, your DNS stops until you change it.** In practice pinning is the only way to lock the lowest-latency PoP, and for users far from their steered PoP it measurably helps.
+
+If you pin: prefer the failover form, and re-run this benchmark periodically — edge server IPs rotate.
 
 ## How It Works
 
