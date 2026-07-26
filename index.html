@@ -900,6 +900,49 @@ tbody tr {
 .gv { color: var(--cyan); font-weight: 600; }
 .gv.unset { color: var(--text-dim); font-weight: 400; font-style: italic; }
 
+/* Copy-paste AI prompt */
+.ai-prompt {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.85rem 0.9rem;
+  margin-top: 0.9rem;
+}
+.ai-prompt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+}
+.ai-prompt-title { font-size: 0.85rem; font-weight: 600; }
+.ai-copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ai-copy-btn:hover { border-color: var(--cyan); }
+.ai-copy-btn.copied { color: var(--green); border-color: var(--green); }
+.ai-prompt-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.73rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+  max-height: 16rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Footer */
 .footer {
   margin-top: 2rem;
@@ -1319,6 +1362,19 @@ tbody tr {
           your personalised IPv6 addresses from the setup page rather than building them by hand.</p>
       </div>
     </details>
+    <div class="ai-prompt">
+      <div class="ai-prompt-head">
+        <span class="ai-prompt-title">Device not listed? Hand this to an AI</span>
+        <button class="ai-copy-btn" id="aiCopyBtn" onclick="copyAiPrompt(this)">copy prompt</button>
+      </div>
+      <p class="guide-intro" style="margin:0 0 0.5rem">Paste this into Google AI Mode, ChatGPT, Claude, or
+        whatever you use, and add your device. It carries the NextDNS facts that models most often get wrong,
+        so you get steps for your hardware instead of invented ones.</p>
+      <pre class="ai-prompt-box" id="aiPromptBox"></pre>
+      <p class="guide-note" style="margin-top:0.5rem">Your config ID is deliberately left as a placeholder.
+        Anyone holding it can send queries through your profile and pollute your analytics, and no AI needs it
+        to tell you which menu to open. Swap it in yourself once you have the steps.</p>
+    </div>
   </div>
 
   <div class="footer">
@@ -2299,6 +2355,84 @@ function fillGuideVars(configId, config, pin) {
   });
 }
 
+// ─── Copy-paste AI prompt ─────────────────────────────────────────────────────
+
+// buildAiPrompt: a self-contained prompt the user can hand to any assistant to get
+// setup steps for hardware this guide does not cover.
+//
+// Two deliberate choices:
+//  - The config ID is ALWAYS a placeholder. It is effectively a credential — anyone
+//    holding it can query through the profile — and it is not needed to describe a
+//    menu path. Never interpolate the real one here.
+//  - The prompt states the NextDNS mechanics models most often invent (DoT cannot
+//    pin, plain IPv4 needs Linked IP), and asks the model to admit uncertainty
+//    rather than guess a menu path. Wrong paths are this guide's main failure mode.
+const AI_ID = '{your-config-id}';
+
+// hasRun distinguishes "no benchmark yet" from "benchmarked, pinning not worth it".
+// Without it the pre-run prompt claims a benchmark result the user never produced.
+function buildAiPrompt(pin, hasRun) {
+  const L = [];
+  L.push('I want to set up NextDNS on: [DESCRIBE YOUR ROUTER, DEVICE OR OS — include make, model and firmware version if you know them]');
+  L.push('');
+  L.push('Use these exact values. Replace ' + AI_ID + ' with my real config ID yourself — I will fill it in.');
+  L.push('');
+  L.push('  DoH, anycast (stable, auto-failover):  https://anycast.dns1.nextdns.io/' + AI_ID);
+  L.push('  DoH, steered (NextDNS picks the PoP):  https://dns.nextdns.io/' + AI_ID);
+  L.push('  DoT hostname:                          ' + AI_ID + '.dns.nextdns.io');
+
+  if (pin && pin.worthIt) {
+    const b = pin.best;
+    L.push('  DoH, pinned to my lowest-latency server: https://' + b.server + '.edge.nextdns.io/' + AI_ID);
+    L.push('');
+    L.push('My benchmarked lowest-latency server is ' + b.server
+      + (b.pop ? ' (PoP ' + b.pop + ')' : '') + ' at ' + b.avgMs + 'ms'
+      + (pin.baseline ? ', which is ' + pin.gainMs + 'ms faster than the steered option.' : '.'));
+    if (b.resolvedIP) L.push('  Its IPv4 address: ' + b.resolvedIP);
+    if (pin.v6 && pin.v6.resolvedIP) L.push('  Its IPv6 address: ' + pin.v6.resolvedIP);
+  } else if (hasRun) {
+    L.push('');
+    L.push('I benchmarked my options and steered routing is already my lowest-latency choice, so I do not need to pin to a specific server.');
+  } else {
+    L.push('');
+    L.push('I have not benchmarked yet, so use the steered or anycast option above.');
+  }
+
+  L.push('');
+  L.push('Facts about NextDNS you must not contradict:');
+  L.push('- DoT cannot be pinned to one edge server by hostname. ' + AI_ID + '.{server}.edge.nextdns.io does NOT resolve. To pin over DoT you use the edge server IP together with the hostname ' + AI_ID + '.dns.nextdns.io.');
+  L.push('- The bare {server}.edge.nextdns.io hostname is dual-stack. The ipv4- and ipv6- prefixed forms are single-family.');
+  L.push('- Plain unencrypted IPv4 cannot carry a config ID. NextDNS identifies you by Linked IP, registered at my.nextdns.io under Setup, and you must use the profile-specific IPv4 addresses shown there — NOT the anycast addresses ending in .0. Without linking, DNS resolves normally but no blocklists apply.');
+  L.push('- Plain IPv6 needs no linking; the config ID is encoded in the address.');
+  L.push('- Pinning to one server means no automatic failover. Only the NextDNS CLI supports a fallback list, using a comma-separated -forwarder value.');
+  L.push('- I want at least one IPv4 and one IPv6 entry configured, because a pinned server has no other redundancy.');
+  L.push('');
+  L.push('Please give me exact step-by-step instructions for my specific device: which settings screen to open, which field takes which value above, and anything my device cannot do. If you are not confident about a menu path or option name on my firmware, say so instead of guessing — I would rather be told to look for it than sent to a screen that does not exist.');
+  return L.join('\n');
+}
+
+function renderAiPrompt(pin, hasRun) {
+  const box = document.getElementById('aiPromptBox');
+  if (box) box.textContent = buildAiPrompt(pin, hasRun);
+}
+
+async function copyAiPrompt(btn) {
+  const box = document.getElementById('aiPromptBox');
+  if (!box) return;
+  try {
+    await navigator.clipboard.writeText(box.textContent);
+    btn.textContent = 'copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy prompt'; btn.classList.remove('copied'); }, 1500);
+  } catch {
+    btn.textContent = 'copy failed — select manually';
+    setTimeout(() => { btn.textContent = 'copy prompt'; }, 2500);
+  }
+}
+
+// Render the generic form on load; a benchmark run refreshes it with real results.
+renderAiPrompt(null, false);
+
 // ─── Main Entry ───────────────────────────────────────────────────────────────
 
 async function runBenchmark() {
@@ -2446,6 +2580,7 @@ async function runBenchmark() {
     renderConfig(config, configId);
     renderPinSection(pin, configId);
     fillGuideVars(configId, config, pin);
+    renderAiPrompt(pin, true);
 
     setProgress('Done!', 100);
 
