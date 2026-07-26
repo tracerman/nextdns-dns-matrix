@@ -2373,41 +2373,36 @@ const AI_ID = '{your-config-id}';
 // Without it the pre-run prompt claims a benchmark result the user never produced.
 function buildAiPrompt(pin, hasRun) {
   const L = [];
-  L.push('I want to set up NextDNS on: [DESCRIBE YOUR ROUTER, DEVICE OR OS — include make, model and firmware version if you know them]');
+  L.push('Set up NextDNS on: [YOUR ROUTER, DEVICE OR OS — include make, model and firmware version if you know them]');
   L.push('');
-  L.push('Use these exact values. Replace ' + AI_ID + ' with my real config ID yourself — I will fill it in.');
+  L.push('Values to use. Leave ' + AI_ID + ' exactly as written; I will substitute my real ID afterwards.');
   L.push('');
-  L.push('  DoH, anycast (stable, auto-failover):  https://anycast.dns1.nextdns.io/' + AI_ID);
-  L.push('  DoH, steered (NextDNS picks the PoP):  https://dns.nextdns.io/' + AI_ID);
-  L.push('  DoT hostname:                          ' + AI_ID + '.dns.nextdns.io');
+  L.push('  DoH, anycast (most stable):        https://anycast.dns1.nextdns.io/' + AI_ID);
+  L.push('  DoH, steered (NextDNS picks):      https://dns.nextdns.io/' + AI_ID);
+  L.push('  DoT hostname:                      ' + AI_ID + '.dns.nextdns.io');
 
   if (pin && pin.worthIt) {
     const b = pin.best;
-    L.push('  DoH, pinned to my lowest-latency server: https://' + b.server + '.edge.nextdns.io/' + AI_ID);
-    L.push('');
-    L.push('My benchmarked lowest-latency server is ' + b.server
-      + (b.pop ? ' (PoP ' + b.pop + ')' : '') + ' at ' + b.avgMs + 'ms'
-      + (pin.baseline ? ', which is ' + pin.gainMs + 'ms faster than the steered option.' : '.'));
-    if (b.resolvedIP) L.push('  Its IPv4 address: ' + b.resolvedIP);
-    if (pin.v6 && pin.v6.resolvedIP) L.push('  Its IPv6 address: ' + pin.v6.resolvedIP);
+    L.push('  DoH, pinned to one server:         https://' + b.server + '.edge.nextdns.io/' + AI_ID);
+    if (b.resolvedIP) L.push('  That server\'s IPv4:                ' + b.resolvedIP);
+    if (pin.v6 && pin.v6.resolvedIP) L.push('  That server\'s IPv6:                ' + pin.v6.resolvedIP);
   } else if (hasRun) {
     L.push('');
-    L.push('I benchmarked my options and steered routing is already my lowest-latency choice, so I do not need to pin to a specific server.');
+    L.push('Pinning to a single server would not help me, so ignore that option.');
   } else {
     L.push('');
-    L.push('I have not benchmarked yet, so use the steered or anycast option above.');
+    L.push('I have not benchmarked yet — assume the steered or anycast option.');
   }
 
   L.push('');
-  L.push('Facts about NextDNS you must not contradict:');
-  L.push('- DoT cannot be pinned to one edge server by hostname. ' + AI_ID + '.{server}.edge.nextdns.io does NOT resolve. To pin over DoT you use the edge server IP together with the hostname ' + AI_ID + '.dns.nextdns.io.');
-  L.push('- The bare {server}.edge.nextdns.io hostname is dual-stack. The ipv4- and ipv6- prefixed forms are single-family.');
-  L.push('- Plain unencrypted IPv4 cannot carry a config ID. NextDNS identifies you by Linked IP, registered at my.nextdns.io under Setup, and you must use the profile-specific IPv4 addresses shown there — NOT the anycast addresses ending in .0. Without linking, DNS resolves normally but no blocklists apply.');
+  L.push('NextDNS mechanics you must not contradict:');
+  L.push('- DoT cannot be pinned to one server by hostname. To pin over DoT, use that server\'s IP together with the hostname ' + AI_ID + '.dns.nextdns.io.');
+  L.push('- Plain unencrypted IPv4 cannot carry a config ID. NextDNS identifies you by Linked IP, registered at my.nextdns.io under Setup, using the profile-specific IPv4 addresses shown there — NOT the anycast addresses ending in .0. Without linking, DNS resolves normally but no filtering applies.');
   L.push('- Plain IPv6 needs no linking; the config ID is encoded in the address.');
-  L.push('- Pinning to one server means no automatic failover. Only the NextDNS CLI supports a fallback list, using a comma-separated -forwarder value.');
-  L.push('- I want at least one IPv4 and one IPv6 entry configured, because a pinned server has no other redundancy.');
+  L.push('- A pinned server has no automatic failover. Only the NextDNS CLI supports a fallback list.');
+  L.push('- Configure at least one IPv4 and one IPv6 entry.');
   L.push('');
-  L.push('Please give me exact step-by-step instructions for my specific device: which settings screen to open, which field takes which value above, and anything my device cannot do. If you are not confident about a menu path or option name on my firmware, say so instead of guessing — I would rather be told to look for it than sent to a screen that does not exist.');
+  L.push('Tell me which settings screen to open on my device, which value above goes in which field, and anything my device cannot do. If you are not confident about a menu path or option name on my firmware, say so rather than guessing — I would rather look for it than be sent to a screen that does not exist.');
   return L.join('\n');
 }
 
