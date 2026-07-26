@@ -151,13 +151,20 @@ Since browsers can't resolve DNS directly, IPs are resolved via a **public DoH A
 
 ### Asus Router (DoT)
 
-For ASUSWRT / Merlin routers: **WAN → DNS → DNS Privacy Protocol → DNS-over-TLS**
+For ASUSWRT / Merlin routers: **WAN → Internet Connection → DNS Privacy Protocol → DNS-over-TLS (DoT)**
 
-Each entry has two fields (leave port blank):
-- **IP:** the resolved server IP
-- **Hostname:** `{configId}.dns.nextdns.io`
+The DoT server list only appears once DNS Privacy Protocol is switched off `None`. Leave the **Preset servers** dropdown alone and fill the list manually:
+
+| Field | Value |
+|---|---|
+| **IP Address** | the resolved server IP |
+| **TLS Hostname** | `{configId}.dns.nextdns.io` |
+| **TLS Port** | leave blank (defaults to 853) |
+| **SPKI Fingerprint** | leave blank |
 
 Includes: Primary (lowest latency), Secondary (backup), and two Anycast fallbacks.
+
+Two things that catch people out: the DNS servers *above* the DoT section are only used by the router itself and have no effect on your devices once DoT is on — and IPv6 DNS servers go on the **IPv6** page, not the WAN page.
 
 ### DNS-over-HTTPS (DoH)
 
