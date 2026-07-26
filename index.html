@@ -1147,6 +1147,11 @@ tbody tr {
           <li><strong>DNS-over-HTTPS (DoH)</strong> &mdash; paste one of the DoH URLs above.</li>
           <li><strong>Neither</strong> &mdash; plain DNS with linked IP. See below.</li>
         </ol>
+        <p><strong>Whichever you use, set at least one IPv4 and one IPv6 address.</strong> Most routers keep
+          them on separate pages, so it is easy to configure one family and leave the other pointing at your
+          ISP &mdash; which quietly bypasses NextDNS for every lookup that takes that path. It matters most
+          when pinning: a pinned server has no automatic failover, so a second stack is the only redundancy
+          you have left.</p>
 
         <p><strong>Using plain IPs and keeping your profile</strong></p>
         <p>Router menus differ, but the setting lives in one of two places. Look for whichever your firmware has:</p>
@@ -1191,9 +1196,11 @@ tbody tr {
           <tr><td>TLS Port</td><td>leave blank (defaults to 853)</td></tr>
           <tr><td>SPKI Fingerprint</td><td>leave blank</td></tr>
         </table>
-        <p class="guide-note">Two things that catch people out: the DNS servers <em>above</em> the DoT section
-          are only used by the router itself and have no effect on your devices once DoT is on &mdash; and
-          IPv6 DNS servers go on the <strong>IPv6</strong> page, not the WAN page.</p>
+        <p>Add <strong>at least one IPv4 and one IPv6 entry</strong>. IPv6 DNS servers go on the
+          <strong>IPv6</strong> page, not the WAN page &mdash; they are separate screens on Asuswrt, which is
+          why people often end up IPv4-only without realising.</p>
+        <p class="guide-note">One more thing that catches people out: the DNS servers <em>above</em> the DoT
+          section are only used by the router itself and have no effect on your devices once DoT is on.</p>
       </div>
     </details>
 
@@ -1992,10 +1999,32 @@ function renderPinSection(pin, configId) {
     + `<div class="pin-sub">Dual-stack hostname &mdash; one URL covers both IPv4 and IPv6.</div>`;
 
   html += `<div class="pin-formats">`;
-  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>${configEntry('', dohUrl)}</div>`;
+
+  // Both families for the pinned server. Pinning gives up automatic failover, so
+  // dual-stack is the nearest substitute: if one stack breaks, the other resolves.
+  const v4ip = b.resolvedIP || null;
+  const v6ip = pin.v6 ? pin.v6.resolvedIP : null;
+  if (v4ip || v6ip) {
+    html += `<div><div class="pin-format-label">Pinned server addresses &mdash; set one of each</div>`
+      + (v4ip ? configEntry('IPv4', v4ip) : '')
+      + (v6ip ? configEntry('IPv6', v6ip) : '')
+      + `<div class="pin-format-note">`
+      + (v6ip
+          ? `Use both wherever your client allows two entries &mdash; manual DNS, DoT server lists, or a `
+            + `router's separate IPv4 and IPv6 DNS pages. If one stack fails you still resolve on the other, `
+            + `which is the closest thing to failover you get while pinned.`
+          : `No IPv6 address resolved for this server &mdash; you will be pinned on IPv4 only, with no second `
+            + `stack to fall back on. Consider the failover form below.`)
+      + `</div></div>`;
+  }
+
+  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>${configEntry('', dohUrl)}`
+    + `<div class="pin-format-note">This hostname is dual-stack, so a DoH client will use whichever family it `
+    + `has &mdash; one URL covers both.</div></div>`;
   html += `<div><div class="pin-format-label">NextDNS CLI &mdash; pinned, with anycast failover</div>`
     + configEntry('', forwarder)
     + `<div class="pin-format-note">NextDNS CLI only &mdash; falls back to anycast if the pinned server stops answering. `
+    + `The bootstrap suffix uses the IPv4 address, which is the only form NextDNS documents. `
     + `Router DoT setups cannot use this syntax; pin by bootstrap IP using the Asus fields above.</div></div>`;
   html += `</div>`;
 
