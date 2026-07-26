@@ -810,6 +810,96 @@ tbody tr {
   .config-cell.span2 { grid-column: span 1; }
 }
 
+/* "Where do I paste this?" guide */
+.guide { margin-top: 2.5rem; }
+.guide-intro {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  margin: 0.5rem 0 0.9rem;
+}
+.guide-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+}
+/* Block, not flex: a flex summary turns each inline child (<em>, text nodes) into
+   its own flex item, which breaks multi-part headings onto separate lines. */
+.guide-item summary {
+  cursor: pointer;
+  padding: 0.6rem 0.9rem 0.6rem 1.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  list-style: none;
+  position: relative;
+}
+.guide-item summary::-webkit-details-marker { display: none; }
+.guide-item summary::before {
+  content: '';
+  position: absolute;
+  left: 0.9rem;
+  top: 0.95em;
+  width: 0; height: 0;
+  border-left: 5px solid var(--cyan);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.15s ease;
+}
+.guide-item[open] summary::before { transform: rotate(90deg); }
+.guide-item summary:hover { color: var(--cyan); }
+.guide-body {
+  padding: 0 0.9rem 0.9rem 1.9rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.guide-body p { margin-bottom: 0.5rem; }
+.guide-body ol { margin: 0 0 0.5rem 1.1rem; }
+.guide-body li { margin-bottom: 0.25rem; }
+.guide-body a { color: var(--cyan); }
+.guide-body code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 0.78rem;
+}
+.guide-note {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  border-left: 2px solid var(--border);
+  padding-left: 0.6rem;
+  margin-top: 0.6rem;
+}
+.guide-pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.55rem 0.7rem;
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+}
+/* table-layout:fixed is load-bearing. .container is max-width:fit-content, so it
+   grows to its widest child — an auto-layout table sizes to max-content, expands
+   the container, and width:100% then resolves against that expanded width. Fixed
+   layout takes cell content out of sizing entirely, so long text wraps. min-width
+   also overrides the 800px floor the results tables set globally. */
+.guide-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0.3rem 0 0.5rem;
+  font-size: 0.8rem;
+}
+.guide-table td { padding: 0.15rem 0.9rem 0.15rem 0; vertical-align: top; word-break: break-word; }
+.guide-table td:first-child { color: var(--text-dim); width: 8.5rem; }
+.gv { color: var(--cyan); font-weight: 600; }
+.gv.unset { color: var(--text-dim); font-weight: 400; font-style: italic; }
+
 /* Footer */
 .footer {
   margin-top: 2rem;
@@ -1041,6 +1131,188 @@ tbody tr {
     </div>
   </div>
 
+
+  <div class="guide">
+    <div class="section-header">Where do I paste this?</div>
+    <p class="guide-intro">This tool gives you the strings. Here is which field each one goes in.
+      Values below fill in with your own once you run a benchmark.</p>
+
+    <details class="guide-item">
+      <summary>Any router &mdash; which option do I use?</summary>
+      <div class="guide-body">
+        <p>Go by what your router supports, best first:</p>
+        <ol>
+          <li><strong>DNS-over-TLS (DoT)</strong> &mdash; enter an <em>IP</em> and a <em>TLS hostname</em>
+            (<span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span>). Port 853.</li>
+          <li><strong>DNS-over-HTTPS (DoH)</strong> &mdash; paste one of the DoH URLs above.</li>
+          <li><strong>Neither</strong> &mdash; plain DNS with linked IP. See below.</li>
+        </ol>
+
+        <p><strong>Using plain IPs and keeping your profile</strong></p>
+        <p>Router menus differ, but the setting lives in one of two places. Look for whichever your firmware has:</p>
+        <table class="guide-table">
+          <tr><td>WAN / Internet</td><td>&ldquo;DNS Server 1 / 2&rdquo;, &ldquo;Static DNS&rdquo;, or
+            &ldquo;Use these DNS servers&rdquo; &mdash; often needs <em>Automatic / Get DNS from ISP</em> set to
+            <em>No</em> first</td></tr>
+          <tr><td>LAN / DHCP</td><td>&ldquo;DNS Server&rdquo; under the DHCP server settings &mdash; this is what
+            your devices are actually handed</td></tr>
+        </table>
+        <p>Many routers only pass DNS to clients from the <strong>DHCP/LAN</strong> page; the WAN entry may just
+          be for the router's own lookups. If your devices ignore the change, that is usually why.</p>
+        <p>Then, in order:</p>
+        <ol>
+          <li>Go to <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr;
+            <strong>Setup</strong> and scroll to <strong>Linked IP</strong>.</li>
+          <li>Click the link button to bind your current public IP to this profile.</li>
+          <li>Copy the IPv4 addresses shown in <em>that</em> section into your router. They are specific to your
+            profile and are <strong>not</strong> the anycast addresses ending in <code>.0</code>.</li>
+          <li>If your ISP gives you IPv6, add your personalised IPv6 addresses from the same page &mdash; those
+            need no linking at all.</li>
+          <li>Verify at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>.
+            It should name your profile. If it says
+            <em>&ldquo;using NextDNS with no profile&rdquo;</em>, the link did not take &mdash; recheck steps 2 and 3.</li>
+        </ol>
+        <p class="guide-note">Encrypted options carry your config ID in the connection itself, so NextDNS always
+          knows which profile to apply. Plain DNS has nowhere to put it, which is why the linking step exists.
+          Your linked IP breaks whenever your public IP changes &mdash; use DDNS if it is dynamic, and note that
+          carrier-grade NAT rules this method out entirely.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Asus / Asuswrt-Merlin</summary>
+      <div class="guide-body">
+        <p><strong>WAN &rarr; Internet Connection &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS (DoT)</strong></p>
+        <p>The server list only appears once you switch the protocol off <em>None</em>. Ignore the
+          <em>Preset servers</em> dropdown and add rows manually:</p>
+        <table class="guide-table">
+          <tr><td>IP Address</td><td><span class="gv" data-gv="bestIP">your best IPv4 from the table above</span></td></tr>
+          <tr><td>TLS Hostname</td><td><span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span></td></tr>
+          <tr><td>TLS Port</td><td>leave blank (defaults to 853)</td></tr>
+          <tr><td>SPKI Fingerprint</td><td>leave blank</td></tr>
+        </table>
+        <p class="guide-note">Two things that catch people out: the DNS servers <em>above</em> the DoT section
+          are only used by the router itself and have no effect on your devices once DoT is on &mdash; and
+          IPv6 DNS servers go on the <strong>IPv6</strong> page, not the WAN page.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>pfSense / OPNsense / anything running unbound</summary>
+      <div class="guide-body">
+        <p><strong>Services &rarr; DNS Resolver &rarr; General Settings &rarr; Custom Options</strong></p>
+        <pre class="guide-pre">server:
+  forward-zone:
+    name: "."
+    forward-tls-upstream: yes
+    forward-addr: 45.90.28.0#<span class="gv" data-gv="id">{configId}</span>.dns1.nextdns.io
+    forward-addr: 2a07:a8c0::#<span class="gv" data-gv="id">{configId}</span>.dns1.nextdns.io
+    forward-addr: 45.90.30.0#<span class="gv" data-gv="id">{configId}</span>.dns2.nextdns.io
+    forward-addr: 2a07:a8c1::#<span class="gv" data-gv="id">{configId}</span>.dns2.nextdns.io</pre>
+        <p class="guide-note">This is NextDNS's own pfSense recipe. The bare anycast IPs are correct here &mdash;
+          the config ID travels in the TLS hostname after the <code>#</code>, not in the address. Recent pfSense
+          builds let you set the TLS hostname in the GUI instead of using Custom Options.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>NextDNS CLI &mdash; the only setup that can pin <em>and</em> fail over</summary>
+      <div class="guide-body">
+        <pre class="guide-pre">nextdns config set -profile=<span class="gv" data-gv="id">{configId}</span></pre>
+        <p>To pin to your lowest-latency server while keeping anycast as a safety net:</p>
+        <pre class="guide-pre">nextdns config set -forwarder <span class="gv" data-gv="forwarder">(run a benchmark to generate this)</span></pre>
+        <p class="guide-note">The CLI takes a comma-separated forwarder list and tries them in order. This is the
+          only client that gives you pinned latency without the single point of failure.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Windows 11</summary>
+      <div class="guide-body">
+        <p>Windows only offers its encrypted-DNS dropdown for resolvers it already knows &mdash; Cloudflare,
+          Google and Quad9. NextDNS is not on that list, so register the template first, in PowerShell as
+          Administrator:</p>
+        <pre class="guide-pre">Add-DnsClientDohServerAddress -ServerAddress '<span class="gv" data-gv="bestIP">{serverIP}</span>' -DohTemplate '<span class="gv" data-gv="doh">https://dns.nextdns.io/{configId}</span>' -AllowFallbackToUdp $False -AutoUpgrade $True</pre>
+        <p>Then walk this exact path:</p>
+        <ol>
+          <li><strong>Settings &rarr; Network &amp; Internet</strong></li>
+          <li>Click <strong>Wi-Fi</strong> or <strong>Ethernet</strong> &mdash; whichever you are on &mdash;
+            then click the connection itself (its name, not the toggle).</li>
+          <li>Scroll to <strong>DNS server assignment</strong> and click <strong>Edit</strong>.</li>
+          <li>Change the dropdown from <em>Automatic (DHCP)</em> to <strong>Manual</strong>, then toggle
+            <strong>IPv4</strong> on.</li>
+          <li>Put your IP in <strong>Preferred DNS</strong>, and set
+            <strong>Preferred DNS encryption</strong> to <em>Encrypted only (DNS over HTTPS)</em>.</li>
+          <li>Repeat in <strong>Alternate DNS</strong> with a second IP for redundancy, then
+            <strong>Save</strong>.</li>
+        </ol>
+        <p>The encryption dropdown stays greyed out until the IP you entered matches a registered template &mdash;
+          that is the PowerShell step above, not a bug.</p>
+
+        <p><strong>If you would rather use plain IPs and your profile</strong></p>
+        <p>Same path, but skip the PowerShell step, use the IPv4 addresses from
+          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup &rarr;
+          <strong>Linked IP</strong>, and leave encryption on <em>Unencrypted only</em>. You must click the link
+          button on that page first or your blocklists will not apply.</p>
+        <p>Verify either way at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>
+          &mdash; it should name your profile rather than saying
+          <em>&ldquo;using NextDNS with no profile&rdquo;</em>.</p>
+        <p class="guide-note">Because Windows pairs an IP with a DoH template, this is one of the few clients
+          where you can pin: register your pinned edge IP against the pinned DoH URL above.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Android</summary>
+      <div class="guide-body">
+        <p><strong>Settings &rarr; Network &amp; internet &rarr; Private DNS</strong>
+          (if it is not there, search your settings for &ldquo;Private DNS&rdquo; &mdash; the path moves between
+          versions and skins). Choose <em>Private DNS provider hostname</em> and enter:</p>
+        <pre class="guide-pre"><span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span></pre>
+        <p class="guide-note">Private DNS accepts a DoT hostname only, and DoT cannot address an individual
+          edge server &mdash; so pinning is not available on Android. You get steered routing, which is usually
+          within a few ms anyway.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Firefox / Chrome</summary>
+      <div class="guide-body">
+        <p>Search the browser's settings for <em>&ldquo;DNS over HTTPS&rdquo;</em> or <em>&ldquo;secure DNS&rdquo;</em>
+          &mdash; both bury it, and both move it between releases. Choose the custom/provider option and paste:</p>
+        <pre class="guide-pre"><span class="gv" data-gv="doh">https://dns.nextdns.io/{configId}</span></pre>
+        <p class="guide-note">This covers the browser only. Everything else on the device keeps using whatever
+          DNS the system is set to.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>iPhone / iPad / Mac</summary>
+      <div class="guide-body">
+        <p>Install the configuration profile from
+          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup.
+          NextDNS generates and signs it, so there is nothing here to paste.</p>
+        <p class="guide-note">The Apple profile cannot target an individual server, so pinning does not apply.
+          Nothing this tool outputs changes an Apple profile.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Plain / unencrypted DNS &mdash; read this before using raw IPs</summary>
+      <div class="guide-body">
+        <p><strong>IPv4 needs your IP linked, or your profile silently does not apply.</strong> DoT carries your
+          config ID in the TLS hostname and DoH carries it in the URL. Plain IPv4 has nowhere to put it, so
+          NextDNS identifies you by your public IP instead &mdash; which you have to register at
+          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup &rarr; Linked IP.</p>
+        <p>Use the IPv4 addresses shown in that Linked IP section. They are specific to your profile and are
+          <em>not</em> the anycast addresses ending in <code>.0</code>. Point a device at
+          <code>45.90.28.0</code> without linking and DNS resolves fine while none of your blocklists apply.</p>
+        <p>Linking also breaks under carrier-grade NAT, and needs DDNS if your IP is dynamic.</p>
+        <p><strong>IPv6 needs no linking</strong> &mdash; your config ID is encoded in the address itself. Copy
+          your personalised IPv6 addresses from the setup page rather than building them by hand.</p>
+      </div>
+    </details>
+  </div>
 
   <div class="footer">
     <div class="footer-links">
@@ -1959,6 +2231,45 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
   return { html, currentAnycastPop };
 }
 
+// fillGuideVars: substitute the user's real values into the "Where do I paste this?"
+// guide after a benchmark. Before a run the guide still reads correctly with its
+// {configId} placeholders, so it is useful without running anything.
+function fillGuideVars(configId, config, pin) {
+  const bestV4 = config && config.bestV4;
+  const vals = {
+    id: configId,
+    dot: `${configId}.dns.nextdns.io`,
+    doh: pin && pin.worthIt
+      ? `https://${pin.best.server}.edge.nextdns.io/${configId}`
+      : `https://dns.nextdns.io/${configId}`,
+    bestIP: (pin && pin.worthIt && pin.best.resolvedIP)
+      || (bestV4 && bestV4.resolvedIP)
+      || null,
+    forwarder: pin && pin.worthIt && pin.best.resolvedIP
+      ? `https://${pin.best.server}.edge.nextdns.io/${configId}#${pin.best.resolvedIP}`
+        + `,https://anycast.dns1.nextdns.io/${configId}`
+      : null,
+  };
+
+  document.querySelectorAll('.gv[data-gv]').forEach(el => {
+    const v = vals[el.dataset.gv];
+    if (v) {
+      el.textContent = v;
+      el.classList.remove('unset');
+      return;
+    }
+    // No pinned forwarder to offer. Don't leave "run a benchmark" sitting there
+    // after a benchmark has run — say why it is absent instead.
+    if (el.dataset.gv === 'forwarder' && pin) {
+      el.textContent = pin.worthIt
+        ? '(pinned server has no resolved IP — omit the #bootstrap suffix)'
+        : '(not needed — steered routing is already within '
+          + PIN_MIN_GAIN_MS + 'ms of your lowest-latency server)';
+      el.classList.add('unset');
+    }
+  });
+}
+
 // ─── Main Entry ───────────────────────────────────────────────────────────────
 
 async function runBenchmark() {
@@ -2105,6 +2416,7 @@ async function runBenchmark() {
     const config = generateConfig(ranked, configId, pin);
     renderConfig(config, configId);
     renderPinSection(pin, configId);
+    fillGuideVars(configId, config, pin);
 
     setProgress('Done!', 100);
 
