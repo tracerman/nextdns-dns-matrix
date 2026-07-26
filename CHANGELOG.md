@@ -7,6 +7,7 @@ All notable changes to NextDNS DNS Matrix are documented here.
 ### Added
 - **Pin to Lowest-Latency Server** — new section that closes the gap between what the benchmark finds and what you can actually configure. When a specific edge server beats both anycast and ultralow by more than 3ms, it emits the pinned DoH URL (`https://{server}.edge.nextdns.io/{configId}`) and a NextDNS CLI forwarder string with anycast failover. When pinning wouldn't help, it says so rather than recommending it anyway. Raised by [SeriousHoax on r/nextdns](https://www.reddit.com/r/nextdns/).
 - **Pinned config carries its own disclaimer** — NextDNS does not officially recommend pinning; a pinned server going offline takes your DNS with it. Stated on the card itself, alongside the failover form that mitigates it.
+- **All three DoH tiers in the config panel** — anycast, ultralow, and (when it wins) pinned, each with its measured latency and its trade-off, so the choice is made on numbers rather than on our ranking. The anycast DoH URL (`https://anycast.dns1.nextdns.io/{configId}`) was previously not offered at all; the panel had anycast IPs but no anycast DoH string.
 - `server` (e.g. `vultr-bom-1`) is now retained from the router API alongside `pop` (`vultr-bom`). The bare `{server}.edge.nextdns.io` host is dual-stack and is the only form usable as a pinned DoH URL.
 
 ### Fixed
@@ -14,6 +15,7 @@ All notable changes to NextDNS DNS Matrix are documented here.
 - **Detected-server highlighting landed in the wrong table on dual-stack connections.** Highlighting was scoped by `hasIPv6`, which only reports whether the *browser* can reach NextDNS over IPv6 — not which family the DNS connection uses. The detected PoP is now highlighted wherever it appears, with per-table latency deltas.
 
 ### Changed
+- Consolidated the two divergent HTML escapers into a single `escAttr()` for attribute position. `escHtml()` is textContent-based and does not escape quotes, so it was unsafe in the `data-copy="…"` attributes it was being used for.
 - README: documented pinning end to end, corrected the "based on your active protocol" claim, and updated the stale bento-grid description of the config panel.
 
 ## [1.5.0] — 2026-02-18

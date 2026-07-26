@@ -499,6 +499,29 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .config-value.copied { color: var(--green) !important; }
 .config-sep { color: var(--text-dim); font-size: 0.75rem; }
 
+/* DoH tier rows in the config panel */
+.doh-group-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.35rem;
+}
+.doh-entry {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.05rem;
+  margin: 0.2rem 0 0.35rem 0.6rem;
+}
+.doh-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.doh-head .config-entry-label { font-size: 0.72rem; }
+.doh-ms { font-size: 0.72rem; font-weight: 700; }
+.doh-note { font-size: 0.68rem; color: var(--text-dim); }
+.doh-note.warn { color: var(--yellow); }
+
 /* Pin-to-server section */
 .pin-box {
   background: var(--surface);
@@ -1407,7 +1430,7 @@ async function resolveAllIPs(results, onProgress, resolver = 'google') {
 
 // ─── Config Generation ────────────────────────────────────────────────────────
 
-function generateConfig(ranked, configId) {
+function generateConfig(ranked, configId, pin) {
   const ok = ranked.filter(r => r.status === 'ok');
   const ipv4 = ok.filter(r => r.family === 'IPv4');
   const ipv6 = ok.filter(r => r.family === 'IPv6');
@@ -1447,7 +1470,7 @@ function generateConfig(ranked, configId) {
       anycast1: { ip: anycastV6IP1,  hostname: dotHostname },
       anycast2: { ip: anycastV6IP2,  hostname: dotHostname },
     },
-    doh: `https://dns.nextdns.io/${configId}`,
+    dohOptions: buildDohOptions(ok, configId, pin),
     dot: dotHostname,
     bestV4, secondV4, bestV6, secondV6,
   };
@@ -1590,9 +1613,11 @@ function renderConfig(config, configId) {
   html += `<div class="config-cell${sp}">${configEntry2('IPv4 Fallback', config.ipv4.anycast1.ip, config.ipv4.anycast2.ip)}</div>`;
   if (hasV6) html += `<div class="config-cell">${configEntry2('IPv6 Fallback', config.ipv6.anycast1.ip, config.ipv6.anycast2.ip)}</div>`;
 
-  // Row 4: Encrypted DNS
+  // Row 4: Encrypted DNS — DoT, then every DoH tier so the user picks on numbers.
   html += `<div class="config-cell">${configEntry('DNS-over-TLS/QUIC', config.dot)}</div>`;
-  html += `<div class="config-cell">${configEntry('DNS-over-HTTPS', config.doh)}</div>`;
+  html += `<div class="config-cell"><div class="doh-group-label">DNS-over-HTTPS</div>`
+    + config.dohOptions.map(dohEntry).join('')
+    + `</div>`;
 
   document.getElementById('configTable').innerHTML = html;
 
@@ -1603,17 +1628,39 @@ function renderConfig(config, configId) {
   insightEl.classList.add('pop');
 }
 
+// escAttr: safe for HTML *attribute* position. escHtml() is textContent-based and
+// does NOT escape quotes, so it must never be used inside data-copy="…".
+function escAttr(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function configEntry(label, value, dim = false) {
-  const safeValue = value.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safeValue = escAttr(value);
   return `<div class="config-entry">
     ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
     <span class="config-value${dim ? ' dim' : ''}" data-copy="${safeValue}" onclick="clickCopy(this)" title="Click to copy">${escHtml(value)}</span>
   </div>`;
 }
 
+// dohEntry: one DoH tier — label, measured latency, and its trade-off, above the URL.
+// Stacked rather than inline because the config panel is a narrow single column.
+function dohEntry(o) {
+  const msCls = o.ms != null ? latencyClass(o.ms) : 'text-dim';
+  return `<div class="config-entry doh-entry">
+    <div class="doh-head">
+      <span class="config-entry-label">${escHtml(o.label)}</span>
+      ${o.ms != null ? `<span class="doh-ms ${msCls}">${o.ms}ms</span>` : ''}
+      <span class="doh-note${o.warn ? ' warn' : ''}">${escHtml(o.note)}</span>
+    </div>
+    <span class="config-value" data-copy="${escAttr(o.url)}" onclick="clickCopy(this)" title="Click to copy">${escHtml(o.url)}</span>
+  </div>`;
+}
+
 function configEntry2(label, val1, val2) {
-  const safe1 = val1.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const safe2 = val2.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safe1 = escAttr(val1);
+  const safe2 = escAttr(val2);
   return `<div class="config-entry">
     ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
     <span class="config-value" data-copy="${safe1}" onclick="clickCopy(this)" title="Click to copy">${escHtml(val1)}</span>
@@ -1687,6 +1734,43 @@ function renderPinSection(pin, configId) {
     + `and run this benchmark fresh from time to time &mdash; edge server IPs rotate.</div>`;
 
   box.innerHTML = html;
+}
+
+// buildDohOptions: the DoH endpoint tiers, each with its measured latency and its
+// trade-off, so the choice can be made on numbers rather than on our ranking.
+// Ordered stable → steered → pinned, i.e. increasing latency benefit and
+// increasing risk. The pinned tier only appears when it actually wins.
+function buildDohOptions(ok, configId, pin) {
+  const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
+  const bestOf = t => v4.filter(r => r.type === t).sort((a, b) => a.avgMs - b.avgMs)[0] || null;
+  const anycast = bestOf('anycast');
+  const ultralow = bestOf('ultralow');
+
+  const opts = [
+    {
+      label: 'anycast',
+      url: `https://anycast.dns1.nextdns.io/${configId}`,
+      ms: anycast ? anycast.avgMs : null,
+      note: 'stable IPs, auto-failover',
+    },
+    {
+      label: 'ultralow',
+      url: `https://dns.nextdns.io/${configId}`,
+      ms: ultralow ? ultralow.avgMs : null,
+      note: 'steered to nearest PoP',
+    },
+  ];
+
+  if (pin && pin.worthIt) {
+    opts.push({
+      label: 'pinned',
+      url: `https://${pin.best.server}.edge.nextdns.io/${configId}`,
+      ms: pin.best.avgMs,
+      note: 'no failover — see below',
+      warn: true,
+    });
+  }
+  return opts;
 }
 
 // ─── Pin Target Selection ─────────────────────────────────────────────────────
@@ -2013,13 +2097,14 @@ async function runBenchmark() {
     // edge IPs that rotate. The xref boundary applies to DISPLAY only (insight box, table,
     // headers) — config recommendations need the full ranked set. (DA-4-001)
     setProgress('Generating config...', 98);
-    const config = generateConfig(ranked, configId);
+    // Pin target is computed first: the config panel's pinned DoH row and the
+    // pin section below must agree on the same server. Takes `ok` (not ranked or
+    // xref'd) because pin selection ignores `preference` and needs the raw edge
+    // rows that carry the `server` field.
+    const pin = selectPinTarget(ok);
+    const config = generateConfig(ranked, configId, pin);
     renderConfig(config, configId);
-
-    // Pinned-server recommendation. Takes `ok` (not ranked/xref'd) because pin
-    // selection must ignore `preference` and needs the raw edge rows that carry
-    // the `server` field.
-    renderPinSection(selectPinTarget(ok), configId);
+    renderPinSection(pin, configId);
 
     setProgress('Done!', 100);
 

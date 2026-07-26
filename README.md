@@ -68,8 +68,11 @@ Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns
 
 **Config panel** — ready-to-paste config formats:
 - Asus Router DoT (2-column IP + Hostname per entry)
-- DNS-over-HTTPS URL
 - DNS-over-TLS hostname
+- **DNS-over-HTTPS — all three tiers**, each with its measured latency and trade-off:
+  - `anycast` — `https://anycast.dns1.nextdns.io/{id}` · stable IPs, auto-failover
+  - `ultralow` — `https://dns.nextdns.io/{id}` · steered to nearest PoP
+  - `pinned` — `https://{server}.edge.nextdns.io/{id}` · lowest latency, no failover (shown only when it beats the other two by >3ms)
 - Plain DNS IPs (best, backup, anycast fallback)
 
 Color-coded latency: green (<20ms), yellow (<40ms), red (≥40ms)
