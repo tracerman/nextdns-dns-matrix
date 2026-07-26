@@ -4,16 +4,19 @@
 
 **[→ Open the live tool](https://tracerman.github.io/nextdns-dns-matrix/)**
 
-Benchmarks all available NextDNS PoPs (anycast, ultralow, and individual servers) and recommends the optimal DNS configuration with ready-to-paste strings for Asus routers, DoH, DoT, and plain DNS.
+Benchmarks every NextDNS PoP available to you — anycast, ultralow, and individual edge servers — then hands you the exact config strings to act on the result, plus a guide to which field each one goes in.
+
+Most DNS benchmarks tell you which server is quickest and stop there. This one closes the loop: if a specific edge server beats your steered routing, you get the URL that actually pins you to it, the trade-off that comes with pinning, and the steps for your hardware.
 
 ## Quick Start
 
 1. **[Open the live tool](https://tracerman.github.io/nextdns-dns-matrix/)** — or download [`index.html`](index.html) to run locally
-2. If you're on NextDNS, the tool auto-detects your connection, server, and protocol
+2. If you're on NextDNS, the tool auto-detects your connection and which server you're on
 3. Enter your NextDNS config ID (from [my.nextdns.io](https://my.nextdns.io) → Setup)
 4. Click **Run Benchmark**
 5. Your current server is highlighted in the results — see instantly if you're on the best node
 6. Copy the recommended config strings
+7. Open **Where do I paste this?** at the bottom of the page for setup steps for your device
 
 That's it. No server, no build step, no dependencies.
 
@@ -46,11 +49,13 @@ On page load, the tool detects whether you're connected to NextDNS — no input 
 - **Connection status** — which server and PoP you're connected to
 - **Pre-benchmark RTT** — your current latency before running a full benchmark
 - **IPv6 connectivity** — whether your connection to NextDNS supports IPv6
-- **Protocol-scoped highlighting** — after benchmarking, your detected server is highlighted with a golden row in the correct table (IPv4 or IPv6, based on your active protocol)
+- **Detected-server highlighting** — after benchmarking, your detected server is highlighted with a golden row wherever it appears in the results
 - **Latency delta badge** — if your current server isn't the lowest-latency option, a `+Xms` badge shows the gap
 - **Optimization insight** — actionable recommendation if a lower-latency server is available
 
 Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns.io` — both CORS-enabled, no config ID required.
+
+> **On IPv6:** `test-ipv6.nextdns.io` reports whether your *browser* can reach NextDNS over IPv6. It cannot tell which address family your DNS connection actually uses — browsers have no visibility into that. The IPv6 indicator is reported for what it is, and is not used to infer your DNS protocol.
 
 ## What It Shows
 
@@ -58,14 +63,19 @@ Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns
 
 **Detected server** — highlighted with a golden row background and green dot. If it's not rank #1, a latency delta badge shows how much slower it is than the best option.
 
-**Insight box** — stat pills showing visible / reachable / unreachable counts, optimization insight comparing your current server to the best, and a smart preference suggestion (anycast vs pinned server trade-offs)
+**Insight box** — stat pills showing server / IPv4 / IPv6 / unreachable counts, optimization insight comparing your current server to the best, and a smart preference suggestion (anycast vs pinned server trade-offs)
 
 **IPv4 and IPv6 recommendations** — best + backup server for each family, with resolved IPs and anycast fallbacks
 
-**Bento config grid** — six ready-to-paste config formats in a card layout:
-- Asus Router DoT (2-column IP + Hostname per entry)
-- DNS-over-HTTPS URL
+**Pin to Lowest-Latency Server** — when a specific edge server beats both anycast and ultralow by more than 3ms, a dedicated section gives you the pinned DoH URL and a CLI forwarder string with failover. When it doesn't, the section says so instead of inventing a reason to pin. See [Pinning to a Specific Server](#pinning-to-a-specific-server).
+
+**Config panel** — ready-to-paste config formats:
+- Best / backup / anycast-fallback IPs for IPv4 and IPv6
 - DNS-over-TLS hostname
+- **DNS-over-HTTPS — all three tiers**, each with its measured latency and trade-off:
+  - `anycast` — `https://anycast.dns1.nextdns.io/{id}` · stable IPs, auto-failover
+  - `ultralow` — `https://dns.nextdns.io/{id}` · steered to nearest PoP
+  - `pinned` — `https://{server}.edge.nextdns.io/{id}` · lowest latency, no failover (shown only when it beats the other two by >3ms)
 - Plain DNS IPs (best, backup, anycast fallback)
 
 Color-coded latency: green (<20ms), yellow (<40ms), red (≥40ms)
@@ -93,6 +103,38 @@ Both support browser CORS (`Access-Control-Allow-Origin: *`) and return the same
 
 **How preference works:** Within a tolerance window (default 10ms), preferred servers win. So if you prefer ultralow and ultralow is 25ms vs another server at 20ms, ultralow wins. But if the other server is 5ms and ultralow is 25ms, latency still wins — preference doesn't override large differences.
 
+## Pinning to a Specific Server
+
+The benchmark can tell you `vultr-bom` is your lowest-latency PoP — but the standard DoH URL (`https://dns.nextdns.io/{id}`) re-steers you somewhere else, so knowing it doesn't help. Pinning closes that gap.
+
+**How to pin (DoH):** use the edge server's own hostname in place of `dns.nextdns.io`.
+
+```
+https://{server}.edge.nextdns.io/{configId}
+```
+
+e.g. `https://vultr-bom-1.edge.nextdns.io/abc123`
+
+Note it's the **server** (`vultr-bom-1`), not the PoP (`vultr-bom`). The bare hostname is dual-stack — one URL covers IPv4 and IPv6. The `ipv4-` / `ipv6-` prefixed forms shown in the results table are single-family and are used for benchmarking only.
+
+**With failover (NextDNS CLI only):**
+
+```
+forwarder https://{server}.edge.nextdns.io/{id}#{serverIP},https://anycast.dns1.nextdns.io/{id}
+```
+
+The CLI accepts a comma-separated forwarder list and falls back in order, so you get the pinned server's latency *and* an anycast safety net. `#{serverIP}` is a bootstrap IP — parsed by the CLI to skip resolving the hostname, never sent over the wire.
+
+**DoT cannot pin by hostname.** `{configId}.{server}.edge.nextdns.io` does not resolve. DoT pins by bootstrap IP instead — the edge IP paired with `{configId}.dns.nextdns.io`, which is exactly what the Asus fields in this tool already produce. Edge IPs serve certificates valid for the NextDNS hostname, so TLS validation holds.
+
+### The trade-off
+
+NextDNS does not officially recommend pinning, and the reason is sound: steering exists to route around outages. **If a pinned server goes offline, your DNS stops until you change it.** In practice pinning is the only way to lock the lowest-latency PoP, and for users far from their steered PoP it measurably helps.
+
+If you pin: prefer the failover form, and re-run this benchmark periodically — edge server IPs rotate.
+
+**Set at least one IPv4 and one IPv6 address.** With failover gone, a second address family is the only redundancy you have left — if one stack breaks, the other still resolves. It also guards against a common misconfiguration: most routers keep IPv4 and IPv6 DNS on separate pages (Asuswrt puts IPv6 DNS on the IPv6 page, not WAN), so it's easy to configure one family and leave the other pointing at your ISP, quietly bypassing NextDNS for every lookup that takes that path. The tool shows both addresses for the pinned server, and tells you if no IPv6 one resolved.
+
 ## How It Works
 
 Uses two NextDNS APIs (both CORS `*`):
@@ -114,18 +156,29 @@ Since browsers can't resolve DNS directly, IPs are resolved via a **public DoH A
 
 ### Asus Router (DoT)
 
-For ASUSWRT / Merlin routers: **WAN → DNS → DNS Privacy Protocol → DNS-over-TLS**
+For ASUSWRT / Merlin routers: **WAN → Internet Connection → DNS Privacy Protocol → DNS-over-TLS (DoT)**
 
-Each entry has two fields (leave port blank):
-- **IP:** the resolved server IP
-- **Hostname:** `{configId}.dns.nextdns.io`
+The DoT server list only appears once DNS Privacy Protocol is switched off `None`. Leave the **Preset servers** dropdown alone and fill the list manually:
+
+| Field | Value |
+|---|---|
+| **IP Address** | the resolved server IP |
+| **TLS Hostname** | `{configId}.dns.nextdns.io` |
+| **TLS Port** | leave blank (defaults to 853) |
+| **SPKI Fingerprint** | leave blank |
 
 Includes: Primary (lowest latency), Secondary (backup), and two Anycast fallbacks.
 
+Two things that catch people out: the DNS servers *above* the DoT section are only used by the router itself and have no effect on your devices once DoT is on — and IPv6 DNS servers go on the **IPv6** page, not the WAN page.
+
 ### DNS-over-HTTPS (DoH)
 
+Three tiers — see [What It Shows](#what-it-shows) for the full list and when each appears.
+
 ```
-https://dns.nextdns.io/{configId}
+https://anycast.dns1.nextdns.io/{configId}     stable, auto-failover
+https://dns.nextdns.io/{configId}              steered (ultralow)
+https://{server}.edge.nextdns.io/{configId}    pinned, no failover
 ```
 
 ### DNS-over-TLS Hostname
@@ -136,7 +189,22 @@ https://dns.nextdns.io/{configId}
 
 ### Plain DNS IPs
 
-Raw IPs for non-encrypted fallback or IoT devices. IPv4 + IPv6, best + backup + anycast fallback.
+Raw IPs for unencrypted fallback or IoT devices.
+
+> **IPv4 requires linking your IP, or your profile silently won't apply.** DoT carries your config ID in the TLS hostname and DoH carries it in the URL path — plain IPv4 has nowhere to put it, so NextDNS identifies you by public IP instead. Register it at [my.nextdns.io](https://my.nextdns.io) → Setup → Linked IP, and use the IPv4 addresses shown *there* — they're profile-specific and are not the anycast addresses ending in `.0`. Point a device at `45.90.28.0` unlinked and DNS resolves normally while none of your blocklists apply.
+>
+> **IPv6 needs no linking** — your config ID is encoded in the address. Copy the personalised IPv6 addresses from the setup page rather than constructing them by hand.
+
+## Where Do I Paste This?
+
+The tool has a built-in, collapsible setup guide at the bottom of the page covering generic routers (by capability rather than brand), Asus/Merlin, pfSense/OPNsense/unbound, the NextDNS CLI, Windows 11, Android, browsers, and Apple devices. Values fill in with your own after a benchmark run.
+
+**Device not listed?** The guide ends with a copy-paste prompt for ChatGPT, Claude, Google AI Mode, or whatever you use. It carries the NextDNS mechanics models most reliably invent — that DoT can't pin by hostname, that plain IPv4 needs Linked IP — so you get steps for your hardware rather than confident fiction. Your config ID stays a placeholder: it's effectively a credential, and no assistant needs it to tell you which menu to open.
+
+Two findings worth calling out, because neither is obvious:
+
+- **Windows 11** only offers its encrypted-DNS dropdown for resolvers it already knows (Cloudflare, Google, Quad9). NextDNS isn't on that list — you must register the template with `Add-DnsClientDohServerAddress` first. Because Windows pairs an *IP* with a *DoH template*, it's one of the few clients that can pin to a specific edge server.
+- **Android** takes a DoT hostname only, and DoT can't address an individual edge server — so pinning isn't available there at all.
 
 ## NextDNS API Reference
 

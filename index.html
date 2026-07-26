@@ -499,6 +499,76 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .config-value.copied { color: var(--green) !important; }
 .config-sep { color: var(--text-dim); font-size: 0.75rem; }
 
+/* DoH tier rows in the config panel */
+.doh-group-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.35rem;
+}
+.doh-entry {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.05rem;
+  margin: 0.2rem 0 0.35rem 0.6rem;
+}
+.doh-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.doh-head .config-entry-label { font-size: 0.72rem; }
+.doh-ms { font-size: 0.72rem; font-weight: 700; }
+.doh-note { font-size: 0.68rem; color: var(--text-dim); }
+.doh-note.warn { color: var(--yellow); }
+
+/* Pin-to-server section */
+.pin-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.pin-headline {
+  font-size: 0.92rem;
+  margin-bottom: 0.15rem;
+}
+.pin-gain { color: var(--green); font-weight: 700; }
+.pin-sub {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 0.85rem;
+}
+.pin-formats { display: grid; gap: 0.55rem; }
+.pin-format-label {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15rem;
+}
+.pin-format-note {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.1rem;
+}
+.pin-disclaimer {
+  margin-top: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--yellow);
+  background: rgba(210,153,34,0.06);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+.pin-disclaimer strong { color: var(--yellow); }
+.pin-ok {
+  font-size: 0.92rem;
+  color: var(--cyan);
+}
+
 /* Error display */
 .error-box {
   background: rgba(248,81,73,0.1);
@@ -740,6 +810,139 @@ tbody tr {
   .config-cell.span2 { grid-column: span 1; }
 }
 
+/* "Where do I paste this?" guide */
+.guide { margin-top: 2.5rem; }
+.guide-intro {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  margin: 0.5rem 0 0.9rem;
+}
+.guide-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+}
+/* Block, not flex: a flex summary turns each inline child (<em>, text nodes) into
+   its own flex item, which breaks multi-part headings onto separate lines. */
+.guide-item summary {
+  cursor: pointer;
+  padding: 0.6rem 0.9rem 0.6rem 1.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  list-style: none;
+  position: relative;
+}
+.guide-item summary::-webkit-details-marker { display: none; }
+.guide-item summary::before {
+  content: '';
+  position: absolute;
+  left: 0.9rem;
+  top: 0.95em;
+  width: 0; height: 0;
+  border-left: 5px solid var(--cyan);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.15s ease;
+}
+.guide-item[open] summary::before { transform: rotate(90deg); }
+.guide-item summary:hover { color: var(--cyan); }
+.guide-body {
+  padding: 0 0.9rem 0.9rem 1.9rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+.guide-body p { margin-bottom: 0.5rem; }
+.guide-body ol { margin: 0 0 0.5rem 1.1rem; }
+.guide-body li { margin-bottom: 0.25rem; }
+.guide-body a { color: var(--cyan); }
+.guide-body code {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-size: 0.78rem;
+}
+.guide-note {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  border-left: 2px solid var(--border);
+  padding-left: 0.6rem;
+  margin-top: 0.6rem;
+}
+.guide-pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.55rem 0.7rem;
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  overflow-x: auto;
+  white-space: pre;
+}
+/* table-layout:fixed is load-bearing. .container is max-width:fit-content, so it
+   grows to its widest child — an auto-layout table sizes to max-content, expands
+   the container, and width:100% then resolves against that expanded width. Fixed
+   layout takes cell content out of sizing entirely, so long text wraps. min-width
+   also overrides the 800px floor the results tables set globally. */
+.guide-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0.3rem 0 0.5rem;
+  font-size: 0.8rem;
+}
+.guide-table td { padding: 0.15rem 0.9rem 0.15rem 0; vertical-align: top; word-break: break-word; }
+.guide-table td:first-child { color: var(--text-dim); width: 8.5rem; }
+.gv { color: var(--cyan); font-weight: 600; }
+.gv.unset { color: var(--text-dim); font-weight: 400; font-style: italic; }
+
+/* Copy-paste AI prompt */
+.ai-prompt {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.85rem 0.9rem;
+  margin-top: 0.9rem;
+}
+.ai-prompt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+}
+.ai-prompt-title { font-size: 0.85rem; font-weight: 600; }
+.ai-copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ai-copy-btn:hover { border-color: var(--cyan); }
+.ai-copy-btn.copied { color: var(--green); border-color: var(--green); }
+.ai-prompt-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.73rem;
+  line-height: 1.55;
+  color: var(--text-dim);
+  max-height: 16rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Footer */
 .footer {
   margin-top: 2rem;
@@ -931,6 +1134,11 @@ tbody tr {
       </div>
     </div>
 
+    <div id="pinSection" style="display:none">
+      <div class="sub-header" id="pinHeader">Pin to Lowest-Latency Server</div>
+      <div class="pin-box" id="pinBox"></div>
+    </div>
+
     <div class="type-legend">
       <span class="type-legend-item">
         <span class="type-legend-dot" style="background:var(--text)"></span>
@@ -966,6 +1174,208 @@ tbody tr {
     </div>
   </div>
 
+
+  <div class="guide">
+    <div class="section-header">Where do I paste this?</div>
+    <p class="guide-intro">This tool gives you the strings. Here is which field each one goes in.
+      Values below fill in with your own once you run a benchmark.</p>
+
+    <details class="guide-item">
+      <summary>Any router &mdash; which option do I use?</summary>
+      <div class="guide-body">
+        <p>Go by what your router supports, best first:</p>
+        <ol>
+          <li><strong>DNS-over-TLS (DoT)</strong> &mdash; enter an <em>IP</em> and a <em>TLS hostname</em>
+            (<span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span>). Port 853.</li>
+          <li><strong>DNS-over-HTTPS (DoH)</strong> &mdash; paste one of the DoH URLs above.</li>
+          <li><strong>Neither</strong> &mdash; plain DNS with linked IP. See below.</li>
+        </ol>
+        <p><strong>Whichever you use, set at least one IPv4 and one IPv6 address.</strong> Most routers keep
+          them on separate pages, so it is easy to configure one family and leave the other pointing at your
+          ISP &mdash; which quietly bypasses NextDNS for every lookup that takes that path. It matters most
+          when pinning: a pinned server has no automatic failover, so a second stack is the only redundancy
+          you have left.</p>
+
+        <p><strong>Using plain IPs and keeping your profile</strong></p>
+        <p>Router menus differ, but the setting lives in one of two places. Look for whichever your firmware has:</p>
+        <table class="guide-table">
+          <tr><td>WAN / Internet</td><td>&ldquo;DNS Server 1 / 2&rdquo;, &ldquo;Static DNS&rdquo;, or
+            &ldquo;Use these DNS servers&rdquo; &mdash; often needs <em>Automatic / Get DNS from ISP</em> set to
+            <em>No</em> first</td></tr>
+          <tr><td>LAN / DHCP</td><td>&ldquo;DNS Server&rdquo; under the DHCP server settings &mdash; this is what
+            your devices are actually handed</td></tr>
+        </table>
+        <p>Many routers only pass DNS to clients from the <strong>DHCP/LAN</strong> page; the WAN entry may just
+          be for the router's own lookups. If your devices ignore the change, that is usually why.</p>
+        <p>Then, in order:</p>
+        <ol>
+          <li>Go to <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr;
+            <strong>Setup</strong> and scroll to <strong>Linked IP</strong>.</li>
+          <li>Click the link button to bind your current public IP to this profile.</li>
+          <li>Copy the IPv4 addresses shown in <em>that</em> section into your router. They are specific to your
+            profile and are <strong>not</strong> the anycast addresses ending in <code>.0</code>.</li>
+          <li>If your ISP gives you IPv6, add your personalised IPv6 addresses from the same page &mdash; those
+            need no linking at all.</li>
+          <li>Verify at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>.
+            It should name your profile. If it says
+            <em>&ldquo;using NextDNS with no profile&rdquo;</em>, the link did not take &mdash; recheck steps 2 and 3.</li>
+        </ol>
+        <p class="guide-note">Encrypted options carry your config ID in the connection itself, so NextDNS always
+          knows which profile to apply. Plain DNS has nowhere to put it, which is why the linking step exists.
+          Your linked IP breaks whenever your public IP changes &mdash; use DDNS if it is dynamic, and note that
+          carrier-grade NAT rules this method out entirely.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Asus / Asuswrt-Merlin</summary>
+      <div class="guide-body">
+        <p><strong>WAN &rarr; Internet Connection &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS (DoT)</strong></p>
+        <p>The server list only appears once you switch the protocol off <em>None</em>. Ignore the
+          <em>Preset servers</em> dropdown and add rows manually:</p>
+        <table class="guide-table">
+          <tr><td>IP Address</td><td><span class="gv" data-gv="bestIP">your best IPv4 from the table above</span></td></tr>
+          <tr><td>TLS Hostname</td><td><span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span></td></tr>
+          <tr><td>TLS Port</td><td>leave blank (defaults to 853)</td></tr>
+          <tr><td>SPKI Fingerprint</td><td>leave blank</td></tr>
+        </table>
+        <p>Add <strong>at least one IPv4 and one IPv6 entry</strong>. IPv6 DNS servers go on the
+          <strong>IPv6</strong> page, not the WAN page &mdash; they are separate screens on Asuswrt, which is
+          why people often end up IPv4-only without realising.</p>
+        <p class="guide-note">One more thing that catches people out: the DNS servers <em>above</em> the DoT
+          section are only used by the router itself and have no effect on your devices once DoT is on.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>pfSense / OPNsense / anything running unbound</summary>
+      <div class="guide-body">
+        <p><strong>Services &rarr; DNS Resolver &rarr; General Settings &rarr; Custom Options</strong></p>
+        <pre class="guide-pre">server:
+  forward-zone:
+    name: "."
+    forward-tls-upstream: yes
+    forward-addr: 45.90.28.0#<span class="gv" data-gv="id">{configId}</span>.dns1.nextdns.io
+    forward-addr: 2a07:a8c0::#<span class="gv" data-gv="id">{configId}</span>.dns1.nextdns.io
+    forward-addr: 45.90.30.0#<span class="gv" data-gv="id">{configId}</span>.dns2.nextdns.io
+    forward-addr: 2a07:a8c1::#<span class="gv" data-gv="id">{configId}</span>.dns2.nextdns.io</pre>
+        <p class="guide-note">This is NextDNS's own pfSense recipe. The bare anycast IPs are correct here &mdash;
+          the config ID travels in the TLS hostname after the <code>#</code>, not in the address. Recent pfSense
+          builds let you set the TLS hostname in the GUI instead of using Custom Options.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>NextDNS CLI &mdash; the only setup that can pin <em>and</em> fail over</summary>
+      <div class="guide-body">
+        <pre class="guide-pre">nextdns config set -profile=<span class="gv" data-gv="id">{configId}</span></pre>
+        <p>To pin to your lowest-latency server while keeping anycast as a safety net:</p>
+        <pre class="guide-pre">nextdns config set -forwarder <span class="gv" data-gv="forwarder">(run a benchmark to generate this)</span></pre>
+        <p class="guide-note">The CLI takes a comma-separated forwarder list and tries them in order. This is the
+          only client that gives you pinned latency without the single point of failure.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Windows 11</summary>
+      <div class="guide-body">
+        <p>Windows only offers its encrypted-DNS dropdown for resolvers it already knows &mdash; Cloudflare,
+          Google and Quad9. NextDNS is not on that list, so register the template first, in PowerShell as
+          Administrator:</p>
+        <pre class="guide-pre">Add-DnsClientDohServerAddress -ServerAddress '<span class="gv" data-gv="bestIP">{serverIP}</span>' -DohTemplate '<span class="gv" data-gv="doh">https://dns.nextdns.io/{configId}</span>' -AllowFallbackToUdp $False -AutoUpgrade $True</pre>
+        <p>Then walk this exact path:</p>
+        <ol>
+          <li><strong>Settings &rarr; Network &amp; Internet</strong></li>
+          <li>Click <strong>Wi-Fi</strong> or <strong>Ethernet</strong> &mdash; whichever you are on &mdash;
+            then click the connection itself (its name, not the toggle).</li>
+          <li>Scroll to <strong>DNS server assignment</strong> and click <strong>Edit</strong>.</li>
+          <li>Change the dropdown from <em>Automatic (DHCP)</em> to <strong>Manual</strong>, then toggle
+            <strong>IPv4</strong> on.</li>
+          <li>Put your IP in <strong>Preferred DNS</strong>, and set
+            <strong>Preferred DNS encryption</strong> to <em>Encrypted only (DNS over HTTPS)</em>.</li>
+          <li>Repeat in <strong>Alternate DNS</strong> with a second IP for redundancy, then
+            <strong>Save</strong>.</li>
+        </ol>
+        <p>The encryption dropdown stays greyed out until the IP you entered matches a registered template &mdash;
+          that is the PowerShell step above, not a bug.</p>
+
+        <p><strong>If you would rather use plain IPs and your profile</strong></p>
+        <p>Same path, but skip the PowerShell step, use the IPv4 addresses from
+          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup &rarr;
+          <strong>Linked IP</strong>, and leave encryption on <em>Unencrypted only</em>. You must click the link
+          button on that page first or your blocklists will not apply.</p>
+        <p>Verify either way at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>
+          &mdash; it should name your profile rather than saying
+          <em>&ldquo;using NextDNS with no profile&rdquo;</em>.</p>
+        <p class="guide-note">Because Windows pairs an IP with a DoH template, this is one of the few clients
+          where you can pin: register your pinned edge IP against the pinned DoH URL above.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Android</summary>
+      <div class="guide-body">
+        <p><strong>Settings &rarr; Network &amp; internet &rarr; Private DNS</strong>
+          (if it is not there, search your settings for &ldquo;Private DNS&rdquo; &mdash; the path moves between
+          versions and skins). Choose <em>Private DNS provider hostname</em> and enter:</p>
+        <pre class="guide-pre"><span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span></pre>
+        <p class="guide-note">Private DNS accepts a DoT hostname only, and DoT cannot address an individual
+          edge server &mdash; so pinning is not available on Android. You get steered routing, which is usually
+          within a few ms anyway.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Firefox / Chrome</summary>
+      <div class="guide-body">
+        <p>Search the browser's settings for <em>&ldquo;DNS over HTTPS&rdquo;</em> or <em>&ldquo;secure DNS&rdquo;</em>
+          &mdash; both bury it, and both move it between releases. Choose the custom/provider option and paste:</p>
+        <pre class="guide-pre"><span class="gv" data-gv="doh">https://dns.nextdns.io/{configId}</span></pre>
+        <p class="guide-note">This covers the browser only. Everything else on the device keeps using whatever
+          DNS the system is set to.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>iPhone / iPad / Mac</summary>
+      <div class="guide-body">
+        <p>Install the configuration profile from
+          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup.
+          NextDNS generates and signs it, so there is nothing here to paste.</p>
+        <p class="guide-note">The Apple profile cannot target an individual server, so pinning does not apply.
+          Nothing this tool outputs changes an Apple profile.</p>
+      </div>
+    </details>
+
+    <details class="guide-item">
+      <summary>Plain / unencrypted DNS &mdash; read this before using raw IPs</summary>
+      <div class="guide-body">
+        <p><strong>IPv4 needs your IP linked, or your profile silently does not apply.</strong> DoT carries your
+          config ID in the TLS hostname and DoH carries it in the URL. Plain IPv4 has nowhere to put it, so
+          NextDNS identifies you by your public IP instead &mdash; which you have to register at
+          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup &rarr; Linked IP.</p>
+        <p>Use the IPv4 addresses shown in that Linked IP section. They are specific to your profile and are
+          <em>not</em> the anycast addresses ending in <code>.0</code>. Point a device at
+          <code>45.90.28.0</code> without linking and DNS resolves fine while none of your blocklists apply.</p>
+        <p>Linking also breaks under carrier-grade NAT, and needs DDNS if your IP is dynamic.</p>
+        <p><strong>IPv6 needs no linking</strong> &mdash; your config ID is encoded in the address itself. Copy
+          your personalised IPv6 addresses from the setup page rather than building them by hand.</p>
+      </div>
+    </details>
+    <div class="ai-prompt">
+      <div class="ai-prompt-head">
+        <span class="ai-prompt-title">Device not listed? Hand this to an AI</span>
+        <button class="ai-copy-btn" id="aiCopyBtn" onclick="copyAiPrompt(this)">copy prompt</button>
+      </div>
+      <p class="guide-intro" style="margin:0 0 0.5rem">Paste this into Google AI Mode, ChatGPT, Claude, or
+        whatever you use, and add your device. It carries the NextDNS facts that models most often get wrong,
+        so you get steps for your hardware instead of invented ones.</p>
+      <pre class="ai-prompt-box" id="aiPromptBox"></pre>
+      <p class="guide-note" style="margin-top:0.5rem">Your config ID is deliberately left as a placeholder.
+        Anyone holding it can send queries through your profile and pollute your analytics, and no AI needs it
+        to tell you which menu to open. Swap it in yourself once you have the steps.</p>
+    </div>
+  </div>
 
   <div class="footer">
     <div class="footer-links">
@@ -1095,6 +1505,10 @@ async function discoverServers(onStatus) {
           const srv = entry.server || '';
           const pop = entry.pop || srv;
           if (!srv) continue;
+          // `server` (e.g. "vultr-bom-1") is retained alongside `pop` ("vultr-bom").
+          // The bare `{server}.edge.nextdns.io` host is dual-stack and is the only
+          // form usable as a pinned DoH URL — the ipv4-/ipv6- prefixes are
+          // single-family and the pop name alone does not resolve.
           // IPv4
           if (entry.ipv4 !== false) {
             servers.push({
@@ -1102,6 +1516,7 @@ async function discoverServers(onStatus) {
               type: 'server',
               family: 'IPv4',
               nodeId: pop,
+              server: srv,
             });
           }
           // IPv6
@@ -1111,6 +1526,7 @@ async function discoverServers(onStatus) {
               type: 'server',
               family: 'IPv6',
               nodeId: pop,
+              server: srv,
             });
           }
         }
@@ -1192,11 +1608,15 @@ async function benchmarkServer(server, rounds) {
     };
   }
 
-  // Use server-reported RTT (microseconds → ms) as primary metric
-  const hasServerRtt = results[0].serverRttUs !== null;
-  const times = hasServerRtt
-    ? results.map(r => r.serverRttUs / 1000)
-    : results.map(r => r.clientMs);
+  // Use server-reported RTT (microseconds → ms) as primary metric.
+  // Filter per-sample rather than deciding from results[0]: if any later round
+  // returns no `rtt`, `null / 1000` evaluates to 0, which zeroes minMs and drags
+  // the average down — making the server look FASTER than it really is.
+  // `metric` is recorded because server RTT and clientMs are not comparable
+  // (clientMs is a full HTTPS round trip incl. TLS), so ranking must not mix them.
+  const serverRtts = results.filter(r => r.serverRttUs != null).map(r => r.serverRttUs / 1000);
+  const usedServerRtt = serverRtts.length > 0;
+  const times = usedServerRtt ? serverRtts : results.map(r => r.clientMs);
 
   const avg = times.reduce((a, b) => a + b, 0) / times.length;
   const min = Math.min(...times);
@@ -1210,6 +1630,7 @@ async function benchmarkServer(server, rounds) {
     jitter: Math.round((max - min) * 100) / 100,
     successRate: Math.round((results.length / rounds) * 100),
     status: 'ok',
+    metric: usedServerRtt ? 'server' : 'client',
     pop: results[0].pop,
     location: results[0].location,
   };
@@ -1344,7 +1765,7 @@ async function resolveAllIPs(results, onProgress, resolver = 'google') {
 
 // ─── Config Generation ────────────────────────────────────────────────────────
 
-function generateConfig(ranked, configId) {
+function generateConfig(ranked, configId, pin) {
   const ok = ranked.filter(r => r.status === 'ok');
   const ipv4 = ok.filter(r => r.family === 'IPv4');
   const ipv6 = ok.filter(r => r.family === 'IPv6');
@@ -1384,7 +1805,7 @@ function generateConfig(ranked, configId) {
       anycast1: { ip: anycastV6IP1,  hostname: dotHostname },
       anycast2: { ip: anycastV6IP2,  hostname: dotHostname },
     },
-    doh: `https://dns.nextdns.io/${configId}`,
+    dohOptions: buildDohOptions(ok, configId, pin),
     dot: dotHostname,
     bestV4, secondV4, bestV6, secondV6,
   };
@@ -1440,9 +1861,11 @@ function renderTable(tableId, servers, currentPop = null) {
   const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.avgMs)) : 1;
   displayed.forEach((r, i) => {
     const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
-    // Match against auto-detected server — only in the table matching the detected protocol
-    const detectedProto = hasIPv6 ? 'ipv6Table' : 'ipv4Table';
-    const isDetected = detectedServer && tableId === detectedProto && (r.nodeId === detectedServer || r.pop === detectedServer);
+    // Highlight the detected PoP wherever it appears. This previously guessed the
+    // connection's address family from `hasIPv6`, but that flag only reports whether
+    // the BROWSER can reach NextDNS over IPv6 — not which family the DNS connection
+    // actually uses. On dual-stack (the common case) the guess lands in the wrong table.
+    const isDetected = detectedServer && (r.nodeId === detectedServer || r.pop === detectedServer);
     const rank = i === 0
       ? '<span class="rank-star">&#9733;</span>'
       : `<span class="text-dim">${i + 1}</span>`;
@@ -1525,9 +1948,11 @@ function renderConfig(config, configId) {
   html += `<div class="config-cell${sp}">${configEntry2('IPv4 Fallback', config.ipv4.anycast1.ip, config.ipv4.anycast2.ip)}</div>`;
   if (hasV6) html += `<div class="config-cell">${configEntry2('IPv6 Fallback', config.ipv6.anycast1.ip, config.ipv6.anycast2.ip)}</div>`;
 
-  // Row 4: Encrypted DNS
+  // Row 4: Encrypted DNS — DoT, then every DoH tier so the user picks on numbers.
   html += `<div class="config-cell">${configEntry('DNS-over-TLS/QUIC', config.dot)}</div>`;
-  html += `<div class="config-cell">${configEntry('DNS-over-HTTPS', config.doh)}</div>`;
+  html += `<div class="config-cell"><div class="doh-group-label">DNS-over-HTTPS</div>`
+    + config.dohOptions.map(dohEntry).join('')
+    + `</div>`;
 
   document.getElementById('configTable').innerHTML = html;
 
@@ -1538,23 +1963,211 @@ function renderConfig(config, configId) {
   insightEl.classList.add('pop');
 }
 
+// escAttr: safe for HTML *attribute* position. escHtml() is textContent-based and
+// does NOT escape quotes, so it must never be used inside data-copy="…".
+function escAttr(s) {
+  return String(s)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function configEntry(label, value, dim = false) {
-  const safeValue = value.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safeValue = escAttr(value);
   return `<div class="config-entry">
     ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
     <span class="config-value${dim ? ' dim' : ''}" data-copy="${safeValue}" onclick="clickCopy(this)" title="Click to copy">${escHtml(value)}</span>
   </div>`;
 }
 
+// dohEntry: one DoH tier — label, measured latency, and its trade-off, above the URL.
+// Stacked rather than inline because the config panel is a narrow single column.
+function dohEntry(o) {
+  const msCls = o.ms != null ? latencyClass(o.ms) : 'text-dim';
+  return `<div class="config-entry doh-entry">
+    <div class="doh-head">
+      <span class="config-entry-label">${escHtml(o.label)}</span>
+      ${o.ms != null ? `<span class="doh-ms ${msCls}">${o.ms}ms</span>` : ''}
+      <span class="doh-note${o.warn ? ' warn' : ''}">${escHtml(o.note)}</span>
+    </div>
+    <span class="config-value" data-copy="${escAttr(o.url)}" onclick="clickCopy(this)" title="Click to copy">${escHtml(o.url)}</span>
+  </div>`;
+}
+
 function configEntry2(label, val1, val2) {
-  const safe1 = val1.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const safe2 = val2.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safe1 = escAttr(val1);
+  const safe2 = escAttr(val2);
   return `<div class="config-entry">
     ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
     <span class="config-value" data-copy="${safe1}" onclick="clickCopy(this)" title="Click to copy">${escHtml(val1)}</span>
     <span class="config-sep">/</span>
     <span class="config-value dim" data-copy="${safe2}" onclick="clickCopy(this)" title="Click to copy">${escHtml(val2)}</span>
   </div>`;
+}
+
+// renderPinSection: render the pinned-server recommendation, or the
+// "you don't need to pin" state. Uses configEntry for values so they inherit its
+// quote-safe attribute escaping — escHtml alone is not safe in a data-copy="".
+function renderPinSection(pin, configId) {
+  const section = document.getElementById('pinSection');
+  const box = document.getElementById('pinBox');
+  if (!pin) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  const b = pin.best;
+  const { flag, city } = parseLocation(b.location || '');
+  const loc = city ? (flag ? `[${flag}] ${city}` : city) : (b.pop || '');
+
+  if (!pin.worthIt) {
+    // Common case: steering already lands on the same PoP the best edge server
+    // belongs to. Saying "zepto-iad is within 3ms of zepto-iad-1" reads as nonsense,
+    // so name what actually happened instead.
+    const samePop = pin.baseline && b.pop && pin.baseline.pop === b.pop;
+    box.innerHTML = samePop
+      ? `<div class="pin-ok">Already on your lowest-latency PoP &mdash; `
+        + `${escHtml(pin.baseline.type === 'anycast' ? 'anycast' : 'ultralow')} routes you to `
+        + `<strong>${escHtml(b.pop)}</strong> <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span>, `
+        + `the same PoP you would be pinning to.</div>`
+        + `<div class="pin-sub" style="margin:0.4rem 0 0">Pinning would target the same hardware while giving up automatic failover. `
+        + `Use the recommended configuration above.</div>`
+      : `<div class="pin-ok">No pinning needed &mdash; `
+        + `${escHtml(serverLabel(pin.baseline))} <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span> `
+        + `is already within ${PIN_MIN_GAIN_MS}ms of the lowest-latency edge server `
+        + `${escHtml(b.server)} <span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>.</div>`
+        + `<div class="pin-sub" style="margin:0.4rem 0 0">Steered routing keeps automatic failover, so there is nothing to gain here. `
+        + `Use the recommended configuration above.</div>`;
+    return;
+  }
+
+  const dohUrl = `https://${b.server}.edge.nextdns.io/${configId}`;
+  const bootstrap = b.resolvedIP ? `#${b.resolvedIP}` : '';
+  const forwarder = `https://${b.server}.edge.nextdns.io/${configId}${bootstrap}`
+    + `,https://anycast.dns1.nextdns.io/${configId}`;
+
+  let html =
+    `<div class="pin-headline"><strong>${escHtml(b.server)}</strong> `
+    + `<span class="text-dim">${escHtml(loc)}</span> `
+    + `<span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>`
+    + (pin.gainMs != null
+        ? ` &mdash; <span class="pin-gain">${pin.gainMs}ms lower</span> <span class="text-dim">than `
+          + `${escHtml(serverLabel(pin.baseline))} (${pin.baseline.avgMs}ms)</span>`
+        : '')
+    + `</div>`
+    + `<div class="pin-sub">Dual-stack hostname &mdash; one URL covers both IPv4 and IPv6.</div>`;
+
+  html += `<div class="pin-formats">`;
+
+  // Both families for the pinned server. Pinning gives up automatic failover, so
+  // dual-stack is the nearest substitute: if one stack breaks, the other resolves.
+  const v4ip = b.resolvedIP || null;
+  const v6ip = pin.v6 ? pin.v6.resolvedIP : null;
+  if (v4ip || v6ip) {
+    html += `<div><div class="pin-format-label">Pinned server addresses &mdash; set one of each</div>`
+      + (v4ip ? configEntry('IPv4', v4ip) : '')
+      + (v6ip ? configEntry('IPv6', v6ip) : '')
+      + `<div class="pin-format-note">`
+      + (v6ip
+          ? `Use both wherever your client allows two entries &mdash; manual DNS, DoT server lists, or a `
+            + `router's separate IPv4 and IPv6 DNS pages. If one stack fails you still resolve on the other, `
+            + `which is the closest thing to failover you get while pinned.`
+          : `No IPv6 address resolved for this server &mdash; you will be pinned on IPv4 only, with no second `
+            + `stack to fall back on. Consider the failover form below.`)
+      + `</div></div>`;
+  }
+
+  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>${configEntry('', dohUrl)}`
+    + `<div class="pin-format-note">This hostname is dual-stack, so a DoH client will use whichever family it `
+    + `has &mdash; one URL covers both.</div></div>`;
+  html += `<div><div class="pin-format-label">NextDNS CLI &mdash; pinned, with anycast failover</div>`
+    + configEntry('', forwarder)
+    + `<div class="pin-format-note">NextDNS CLI only &mdash; falls back to anycast if the pinned server stops answering. `
+    + `The bootstrap suffix uses the IPv4 address, which is the only form NextDNS documents. `
+    + `Router DoT setups cannot use this syntax; pin by bootstrap IP using the Asus fields above.</div></div>`;
+  html += `</div>`;
+
+  html += `<div class="pin-disclaimer"><strong>Pinning is not officially recommended.</strong> `
+    + `NextDNS steers you automatically for a reason &mdash; if a pinned server goes offline, `
+    + `your DNS stops until you change it. In practice pinning is the only way to lock the `
+    + `lowest-latency PoP, and it measurably helps. If you pin, prefer the failover form above, `
+    + `and run this benchmark fresh from time to time &mdash; edge server IPs rotate.</div>`;
+
+  box.innerHTML = html;
+}
+
+// buildDohOptions: the DoH endpoint tiers, each with its measured latency and its
+// trade-off, so the choice can be made on numbers rather than on our ranking.
+// Ordered stable → steered → pinned, i.e. increasing latency benefit and
+// increasing risk. The pinned tier only appears when it actually wins.
+function buildDohOptions(ok, configId, pin) {
+  const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
+  const bestOf = t => v4.filter(r => r.type === t).sort((a, b) => a.avgMs - b.avgMs)[0] || null;
+  const anycast = bestOf('anycast');
+  const ultralow = bestOf('ultralow');
+
+  const opts = [
+    {
+      label: 'anycast',
+      url: `https://anycast.dns1.nextdns.io/${configId}`,
+      ms: anycast ? anycast.avgMs : null,
+      note: 'stable IPs, auto-failover',
+    },
+    {
+      label: 'ultralow',
+      url: `https://dns.nextdns.io/${configId}`,
+      ms: ultralow ? ultralow.avgMs : null,
+      note: 'steered to nearest PoP',
+    },
+  ];
+
+  if (pin && pin.worthIt) {
+    opts.push({
+      label: 'pinned',
+      url: `https://${pin.best.server}.edge.nextdns.io/${configId}`,
+      ms: pin.best.avgMs,
+      note: 'no failover — see below',
+      warn: true,
+    });
+  }
+  return opts;
+}
+
+// ─── Pin Target Selection ─────────────────────────────────────────────────────
+
+// Minimum latency gain over the best steered option before pinning is worth
+// recommending. Matches the tip threshold in buildInsightHtml.
+const PIN_MIN_GAIN_MS = 3;
+
+// selectPinTarget: choose the lowest-latency edge server worth pinning to.
+//
+// Deliberately does NOT use `ranked`, for two reasons:
+//   1. ranked[0] may be an anycast or ultralow entry, which carries no `server`
+//      field — there is no pinnable hostname to build a URL from.
+//   2. ranked is skewed by the user's `preference` setting. Pinning is a separate
+//      decision from the general recommendation, so this always sorts by pure latency.
+//
+// Compares within IPv4 only: latency is measured per-family, so mixing families
+// would not be like-for-like. The pinned DoH URL itself is family-agnostic —
+// `{server}.edge.nextdns.io` is dual-stack.
+function selectPinTarget(ok) {
+  const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
+  const edges = v4
+    .filter(r => r.type === 'server' && r.server)
+    .sort((a, b) => a.avgMs - b.avgMs);
+  if (edges.length === 0) return null;
+
+  const best = edges[0];
+  // Baseline = the best thing the user would get WITHOUT pinning.
+  const baseline = v4
+    .filter(r => r.type === 'anycast' || r.type === 'ultralow')
+    .sort((a, b) => a.avgMs - b.avgMs)[0] || null;
+
+  const gainMs = baseline ? Math.round((baseline.avgMs - best.avgMs) * 100) / 100 : null;
+  // No baseline responded at all — pinning is the only option we can offer.
+  const worthIt = baseline ? gainMs > PIN_MIN_GAIN_MS : true;
+
+  // IPv6 row for the same physical server, for an optional v6 bootstrap IP.
+  const v6 = ok.find(r => r.family === 'IPv6' && r.server === best.server && r.resolvedIP) || null;
+
+  return { best, baseline, gainMs, worthIt, v6 };
 }
 
 // ─── Cross-Reference Servers ──────────────────────────────────────────────────
@@ -1657,8 +2270,11 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
   }
 
   // ── Detected-server optimization insight ───────────────────────────────────
-  // Use the protocol-matched list: if connected via IPv6, compare against IPv6 results
-  const detectedList = hasIPv6 ? visibleV6 : visible;
+  // Compare the detected server against the IPv4 list, falling back to IPv6 only if
+  // the detected PoP appears there and not in IPv4. `hasIPv6` is NOT a reliable signal
+  // for which family the DNS connection uses — it only reports browser reachability.
+  const inV4 = visible.some(r => r.nodeId === detectedServer || r.pop === detectedServer);
+  const detectedList = inV4 ? visible : visibleV6;
   if (detectedServer && detectedList.length > 0) {
     const detectedRow = detectedList.find(r => r.nodeId === detectedServer || r.pop === detectedServer);
     const bestRow = detectedList[0];
@@ -1699,6 +2315,118 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
 
   return { html, currentAnycastPop };
 }
+
+// fillGuideVars: substitute the user's real values into the "Where do I paste this?"
+// guide after a benchmark. Before a run the guide still reads correctly with its
+// {configId} placeholders, so it is useful without running anything.
+function fillGuideVars(configId, config, pin) {
+  const bestV4 = config && config.bestV4;
+  const vals = {
+    id: configId,
+    dot: `${configId}.dns.nextdns.io`,
+    doh: pin && pin.worthIt
+      ? `https://${pin.best.server}.edge.nextdns.io/${configId}`
+      : `https://dns.nextdns.io/${configId}`,
+    bestIP: (pin && pin.worthIt && pin.best.resolvedIP)
+      || (bestV4 && bestV4.resolvedIP)
+      || null,
+    forwarder: pin && pin.worthIt && pin.best.resolvedIP
+      ? `https://${pin.best.server}.edge.nextdns.io/${configId}#${pin.best.resolvedIP}`
+        + `,https://anycast.dns1.nextdns.io/${configId}`
+      : null,
+  };
+
+  document.querySelectorAll('.gv[data-gv]').forEach(el => {
+    const v = vals[el.dataset.gv];
+    if (v) {
+      el.textContent = v;
+      el.classList.remove('unset');
+      return;
+    }
+    // No pinned forwarder to offer. Don't leave "run a benchmark" sitting there
+    // after a benchmark has run — say why it is absent instead.
+    if (el.dataset.gv === 'forwarder' && pin) {
+      el.textContent = pin.worthIt
+        ? '(pinned server has no resolved IP — omit the #bootstrap suffix)'
+        : '(not needed — steered routing is already within '
+          + PIN_MIN_GAIN_MS + 'ms of your lowest-latency server)';
+      el.classList.add('unset');
+    }
+  });
+}
+
+// ─── Copy-paste AI prompt ─────────────────────────────────────────────────────
+
+// buildAiPrompt: a self-contained prompt the user can hand to any assistant to get
+// setup steps for hardware this guide does not cover.
+//
+// Two deliberate choices:
+//  - The config ID is ALWAYS a placeholder. It is effectively a credential — anyone
+//    holding it can query through the profile — and it is not needed to describe a
+//    menu path. Never interpolate the real one here.
+//  - The prompt states the NextDNS mechanics models most often invent (DoT cannot
+//    pin, plain IPv4 needs Linked IP), and asks the model to admit uncertainty
+//    rather than guess a menu path. Wrong paths are this guide's main failure mode.
+const AI_ID = '{your-config-id}';
+
+// hasRun distinguishes "no benchmark yet" from "benchmarked, pinning not worth it".
+// Without it the pre-run prompt claims a benchmark result the user never produced.
+function buildAiPrompt(pin, hasRun) {
+  const L = [];
+  L.push('Set up NextDNS on: [YOUR ROUTER, DEVICE OR OS — include make, model and firmware version if you know them]');
+  L.push('');
+  L.push('Values to use. Leave ' + AI_ID + ' exactly as written; I will substitute my real ID afterwards.');
+  L.push('');
+  L.push('  DoH, anycast (most stable):        https://anycast.dns1.nextdns.io/' + AI_ID);
+  L.push('  DoH, steered (NextDNS picks):      https://dns.nextdns.io/' + AI_ID);
+  L.push('  DoT hostname:                      ' + AI_ID + '.dns.nextdns.io');
+
+  if (pin && pin.worthIt) {
+    const b = pin.best;
+    L.push('  DoH, pinned to one server:         https://' + b.server + '.edge.nextdns.io/' + AI_ID);
+    if (b.resolvedIP) L.push('  That server\'s IPv4:                ' + b.resolvedIP);
+    if (pin.v6 && pin.v6.resolvedIP) L.push('  That server\'s IPv6:                ' + pin.v6.resolvedIP);
+  } else if (hasRun) {
+    L.push('');
+    L.push('Pinning to a single server would not help me, so ignore that option.');
+  } else {
+    L.push('');
+    L.push('I have not benchmarked yet — assume the steered or anycast option.');
+  }
+
+  L.push('');
+  L.push('NextDNS mechanics you must not contradict:');
+  L.push('- DoT cannot be pinned to one server by hostname. To pin over DoT, use that server\'s IP together with the hostname ' + AI_ID + '.dns.nextdns.io.');
+  L.push('- Plain unencrypted IPv4 cannot carry a config ID. NextDNS identifies you by Linked IP, registered at my.nextdns.io under Setup, using the profile-specific IPv4 addresses shown there — NOT the anycast addresses ending in .0. Without linking, DNS resolves normally but no filtering applies.');
+  L.push('- Plain IPv6 needs no linking; the config ID is encoded in the address.');
+  L.push('- A pinned server has no automatic failover. Only the NextDNS CLI supports a fallback list.');
+  L.push('- Configure at least one IPv4 and one IPv6 entry.');
+  L.push('');
+  L.push('Tell me which settings screen to open on my device, which value above goes in which field, and anything my device cannot do. If you are not confident about a menu path or option name on my firmware, say so rather than guessing — I would rather look for it than be sent to a screen that does not exist.');
+  return L.join('\n');
+}
+
+function renderAiPrompt(pin, hasRun) {
+  const box = document.getElementById('aiPromptBox');
+  if (box) box.textContent = buildAiPrompt(pin, hasRun);
+}
+
+async function copyAiPrompt(btn) {
+  const box = document.getElementById('aiPromptBox');
+  if (!box) return;
+  try {
+    await navigator.clipboard.writeText(box.textContent);
+    btn.textContent = 'copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy prompt'; btn.classList.remove('copied'); }, 1500);
+  } catch {
+    btn.textContent = 'copy failed — select manually';
+    setTimeout(() => { btn.textContent = 'copy prompt'; }, 2500);
+  }
+}
+
+// Render the generic form on load; a benchmark run refreshes it with real results.
+renderAiPrompt(null, false);
 
 // ─── Main Entry ───────────────────────────────────────────────────────────────
 
@@ -1838,8 +2566,16 @@ async function runBenchmark() {
     // edge IPs that rotate. The xref boundary applies to DISPLAY only (insight box, table,
     // headers) — config recommendations need the full ranked set. (DA-4-001)
     setProgress('Generating config...', 98);
-    const config = generateConfig(ranked, configId);
+    // Pin target is computed first: the config panel's pinned DoH row and the
+    // pin section below must agree on the same server. Takes `ok` (not ranked or
+    // xref'd) because pin selection ignores `preference` and needs the raw edge
+    // rows that carry the `server` field.
+    const pin = selectPinTarget(ok);
+    const config = generateConfig(ranked, configId, pin);
     renderConfig(config, configId);
+    renderPinSection(pin, configId);
+    fillGuideVars(configId, config, pin);
+    renderAiPrompt(pin, true);
 
     setProgress('Done!', 100);
 

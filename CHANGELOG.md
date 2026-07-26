@@ -2,6 +2,26 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
+## [1.6.0] — 2026-07-26
+
+### Added
+- **Pin to Lowest-Latency Server** — new section that closes the gap between what the benchmark finds and what you can actually configure. When a specific edge server beats both anycast and ultralow by more than 3ms, it emits the pinned DoH URL (`https://{server}.edge.nextdns.io/{configId}`) and a NextDNS CLI forwarder string with anycast failover. When pinning wouldn't help, it says so rather than recommending it anyway. Raised by [SeriousHoax on r/nextdns](https://www.reddit.com/r/nextdns/).
+- **Pinned config carries its own disclaimer** — NextDNS does not officially recommend pinning; a pinned server going offline takes your DNS with it. Stated on the card itself, alongside the failover form that mitigates it.
+- **All three DoH tiers in the config panel** — anycast, ultralow, and (when it wins) pinned, each with its measured latency and its trade-off, so the choice is made on numbers rather than on our ranking. The anycast DoH URL (`https://anycast.dns1.nextdns.io/{configId}`) was previously not offered at all; the panel had anycast IPs but no anycast DoH string.
+- `server` (e.g. `vultr-bom-1`) is now retained from the router API alongside `pop` (`vultr-bom`). The bare `{server}.edge.nextdns.io` host is dual-stack and is the only form usable as a pinned DoH URL.
+
+- **"Where do I paste this?" setup guide** — a collapsible section covering generic routers (organised by capability, not brand), Asus/Merlin, pfSense/OPNsense/unbound, the NextDNS CLI, Windows 11, Android, browsers, and Apple devices. Values fill in with your own after a run. Prompted by the same Reddit thread: the tool handed you strings without saying where they go. Every menu path was verified against vendor documentation rather than written from memory.
+- **Pinned server now shows both IPv4 and IPv6 addresses.** Pinning gives up automatic failover, so a second address family is the nearest substitute — if one stack breaks, the other still resolves. Use both anywhere a client accepts two entries (manual DNS, DoT server lists, a router's separate IPv4/IPv6 pages). If the pinned server has no IPv6 address, the section says so rather than leaving you silently single-stacked. The guide carries the same rule, noting that separate IPv4/IPv6 pages are exactly why people end up configuring one family and leaving the other pointed at their ISP.
+- **Plain-DNS linked-IP warning.** Unencrypted IPv4 has nowhere to carry your config ID, so NextDNS identifies you by public IP — which must be registered at my.nextdns.io, using the profile-specific addresses shown there rather than the `.0` anycast IPs. Without it DNS resolves normally while no blocklists apply, which is silent and easy to miss. IPv6 needs no linking.
+
+### Fixed
+- **Latency could be reported lower than reality.** `benchmarkServer` decided whether to use server-reported RTT from the first round alone. If a later round returned no `rtt`, `null / 1000` evaluated to `0` — zeroing `minMs` and dragging the average down, making a server look faster than it was. Samples are now filtered individually, and the metric used (`server` vs `client`) is recorded so the two are never mixed when ranking.
+- **Detected-server highlighting landed in the wrong table on dual-stack connections.** Highlighting was scoped by `hasIPv6`, which only reports whether the *browser* can reach NextDNS over IPv6 — not which family the DNS connection uses. The detected PoP is now highlighted wherever it appears, with per-table latency deltas.
+
+### Changed
+- Consolidated the two divergent HTML escapers into a single `escAttr()` for attribute position. `escHtml()` is textContent-based and does not escape quotes, so it was unsafe in the `data-copy="…"` attributes it was being used for.
+- README: documented pinning end to end, corrected the "based on your active protocol" claim, and updated the stale bento-grid description of the config panel.
+
 ## [1.5.0] — 2026-02-18
 
 ### Added
