@@ -4,7 +4,9 @@
 
 **[→ Open the live tool](https://tracerman.github.io/nextdns-dns-matrix/)**
 
-Benchmarks all available NextDNS PoPs (anycast, ultralow, and individual servers) and recommends the optimal DNS configuration with ready-to-paste strings for Asus routers, DoH, DoT, and plain DNS.
+Benchmarks every NextDNS PoP available to you — anycast, ultralow, and individual edge servers — then hands you the exact config strings to act on the result, plus a guide to which field each one goes in.
+
+Most DNS benchmarks tell you which server is quickest and stop there. This one closes the loop: if a specific edge server beats your steered routing, you get the URL that actually pins you to it, the trade-off that comes with pinning, and the steps for your hardware.
 
 ## Quick Start
 
@@ -14,6 +16,7 @@ Benchmarks all available NextDNS PoPs (anycast, ultralow, and individual servers
 4. Click **Run Benchmark**
 5. Your current server is highlighted in the results — see instantly if you're on the best node
 6. Copy the recommended config strings
+7. Open **Where do I paste this?** at the bottom of the page for setup steps for your device
 
 That's it. No server, no build step, no dependencies.
 
@@ -130,6 +133,8 @@ NextDNS does not officially recommend pinning, and the reason is sound: steering
 
 If you pin: prefer the failover form, and re-run this benchmark periodically — edge server IPs rotate.
 
+**Set at least one IPv4 and one IPv6 address.** With failover gone, a second address family is the only redundancy you have left — if one stack breaks, the other still resolves. It also guards against a common misconfiguration: most routers keep IPv4 and IPv6 DNS on separate pages (Asuswrt puts IPv6 DNS on the IPv6 page, not WAN), so it's easy to configure one family and leave the other pointing at your ISP, quietly bypassing NextDNS for every lookup that takes that path. The tool shows both addresses for the pinned server, and tells you if no IPv6 one resolved.
+
 ## How It Works
 
 Uses two NextDNS APIs (both CORS `*`):
@@ -193,6 +198,8 @@ Raw IPs for unencrypted fallback or IoT devices.
 ## Where Do I Paste This?
 
 The tool has a built-in, collapsible setup guide at the bottom of the page covering generic routers (by capability rather than brand), Asus/Merlin, pfSense/OPNsense/unbound, the NextDNS CLI, Windows 11, Android, browsers, and Apple devices. Values fill in with your own after a benchmark run.
+
+**Device not listed?** The guide ends with a copy-paste prompt for ChatGPT, Claude, Google AI Mode, or whatever you use. It carries the NextDNS mechanics models most reliably invent — that DoT can't pin by hostname, that plain IPv4 needs Linked IP — so you get steps for your hardware rather than confident fiction. Your config ID stays a placeholder: it's effectively a credential, and no assistant needs it to tell you which menu to open.
 
 Two findings worth calling out, because neither is obvious:
 
