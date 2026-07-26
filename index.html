@@ -568,6 +568,13 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   font-size: 0.92rem;
   color: var(--cyan);
 }
+.pin-anyway {
+  margin-top: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
 
 /* Error display */
 .error-box {
@@ -2017,42 +2024,48 @@ function renderPinSection(pin, configId) {
   const { flag, city } = parseLocation(b.location || '');
   const loc = city ? (flag ? `[${flag}] ${city}` : city) : (b.pop || '');
 
-  if (!pin.worthIt) {
-    // Common case: steering already lands on the same PoP the best edge server
-    // belongs to. Saying "zepto-iad is within 3ms of zepto-iad-1" reads as nonsense,
-    // so name what actually happened instead.
-    const samePop = pin.baseline && b.pop && pin.baseline.pop === b.pop;
-    box.innerHTML = samePop
-      ? `<div class="pin-ok">Already on your lowest-latency PoP &mdash; `
-        + `${escHtml(pin.baseline.type === 'anycast' ? 'anycast' : 'ultralow')} routes you to `
-        + `<strong>${escHtml(b.pop)}</strong> <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span>, `
-        + `the same PoP you would be pinning to.</div>`
-        + `<div class="pin-sub" style="margin:0.4rem 0 0">Pinning would target the same hardware while giving up automatic failover. `
-        + `Use the recommended configuration above.</div>`
-      : `<div class="pin-ok">No pinning needed &mdash; `
-        + `${escHtml(serverLabel(pin.baseline))} <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span> `
-        + `is already within ${PIN_MIN_GAIN_MS}ms of the lowest-latency edge server `
-        + `${escHtml(b.server)} <span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>.</div>`
-        + `<div class="pin-sub" style="margin:0.4rem 0 0">Steered routing keeps automatic failover, so there is nothing to gain here. `
-        + `Use the recommended configuration above.</div>`;
-    return;
-  }
-
   const dohUrl = `https://${b.server}.edge.nextdns.io/${configId}`;
   const bootstrap = b.resolvedIP ? `#${b.resolvedIP}` : '';
   const forwarder = `https://${b.server}.edge.nextdns.io/${configId}${bootstrap}`
     + `,https://anycast.dns1.nextdns.io/${configId}`;
 
-  let html =
-    `<div class="pin-headline"><strong>${escHtml(b.server)}</strong> `
-    + `<span class="text-dim">${escHtml(loc)}</span> `
-    + `<span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>`
-    + (pin.gainMs != null
-        ? ` &mdash; <span class="pin-gain">${pin.gainMs}ms lower</span> <span class="text-dim">than `
-          + `${escHtml(serverLabel(pin.baseline))} (${pin.baseline.avgMs}ms)</span>`
-        : '')
-    + `</div>`
-    + `<div class="pin-sub">Dual-stack hostname &mdash; one URL covers both IPv4 and IPv6.</div>`;
+  // The verdict changes, the strings do not. An earlier version returned early when
+  // pinning was not worthwhile, which removed the pinned URL from the page entirely
+  // AND took the disclaimer with it — so the warning was invisible to exactly the
+  // people most likely to go and pin manually anyway. Recommending against something
+  // is not a reason to withhold it; state the verdict, then show the config.
+  let html;
+  if (pin.worthIt) {
+    html =
+      `<div class="pin-headline"><strong>${escHtml(b.server)}</strong> `
+      + `<span class="text-dim">${escHtml(loc)}</span> `
+      + `<span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>`
+      + (pin.gainMs != null
+          ? ` &mdash; <span class="pin-gain">${pin.gainMs}ms lower</span> <span class="text-dim">than `
+            + `${escHtml(serverLabel(pin.baseline))} (${pin.baseline.avgMs}ms)</span>`
+          : '')
+      + `</div>`
+      + `<div class="pin-sub">Dual-stack hostname &mdash; one URL covers both IPv4 and IPv6.</div>`;
+  } else {
+    // Common case: steering already lands on the same PoP the best edge server
+    // belongs to. Saying "zepto-iad is within 3ms of zepto-iad-1" reads as nonsense,
+    // so name what actually happened instead.
+    const samePop = pin.baseline && b.pop && pin.baseline.pop === b.pop;
+    html = samePop
+      ? `<div class="pin-ok">Already on your lowest-latency PoP &mdash; `
+        + `${escHtml(pin.baseline.type === 'anycast' ? 'anycast' : 'ultralow')} routes you to `
+        + `<strong>${escHtml(b.pop)}</strong> <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span>, `
+        + `the same PoP you would be pinning to.</div>`
+        + `<div class="pin-sub" style="margin:0.4rem 0 0">Pinning would target the same hardware while giving up `
+        + `automatic failover. The recommended configuration above is the better choice.</div>`
+      : `<div class="pin-ok">No pinning needed &mdash; `
+        + `${escHtml(serverLabel(pin.baseline))} <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span> `
+        + `is already within ${PIN_MIN_GAIN_MS}ms of the lowest-latency edge server `
+        + `${escHtml(b.server)} <span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>.</div>`
+        + `<div class="pin-sub" style="margin:0.4rem 0 0">Steered routing keeps automatic failover, so there is `
+        + `little to gain. The recommended configuration above is the better choice.</div>`;
+    html += `<div class="pin-anyway">If you want to pin anyway &mdash; ${escHtml(b.server)}</div>`;
+  }
 
   html += `<div class="pin-formats">`;
 
@@ -2096,7 +2109,9 @@ function renderPinSection(pin, configId) {
 // buildDohOptions: the DoH endpoint tiers, each with its measured latency and its
 // trade-off, so the choice can be made on numbers rather than on our ranking.
 // Ordered stable → steered → pinned, i.e. increasing latency benefit and
-// increasing risk. The pinned tier only appears when it actually wins.
+// increasing risk. The pinned tier is listed whenever an edge server resolved,
+// not only when it wins: withholding the URL because we advise against it removes
+// the user's ability to decide. The note says which case they are in.
 function buildDohOptions(ok, configId, pin) {
   const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
   const bestOf = t => v4.filter(r => r.type === t).sort((a, b) => a.avgMs - b.avgMs)[0] || null;
@@ -2118,12 +2133,14 @@ function buildDohOptions(ok, configId, pin) {
     },
   ];
 
-  if (pin && pin.worthIt) {
+  if (pin && pin.best && pin.best.server) {
     opts.push({
       label: 'pinned',
       url: `https://${pin.best.server}.edge.nextdns.io/${configId}`,
       ms: pin.best.avgMs,
-      note: 'no failover — see below',
+      note: pin.worthIt
+        ? 'no failover — see below'
+        : 'no failover — not recommended for you, see below',
       warn: true,
     });
   }
