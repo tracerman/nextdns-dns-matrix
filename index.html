@@ -521,6 +521,15 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .doh-ms { font-size: 0.72rem; font-weight: 700; }
 .doh-note { font-size: 0.68rem; color: var(--text-dim); }
 .doh-note.warn { color: var(--yellow); }
+.cfg-note {
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+  border-left: 2px solid var(--border);
+  padding-left: 0.5rem;
+  margin: 0.3rem 0 0.4rem 0.1rem;
+}
+.cfg-note strong { color: var(--text); font-weight: 600; }
 
 /* Pin-to-server section */
 .pin-box {
@@ -1956,10 +1965,16 @@ function renderConfig(config, configId) {
   if (hasV6) html += `<div class="config-cell">${configEntry2('IPv6 Fallback', config.ipv6.anycast1.ip, config.ipv6.anycast2.ip)}</div>`;
 
   // Row 4: Encrypted DNS — DoT, then every DoH tier so the user picks on numbers.
-  html += `<div class="config-cell">${configEntry('DNS-over-TLS/QUIC', config.dot)}</div>`;
+  // Both carry a pairing note: the hostname alone is not enough for DoT clients,
+  // which want an IP alongside it, and the addresses they need are the rows above.
+  html += `<div class="config-cell">${configEntry('DNS-over-TLS/QUIC', config.dot)}`
+    + `<div class="cfg-note">Most DoT clients want an <strong>IP plus this hostname</strong>. `
+    + `Use the addresses above &mdash; one IPv4 and one IPv6, so a failure on either stack still resolves.</div></div>`;
   html += `<div class="config-cell"><div class="doh-group-label">DNS-over-HTTPS</div>`
     + config.dohOptions.map(dohEntry).join('')
-    + `</div>`;
+    + `<div class="cfg-note">These are hostnames and resolve dual-stack &mdash; one URL covers IPv4 and IPv6, `
+    + `so there is no separate address per family. Clients that pair an IP with a DoH template `
+    + `(Windows 11) take the addresses above.</div></div>`;
 
   document.getElementById('configTable').innerHTML = html;
 
