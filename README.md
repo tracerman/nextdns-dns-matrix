@@ -4,7 +4,7 @@
 
 **[→ Open the live tool](https://tracerman.github.io/nextdns-dns-matrix/)**
 
-Benchmarks every NextDNS PoP available to you — anycast, ultralow, and individual edge servers — then hands you the exact config strings to act on the result, plus a guide to which field each one goes in.
+Benchmarks every NextDNS PoP available to you — anycast, ultralow, and individual edge servers — then turns the result into a compatible, step-by-step setup runbook for your device.
 
 Most DNS benchmarks tell you which server is quickest and stop there. This one closes the loop: if a specific edge server beats your steered routing, you get the URL that actually pins you to it, the trade-off that comes with pinning, and the steps for your hardware.
 
@@ -16,7 +16,7 @@ Most DNS benchmarks tell you which server is quickest and stop there. This one c
 4. Click **Run Benchmark**
 5. Your current server is highlighted in the results — see instantly if you're on the best node
 6. Copy the recommended config strings
-7. Open **Where do I paste this?** at the bottom of the page for setup steps for your device
+7. Under **Set up your recommended route**, choose a category and device, then click **Show setup**
 
 That's it. No server, no build step, no dependencies.
 
@@ -196,11 +196,23 @@ Raw IPs for unencrypted fallback or IoT devices.
 >
 > **IPv6 needs no linking** — your config ID is encoded in the address. Copy the personalised IPv6 addresses from the setup page rather than constructing them by hand.
 
-## Where Do I Paste This?
+## Guided Setup
 
-The tool has a built-in, collapsible setup guide at the bottom of the page covering generic routers (by capability rather than brand), Asus/Merlin, pfSense/OPNsense/unbound, the NextDNS CLI, Windows 11, Android, browsers, and Apple devices. Values fill in with your own after a benchmark run.
+The setup section is a short flow rather than a catalog of generic snippets:
 
-**Device not listed?** The guide ends with a copy-paste prompt for ChatGPT, Claude, Google AI Mode, or whatever you use. It carries the NextDNS mechanics models most reliably invent — that DoT can't pin by hostname, that plain IPv4 needs Linked IP — so you get steps for your hardware rather than confident fiction. Your config ID stays a placeholder: it's effectively a credential, and no assistant needs it to tell you which menu to open.
+1. Choose the scope: router/firewall, computer/mobile, browser/ChromeOS, or server/DNS
+2. Choose the device and, when needed, its firmware or capability
+3. Click **Show setup** to generate one best compatible route and a complete runbook
+
+Before benchmarking, the guide uses a neutral **Standard encrypted setup** and makes no latency claim. After a run, it adapts the measured recommendation to the device's real capabilities — for example, Android receives steered DoT even if a pinned edge won overall. The runbook includes prerequisites, paste-ready values, numbered steps, platform-specific recovery, official sources, and a fresh connection check.
+
+Primary paths cover AsusWRT/Merlin, pfSense, OPNsense, OpenWrt, UniFi OS, generic routers by capability, Windows 11, Apple profiles, Android, Linux/NextDNS CLI, Firefox, Chrome, ChromeOS, AdGuard Home, Pi-hole, and Synology DSM. Less common platforms and protocol notes remain in **Advanced reference**.
+
+**Share guide** creates a device/variant deep link and removes every accepted config-ID parameter before copying it. A recipient gets the instructions without receiving your profile ID.
+
+**Verification is deliberately scoped.** The in-page re-check can confirm that this browser reached NextDNS and compare the reported profile. It cannot prove router-wide coverage or the DNS transport used, because a browser, VPN, cache, or another client path may behave differently. Each runbook therefore adds a platform-specific check.
+
+**Device still not listed?** The collapsed assistant prompt inherits the selected device and compatible route while leaving the config ID as `{your-config-id}`. It tells the assistant which NextDNS mechanics it must preserve and asks it to admit uncertainty about firmware-specific menu paths.
 
 Two findings worth calling out, because neither is obvious:
 

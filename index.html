@@ -291,6 +291,7 @@ body {
 .section-header {
   font-size: 1rem;
   font-weight: 700;
+  margin-top: 0;
   margin-bottom: 0.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
@@ -981,7 +982,7 @@ tbody tr {
   .bootstrap-grid { grid-template-columns: 1fr; }
 }
 
-/* "Where do I paste this?" guide */
+/* Setup guide foundations */
 .guide { margin-top: 2.5rem; }
 .guide-intro {
   color: var(--text-dim);
@@ -1077,20 +1078,439 @@ tbody tr {
 .gv { color: var(--cyan); font-weight: 600; }
 .gv.unset { color: var(--text-dim); font-weight: 400; font-style: italic; }
 
+/* Guided setup */
+.setup-guide { scroll-margin-top: 1rem; }
+.setup-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.setup-kicker {
+  flex: 0 0 auto;
+  color: var(--cyan);
+  border: 1px solid rgba(88,166,255,0.3);
+  background: rgba(88,166,255,0.06);
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+}
+.setup-state-banner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.7rem;
+  background: rgba(88,166,255,0.05);
+  border: 1px solid rgba(88,166,255,0.22);
+  border-radius: 7px;
+  padding: 0.7rem 0.8rem;
+  margin: 1rem 0 0.7rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+.setup-state-banner strong { color: var(--text); }
+.setup-state-banner.measured {
+  background: rgba(63,185,80,0.04);
+  border-color: rgba(63,185,80,0.24);
+}
+.setup-state-icon {
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--cyan);
+  border-radius: 50%;
+  color: var(--cyan);
+  font-weight: 700;
+}
+.setup-state-banner.measured .setup-state-icon {
+  color: var(--green);
+  border-color: var(--green);
+}
+.text-action {
+  border: 0;
+  background: transparent;
+  color: var(--cyan);
+  cursor: pointer;
+  font: inherit;
+  padding: 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.setup-chooser {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.setup-stage {
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem;
+  min-width: 0;
+}
+.setup-stage:last-of-type { margin-bottom: 0.5rem; }
+.setup-stage[disabled] { opacity: 0.5; }
+.setup-stage legend {
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0;
+  margin-bottom: 0.55rem;
+}
+.setup-stage legend span {
+  display: inline-grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--cyan);
+  margin-right: 0.4rem;
+  font-size: 0.7rem;
+}
+.stage-hint {
+  color: var(--text-dim);
+  font-size: 0.73rem;
+  margin: -0.25rem 0 0.55rem 1.8rem;
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.choice-grid--scope { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.setup-choice {
+  appearance: none;
+  text-align: left;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.7rem;
+  min-height: 4.15rem;
+  cursor: pointer;
+  font-family: var(--mono);
+}
+.setup-choice:hover { border-color: rgba(88,166,255,0.55); }
+.setup-choice[aria-pressed="true"] {
+  border-color: var(--cyan);
+  box-shadow: inset 3px 0 var(--cyan);
+  background: rgba(88,166,255,0.08);
+}
+.setup-choice strong {
+  display: block;
+  color: inherit;
+  font-size: 0.78rem;
+  margin-bottom: 0.22rem;
+}
+.setup-choice small {
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.67rem;
+  line-height: 1.4;
+}
+.setup-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.85rem;
+}
+.setup-show-btn { width: auto; min-width: 9rem; }
+.setup-actions p {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  margin: 0;
+}
+.setup-runbook {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+  scroll-margin-top: 1rem;
+}
+.runbook-hero {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(120deg, rgba(88,166,255,0.08), transparent 65%);
+}
+.runbook-eyebrow {
+  color: var(--cyan);
+  font-size: 0.67rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.runbook-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.2rem;
+}
+.runbook-title-row h2 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+.runbook-title-row p {
+  color: var(--text-dim);
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+}
+.share-guide-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--cyan);
+  border-radius: 4px;
+  padding: 0.35rem 0.55rem;
+  cursor: pointer;
+  font: 0.7rem var(--mono);
+  white-space: nowrap;
+}
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+.setup-badge {
+  border: 1px solid rgba(88,166,255,0.25);
+  border-radius: 999px;
+  color: var(--cyan);
+  background: rgba(88,166,255,0.05);
+  padding: 0.18rem 0.45rem;
+  font-size: 0.65rem;
+}
+.setup-badge.warning {
+  color: var(--yellow);
+  border-color: rgba(210,153,34,0.35);
+  background: rgba(210,153,34,0.06);
+}
+.runbook-body { padding: 0 1rem 1rem; }
+.runbook-section {
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+.runbook-section:first-child { border-top: 0; margin-top: 0; }
+.runbook-section h3 {
+  font-size: 0.86rem;
+  margin: 0 0 0.55rem;
+}
+.runbook-section p,
+.runbook-section li {
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.runbook-section a { color: var(--cyan); }
+.setup-recommendation {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  padding: 0.7rem;
+  background: rgba(88,166,255,0.05);
+  border: 1px solid rgba(88,166,255,0.2);
+  border-radius: 6px;
+}
+.setup-recommendation .route-mark {
+  color: var(--cyan);
+  font-size: 1.15rem;
+}
+.setup-recommendation p { margin: 0.2rem 0 0; color: var(--text-dim); }
+.setup-caution,
+.setup-blocker {
+  border-left: 3px solid var(--yellow);
+  background: rgba(210,153,34,0.06);
+  padding: 0.6rem 0.7rem;
+  color: var(--text-dim);
+  margin-top: 0.65rem;
+}
+.setup-blocker { border-left-color: var(--red); background: rgba(248,81,73,0.05); }
+.prereq-list,
+.recovery-list {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+.value-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+.setup-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.55rem 0.65rem;
+}
+.setup-value-label {
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.62rem;
+  margin-bottom: 0.15rem;
+}
+.setup-value code {
+  display: block;
+  color: var(--text);
+  font-size: 0.72rem;
+  overflow-wrap: anywhere;
+}
+.setup-value button {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--cyan);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0.22rem 0.4rem;
+  font: 0.65rem var(--mono);
+}
+.setup-value button.copied { color: var(--green); border-color: var(--green); }
+.endpoint-pair-note {
+  grid-column: 1 / -1;
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  margin: 0.1rem 0 0;
+}
+.runbook-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: setup-steps;
+}
+.runbook-steps > li {
+  counter-increment: setup-steps;
+  position: relative;
+  padding: 0 0 0.85rem 2.35rem;
+}
+.runbook-steps > li:last-child { padding-bottom: 0; }
+.runbook-steps > li::before {
+  content: counter(setup-steps);
+  position: absolute;
+  left: 0;
+  top: -0.05rem;
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--cyan);
+  border-radius: 50%;
+  color: var(--cyan);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.runbook-steps > li::after {
+  content: '';
+  position: absolute;
+  left: 0.75rem;
+  top: 1.55rem;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+.runbook-steps > li:last-child::after { display: none; }
+.runbook-steps strong { color: var(--text); }
+.inline-command {
+  display: block;
+  margin-top: 0.4rem;
+  padding: 0.5rem 0.6rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.7rem;
+}
+.verification-panel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.7rem;
+}
+.verification-copy p { color: var(--text-dim); margin: 0.2rem 0 0; }
+.verification-btn {
+  border: 1px solid var(--cyan);
+  background: rgba(88,166,255,0.08);
+  color: var(--cyan);
+  border-radius: 4px;
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+  font: 0.7rem var(--mono);
+}
+.verification-result {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border);
+  padding-top: 0.6rem;
+  font-size: 0.75rem;
+}
+.verification-result.success { color: var(--green); }
+.verification-result.warning { color: var(--yellow); }
+.verification-result.error { color: var(--red); }
+.scope-caveat {
+  color: var(--text-dim);
+  font-size: 0.69rem !important;
+  margin-top: 0.55rem;
+}
+.source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: var(--text-dim);
+  font-size: 0.67rem;
+}
+.source-links { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+.advanced-reference {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-top: 0.8rem;
+}
+.advanced-reference > summary,
+.ai-prompt > summary {
+  cursor: pointer;
+  list-style-position: inside;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.advanced-reference-body {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  padding: 0 0.85rem 0.85rem;
+}
+.advanced-reference-body h3 { font-size: 0.76rem; margin: 0 0 0.35rem; }
+.advanced-reference-body p { color: var(--text-dim); font-size: 0.7rem; line-height: 1.5; margin: 0; }
+.advanced-reference-body a { color: var(--cyan); }
+
 /* Copy-paste AI prompt */
 .ai-prompt {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0.85rem 0.9rem;
+  padding: 0;
   margin-top: 0.9rem;
 }
+.ai-prompt-content { padding: 0 0.85rem 0.85rem; }
 .ai-prompt-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.5rem;
 }
 .ai-prompt-title { font-size: 0.85rem; font-weight: 600; }
 .ai-copy-btn {
@@ -1205,6 +1625,8 @@ tbody tr {
 @media (max-width: 960px) {
   /* Prevent fit-content container from overflowing viewport */
   .container { max-width: 100%; }
+  .choice-grid--scope { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .advanced-reference-body { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
@@ -1214,6 +1636,21 @@ tbody tr {
   /* Prevent iOS Safari auto-zoom on focus (triggers at <16px) */
   .form-group input, .form-group select { font-size: 16px; }
   .btn { width: 100%; }
+  .setup-heading { display: block; }
+  .setup-kicker { display: inline-block; margin-top: 0.3rem; }
+  .setup-state-banner { grid-template-columns: auto 1fr; }
+  .setup-state-banner .text-action { grid-column: 2; justify-self: start; padding-left: 0; }
+  .setup-chooser { padding: 0.75rem; }
+  .choice-grid,
+  .choice-grid--scope { grid-template-columns: 1fr; }
+  .setup-choice { min-height: 0; }
+  .setup-actions { align-items: stretch; flex-direction: column; }
+  .setup-show-btn { width: 100%; }
+  .runbook-title-row { display: block; }
+  .share-guide-btn { margin-top: 0.7rem; }
+  .value-list { grid-template-columns: 1fr; }
+  .verification-panel { grid-template-columns: 1fr; }
+  .verification-btn { justify-self: start; }
   table { font-size: 0.75rem; }
   td, th { padding: 0.3rem 0.4rem; }
   /* Hide Hostname (col 5) and Jitter (col 9) — table scrolls horizontally */
@@ -1361,211 +1798,90 @@ tbody tr {
   </div>
 
 
-  <div class="guide">
-    <div class="section-header">Where do I paste this?</div>
-    <p class="guide-intro">This tool gives you the strings. Here is which field each one goes in.
-      Values below fill in with your own once you run a benchmark.</p>
-
-    <details class="guide-item">
-      <summary>Any router &mdash; which option do I use?</summary>
-      <div class="guide-body">
-        <p>Go by what your router supports, best first:</p>
-        <ol>
-          <li><strong>DNS-over-TLS (DoT)</strong> &mdash; enter an <em>IP</em> and a <em>TLS hostname</em>
-            (<span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span>). Port 853.</li>
-          <li><strong>DNS-over-HTTPS (DoH)</strong> &mdash; paste one of the DoH URLs above.</li>
-          <li><strong>Neither</strong> &mdash; plain DNS with linked IP. See below.</li>
-        </ol>
-        <p><strong>Whichever you use, set at least one IPv4 and one IPv6 address.</strong> Most routers keep
-          them on separate pages, so it is easy to configure one family and leave the other pointing at your
-          ISP &mdash; which quietly bypasses NextDNS for every lookup that takes that path. It matters most
-          when pinning: a pinned server has no automatic failover, so a second stack is the only redundancy
-          you have left.</p>
-
-        <p><strong>Using plain IPs and keeping your profile</strong></p>
-        <p>Router menus differ, but the setting lives in one of two places. Look for whichever your firmware has:</p>
-        <table class="guide-table">
-          <tr><td>WAN / Internet</td><td>&ldquo;DNS Server 1 / 2&rdquo;, &ldquo;Static DNS&rdquo;, or
-            &ldquo;Use these DNS servers&rdquo; &mdash; often needs <em>Automatic / Get DNS from ISP</em> set to
-            <em>No</em> first</td></tr>
-          <tr><td>LAN / DHCP</td><td>&ldquo;DNS Server&rdquo; under the DHCP server settings &mdash; this is what
-            your devices are actually handed</td></tr>
-        </table>
-        <p>Many routers only pass DNS to clients from the <strong>DHCP/LAN</strong> page; the WAN entry may just
-          be for the router's own lookups. If your devices ignore the change, that is usually why.</p>
-        <p>Then, in order:</p>
-        <ol>
-          <li>Go to <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr;
-            <strong>Setup</strong> and scroll to <strong>Linked IP</strong>.</li>
-          <li>Click the link button to bind your current public IP to this profile.</li>
-          <li>Copy the IPv4 addresses shown in <em>that</em> section into your router. They are specific to your
-            profile and are <strong>not</strong> the anycast addresses ending in <code>.0</code>.</li>
-          <li>If your ISP gives you IPv6, add your personalised IPv6 addresses from the same page &mdash; those
-            need no linking at all.</li>
-          <li>Verify at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>.
-            It should name your profile. If it says
-            <em>&ldquo;using NextDNS with no profile&rdquo;</em>, the link did not take &mdash; recheck steps 2 and 3.</li>
-        </ol>
-        <p class="guide-note">Encrypted options carry your config ID in the connection itself, so NextDNS always
-          knows which profile to apply. Plain DNS has nowhere to put it, which is why the linking step exists.
-          Your linked IP breaks whenever your public IP changes &mdash; use DDNS if it is dynamic, and note that
-          carrier-grade NAT rules this method out entirely.</p>
+  <section class="guide setup-guide" id="setupGuide" aria-labelledby="setupGuideTitle">
+    <div class="setup-heading">
+      <div>
+        <h2 class="section-header" id="setupGuideTitle">Set up your recommended route</h2>
+        <p class="guide-intro">Choose what you are configuring. You will get one compatible route, the exact
+          values it needs, and a step-by-step runbook that finishes with verification.</p>
       </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>Asus / Asuswrt-Merlin</summary>
-      <div class="guide-body">
-        <p><strong>WAN &rarr; Internet Connection &rarr; DNS Privacy Protocol &rarr; DNS-over-TLS (DoT)</strong></p>
-        <p>The server list only appears once you switch the protocol off <em>None</em>. Ignore the
-          <em>Preset servers</em> dropdown and add rows manually:</p>
-        <table class="guide-table">
-          <tr><td>IP Address</td><td><span class="gv" data-gv="bestIP">your best IPv4 from the table above</span></td></tr>
-          <tr><td>TLS Hostname</td><td><span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span></td></tr>
-          <tr><td>TLS Port</td><td>leave blank (defaults to 853)</td></tr>
-          <tr><td>SPKI Fingerprint</td><td>leave blank</td></tr>
-        </table>
-        <p>Add <strong>at least one IPv4 and one IPv6 entry</strong>. IPv6 DNS servers go on the
-          <strong>IPv6</strong> page, not the WAN page &mdash; they are separate screens on Asuswrt, which is
-          why people often end up IPv4-only without realising.</p>
-        <p class="guide-note">One more thing that catches people out: the DNS servers <em>above</em> the DoT
-          section are only used by the router itself and have no effect on your devices once DoT is on.</p>
-      </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>pfSense / OPNsense / anything running unbound</summary>
-      <div class="guide-body">
-        <p><strong>Services &rarr; DNS Resolver &rarr; General Settings &rarr; Custom Options</strong></p>
-        <pre class="guide-pre">server:
-  forward-zone:
-    name: "."
-    forward-tls-upstream: yes
-    forward-addr: 45.90.28.0#<span class="gv" data-gv="id">{configId}</span>.dns1.nextdns.io
-    forward-addr: 2a07:a8c0::#<span class="gv" data-gv="id">{configId}</span>.dns1.nextdns.io
-    forward-addr: 45.90.30.0#<span class="gv" data-gv="id">{configId}</span>.dns2.nextdns.io
-    forward-addr: 2a07:a8c1::#<span class="gv" data-gv="id">{configId}</span>.dns2.nextdns.io</pre>
-        <p class="guide-note">This is NextDNS's own pfSense recipe. The bare anycast IPs are correct here &mdash;
-          the config ID travels in the TLS hostname after the <code>#</code>, not in the address. Recent pfSense
-          builds let you set the TLS hostname in the GUI instead of using Custom Options.</p>
-      </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>NextDNS CLI &mdash; the only setup that can pin <em>and</em> fail over</summary>
-      <div class="guide-body">
-        <pre class="guide-pre">nextdns config set -profile=<span class="gv" data-gv="id">{configId}</span></pre>
-        <p>To pin to your lowest-latency server while keeping anycast as a safety net:</p>
-        <pre class="guide-pre">nextdns config set -forwarder <span class="gv" data-gv="forwarder">(run a benchmark to generate this)</span></pre>
-        <p class="guide-note">The CLI takes a comma-separated forwarder list and tries them in order. This is the
-          only client that gives you pinned latency without the single point of failure.</p>
-      </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>Windows 11</summary>
-      <div class="guide-body">
-        <p class="guide-route">Recommended route: <strong><span class="gv" data-gv="tier">run a benchmark</span></strong>.
-          The command below always keeps the server address and DoH template on that same route.</p>
-        <p>Windows only offers its encrypted-DNS dropdown for resolvers it already knows &mdash; Cloudflare,
-          Google and Quad9. NextDNS is not on that list, so register the template first, in PowerShell as
-          Administrator:</p>
-        <pre class="guide-pre">Add-DnsClientDohServerAddress -ServerAddress '<span class="gv" data-gv="bestIP">{serverIP}</span>' -DohTemplate '<span class="gv" data-gv="doh">https://dns.nextdns.io/{configId}</span>' -AllowFallbackToUdp $False -AutoUpgrade $True</pre>
-        <p>Then walk this exact path:</p>
-        <ol>
-          <li><strong>Settings &rarr; Network &amp; Internet</strong></li>
-          <li>Click <strong>Wi-Fi</strong> or <strong>Ethernet</strong> &mdash; whichever you are on &mdash;
-            then click the connection itself (its name, not the toggle).</li>
-          <li>Scroll to <strong>DNS server assignment</strong> and click <strong>Edit</strong>.</li>
-          <li>Change the dropdown from <em>Automatic (DHCP)</em> to <strong>Manual</strong>, then toggle
-            <strong>IPv4</strong> on.</li>
-          <li>Put your IP in <strong>Preferred DNS</strong>, and set
-            <strong>Preferred DNS encryption</strong> to <em>Encrypted only (DNS over HTTPS)</em>.</li>
-          <li>Repeat in <strong>Alternate DNS</strong> with a second IP for redundancy, then
-            <strong>Save</strong>.</li>
-        </ol>
-        <p>The encryption dropdown stays greyed out until the IP you entered matches a registered template &mdash;
-          that is the PowerShell step above, not a bug.</p>
-
-        <p><strong>If you would rather use plain IPs and your profile</strong></p>
-        <p>Same path, but skip the PowerShell step, use the IPv4 addresses from
-          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup &rarr;
-          <strong>Linked IP</strong>, and leave encryption on <em>Unencrypted only</em>. You must click the link
-          button on that page first or your blocklists will not apply.</p>
-        <p>Verify either way at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>
-          &mdash; it should name your profile rather than saying
-          <em>&ldquo;using NextDNS with no profile&rdquo;</em>.</p>
-        <p class="guide-note">Windows stores the IP and DoH template as a pair. Never mix an anycast address,
-          a steered template, or a pinned edge URL from different routing cards. To add IPv6, repeat the
-          registration with <span class="gv" data-gv="bestV6">the matching IPv6 address</span> and the same
-          template.</p>
-      </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>Android</summary>
-      <div class="guide-body">
-        <p><strong>Settings &rarr; Network &amp; internet &rarr; Private DNS</strong>
-          (if it is not there, search your settings for &ldquo;Private DNS&rdquo; &mdash; the path moves between
-          versions and skins). Choose <em>Private DNS provider hostname</em> and enter:</p>
-        <pre class="guide-pre"><span class="gv" data-gv="dot">{configId}.dns.nextdns.io</span></pre>
-        <p class="guide-note">Private DNS accepts a DoT hostname only, and DoT cannot address an individual
-          edge server &mdash; so pinning is not available on Android. You get steered routing, which is usually
-          within a few ms anyway.</p>
-      </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>Firefox / Chrome</summary>
-      <div class="guide-body">
-        <p>Search the browser's settings for <em>&ldquo;DNS over HTTPS&rdquo;</em> or <em>&ldquo;secure DNS&rdquo;</em>
-          &mdash; both bury it, and both move it between releases. Choose the custom/provider option and paste:</p>
-        <pre class="guide-pre"><span class="gv" data-gv="doh">https://dns.nextdns.io/{configId}</span></pre>
-        <p class="guide-note">This covers the browser only. Everything else on the device keeps using whatever
-          DNS the system is set to.</p>
-      </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>iPhone / iPad / Mac</summary>
-      <div class="guide-body">
-        <p>Install the configuration profile from
-          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup.
-          NextDNS generates and signs it, so there is nothing here to paste.</p>
-        <p class="guide-note">The Apple profile cannot target an individual server, so pinning does not apply.
-          Nothing this tool outputs changes an Apple profile.</p>
-      </div>
-    </details>
-
-    <details class="guide-item">
-      <summary>Plain / unencrypted DNS &mdash; read this before using raw IPs</summary>
-      <div class="guide-body">
-        <p><strong>IPv4 needs your IP linked, or your profile silently does not apply.</strong> DoT carries your
-          config ID in the TLS hostname and DoH carries it in the URL. Plain IPv4 has nowhere to put it, so
-          NextDNS identifies you by your public IP instead &mdash; which you have to register at
-          <a href="https://my.nextdns.io" target="_blank" rel="noopener">my.nextdns.io</a> &rarr; Setup &rarr; Linked IP.</p>
-        <p>Use the IPv4 addresses shown in that Linked IP section. They are specific to your profile and are
-          <em>not</em> the anycast addresses ending in <code>.0</code>. Point a device at
-          <code>45.90.28.0</code> without linking and DNS resolves fine while none of your blocklists apply.</p>
-        <p>Linking also breaks under carrier-grade NAT, and needs DDNS if your IP is dynamic.</p>
-        <p><strong>IPv6 needs no linking</strong> &mdash; your config ID is encoded in the address itself. Copy
-          your personalised IPv6 addresses from the setup page rather than building them by hand.</p>
-      </div>
-    </details>
-    <div class="ai-prompt">
-      <div class="ai-prompt-head">
-        <span class="ai-prompt-title">Device not listed? Hand this to an AI</span>
-        <button class="ai-copy-btn" id="aiCopyBtn" onclick="copyAiPrompt(this)">copy prompt</button>
-      </div>
-      <p class="guide-intro" style="margin:0 0 0.5rem">Paste this into Google AI Mode, ChatGPT, Claude, or
-        whatever you use, and add your device. It carries the NextDNS facts that models most often get wrong,
-        so you get steps for your hardware instead of invented ones.</p>
-      <pre class="ai-prompt-box" id="aiPromptBox" tabindex="0" role="region" aria-label="Generated setup prompt"></pre>
-      <p class="guide-note" style="margin-top:0.5rem">Your config ID is deliberately left as a placeholder.
-        Anyone holding it can send queries through your profile and pollute your analytics, and no AI needs it
-        to tell you which menu to open. Swap it in yourself once you have the steps.</p>
+      <span class="setup-kicker">GUIDED SETUP</span>
     </div>
-  </div>
+
+    <div class="setup-state-banner" id="setupStateBanner" role="status">
+      <span class="setup-state-icon" aria-hidden="true">1</span>
+      <div><strong>Standard encrypted setup is ready.</strong>
+        Run the benchmark first if you want this guide personalized to your measured route.</div>
+      <button type="button" class="text-action" onclick="focusBenchmark()">Run benchmark</button>
+    </div>
+
+    <div class="setup-chooser" role="group" aria-label="Setup guide choices">
+      <fieldset class="setup-stage">
+        <legend><span>1</span> What are you configuring?</legend>
+        <div class="choice-grid choice-grid--scope" id="scopeChoices"></div>
+      </fieldset>
+
+      <fieldset class="setup-stage" id="deviceStage" disabled>
+        <legend><span>2</span> Choose your device</legend>
+        <p class="stage-hint" id="deviceHint">Choose a category first.</p>
+        <div class="choice-grid" id="deviceChoices"></div>
+      </fieldset>
+
+      <fieldset class="setup-stage setup-stage--variant" id="variantStage" hidden>
+        <legend><span>3</span> Which version or capability?</legend>
+        <p class="stage-hint" id="variantHint"></p>
+        <div class="choice-grid" id="variantChoices"></div>
+      </fieldset>
+
+      <div class="setup-actions">
+        <button type="button" class="btn setup-show-btn" id="showSetupBtn" onclick="showSelectedSetup()" disabled>
+          Show setup
+        </button>
+        <p id="setupActionHint">Select a category and device to continue.</p>
+      </div>
+    </div>
+
+    <article class="setup-runbook" id="setupRunbook" hidden aria-live="polite"></article>
+
+    <details class="advanced-reference">
+      <summary>Advanced reference &amp; less common platforms</summary>
+      <div class="advanced-reference-body">
+        <div>
+          <h3>By protocol</h3>
+          <p><strong>DoH</strong> uses a profile URL. Keep every bootstrap IP paired with the URL from the same
+            route. <strong>DoT</strong> uses port 853 and the TLS hostname
+            <code>{config-id}.dns.nextdns.io</code>. Plain IPv4 requires Linked IP.</p>
+        </div>
+        <div>
+          <h3>More platforms</h3>
+          <p>Firewalla, DD-WRT, EdgeOS, BSD, Synology SRM, and firmware-specific builds can differ materially.
+            Use the capability-based “Other router” guide or the assistant prompt below, and confirm the menu
+            path against your firmware documentation.</p>
+        </div>
+        <div>
+          <h3>Official setup index</h3>
+          <p><a href="https://github.com/nextdns/nextdns/wiki" target="_blank" rel="noopener">NextDNS supported
+            platforms</a> · <a href="https://help.nextdns.io/t/m1hmv0k/which-setup-type-to-use" target="_blank"
+            rel="noopener">Which setup type to use</a> · <a href="https://help.nextdns.io/t/g9hmvan/what-is-linked-ip"
+            target="_blank" rel="noopener">How Linked IP works</a></p>
+        </div>
+      </div>
+    </details>
+
+    <details class="ai-prompt">
+      <summary class="ai-prompt-title">Device still not listed? Generate a careful assistant prompt</summary>
+      <div class="ai-prompt-content">
+        <div class="ai-prompt-head">
+          <p class="guide-intro">The prompt inherits your selected device and compatible route, but deliberately
+            keeps your real profile ID private.</p>
+          <button class="ai-copy-btn" id="aiCopyBtn" onclick="copyAiPrompt(this)">copy prompt</button>
+        </div>
+        <pre class="ai-prompt-box" id="aiPromptBox" tabindex="0" role="region" aria-label="Generated setup prompt"></pre>
+        <p class="guide-note">Replace <code>{your-config-id}</code> yourself after the assistant gives you a
+          firmware-specific path. If it is unsure about your model, treat that uncertainty as useful.</p>
+      </div>
+    </details>
+  </section>
 
   <footer class="footer">
     <div class="footer-links">
@@ -2593,38 +2909,825 @@ function buildInsightHtml(errors, ipv4, ipv6, preference, routingTiers) {
   return { html, currentAnycastPop };
 }
 
-// fillGuideVars: substitute the user's real values into the "Where do I paste this?"
-// guide after a benchmark. Before a run the guide still reads correctly with its
-// {configId} placeholders, so it is useful without running anything.
-function fillGuideVars(configId, config) {
-  const recommended = config && config.recommendedTier;
-  const pinned = config && config.routingTiers.find(t => t.id === 'pinned');
-  const vals = {
-    id: configId,
-    dot: `${configId}.dns.nextdns.io`,
-    tier: recommended ? recommended.label : null,
-    doh: recommended ? recommended.url : null,
-    bestIP: recommended ? recommended.addresses.ipv4[0] : null,
-    bestV6: recommended ? recommended.addresses.ipv6[0] : null,
-    forwarder: pinned && pinned.available ? pinned.forwarder : null,
+// ─── Guided setup ─────────────────────────────────────────────────────────────
+
+const SETUP_SCOPES = [
+  { id: 'network', label: 'Routers & firewalls', description: 'Protect devices across a home or site.' },
+  { id: 'device', label: 'Computers & mobile', description: 'Configure one operating system.' },
+  { id: 'browser', label: 'Browsers & ChromeOS', description: 'Protect browser traffic only.' },
+  { id: 'server', label: 'Servers & DNS', description: 'Forward a network through a local resolver.' },
+];
+
+const SETUP_DEVICES = [
+  {
+    id: 'asus', scope: 'network', label: 'Asus', description: 'AsusWRT or Asuswrt-Merlin',
+    protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    badges: ['Encrypted', 'Network-wide'], source: 'https://rog.asus.com/support/faq/1051428/',
+    sourceLabel: 'Asus DNS-over-TLS guide', lastVerified: '2026-07-27',
+    variantHint: 'The available setup differs between stock AsusWRT and Merlin.',
+    variants: [
+      { id: 'stock', label: 'Stock AsusWRT', description: 'Native DNS Privacy / DoT' },
+      { id: 'merlin-dot', label: 'Merlin · native DoT', description: 'Use the DNS Privacy screen' },
+      { id: 'merlin-cli', label: 'Merlin · NextDNS CLI', description: 'More control and pinned failover', protocol: 'CLI' },
+    ],
+  },
+  {
+    id: 'pfsense', scope: 'network', label: 'pfSense', description: 'Unbound DNS Resolver',
+    protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    badges: ['Encrypted', 'Network-wide'], source: 'https://github.com/nextdns/nextdns/wiki/pfSense',
+    sourceLabel: 'NextDNS pfSense guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'opnsense', scope: 'network', label: 'OPNsense', description: 'Native Unbound DNS-over-TLS',
+    protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    badges: ['Encrypted', 'Network-wide'], source: 'https://docs.opnsense.org/manual/unbound.html',
+    sourceLabel: 'OPNsense Unbound guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'openwrt', scope: 'network', label: 'OpenWrt', description: 'NextDNS CLI package',
+    protocol: 'CLI', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    badges: ['Encrypted', 'Network-wide'], source: 'https://github.com/nextdns/nextdns/wiki/OpenWRT',
+    sourceLabel: 'NextDNS OpenWrt guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'unifi', scope: 'network', label: 'UniFi / UDM / UXG', description: 'UniFi OS with NextDNS CLI',
+    protocol: 'CLI', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    badges: ['Encrypted', 'Network-wide'], source: 'https://github.com/nextdns/nextdns/wiki/UnifiOS',
+    sourceLabel: 'NextDNS UniFi OS guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'other-router', scope: 'network', label: 'Other router', description: 'Choose what its firmware supports',
+    protocol: 'DoT', routes: ['ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    badges: ['Network-wide'], source: 'https://help.nextdns.io/t/m1hmv0k/which-setup-type-to-use',
+    sourceLabel: 'NextDNS setup type guide', lastVerified: '2026-07-27',
+    variantHint: 'Check your router manual or settings for one of these capabilities.',
+    variants: [
+      { id: 'dot', label: 'It supports DoT', description: 'IP + TLS hostname, port 853', protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'] },
+      { id: 'doh', label: 'It supports custom DoH', description: 'Custom URL, sometimes bootstrap IPs', protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'] },
+      { id: 'cli', label: 'It can run NextDNS CLI', description: 'SSH / package-capable firmware', protocol: 'CLI', routes: ['pinned', 'ultralow', 'anycast'] },
+      { id: 'plain', label: 'Only plain DNS', description: 'Requires Linked IP for IPv4', protocol: 'Plain DNS', routes: ['anycast'], badges: ['Requires Linked IP'] },
+    ],
+  },
+  {
+    id: 'windows', scope: 'device', label: 'Windows 11', description: 'Native encrypted DNS settings',
+    protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'This Windows device',
+    badges: ['Encrypted', 'System-wide'], source: 'https://learn.microsoft.com/en-us/powershell/module/dnsclient/add-dnsclientdohserveraddress?view=windowsserver2025-ps',
+    sourceLabel: 'Microsoft DoH registration', lastVerified: '2026-07-27',
+    secondarySource: 'https://support.microsoft.com/en-us/windows/experience/connectivity-networking/essential-network-settings-and-tasks-in-windows',
+    secondarySourceLabel: 'Windows network settings',
+  },
+  {
+    id: 'apple', scope: 'device', label: 'Apple profile', description: 'macOS, iPhone, iPad, or Apple TV',
+    protocol: 'Apple profile', routes: ['ultralow'], scopeLabel: 'This Apple device',
+    badges: ['Encrypted', 'System-wide'], source: 'https://apple.nextdns.io/',
+    sourceLabel: 'NextDNS Apple profile generator', lastVerified: '2026-07-27',
+    variantHint: 'Choose the device receiving the profile.',
+    variants: [
+      { id: 'macos', label: 'macOS', description: 'Install from System Settings' },
+      { id: 'ios', label: 'iPhone / iPad', description: 'Install a downloaded profile' },
+      { id: 'tvos', label: 'Apple TV', description: 'Use the profile instructions for tvOS' },
+    ],
+  },
+  {
+    id: 'android', scope: 'device', label: 'Android', description: 'Private DNS provider hostname',
+    protocol: 'DoT', routes: ['ultralow'], scopeLabel: 'This Android device',
+    badges: ['Encrypted', 'System-wide'], source: 'https://support.google.com/android/answer/9654714?hl=en',
+    sourceLabel: 'Google Private DNS guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'linux', scope: 'device', label: 'Linux / NextDNS CLI', description: 'Native NextDNS client',
+    protocol: 'CLI', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'This Linux device',
+    badges: ['Encrypted', 'System-wide'], source: 'https://github.com/nextdns/nextdns/wiki',
+    sourceLabel: 'NextDNS CLI platform guides', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'firefox', scope: 'browser', label: 'Firefox', description: 'Custom DNS-over-HTTPS provider',
+    protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Firefox only',
+    badges: ['Encrypted', 'Browser only'], warningBadges: ['Browser only'], source: 'https://support.mozilla.org/en-US/kb/dns-over-https',
+    sourceLabel: 'Mozilla DNS over HTTPS guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'chrome', scope: 'browser', label: 'Chrome', description: 'Use secure DNS with custom provider',
+    protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Chrome only',
+    badges: ['Encrypted', 'Browser only'], warningBadges: ['Browser only'], source: 'https://support.google.com/chrome/answer/10468685?hl=en&co=GENIE.Platform%3DDesktop',
+    sourceLabel: 'Google Chrome Secure DNS guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'chromeos', scope: 'browser', label: 'ChromeOS', description: 'Chrome Secure DNS, not system-wide DoH',
+    protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Chrome browser only',
+    badges: ['Encrypted', 'Browser only'], warningBadges: ['Browser only'], source: 'https://support.google.com/chrome/answer/10468685?hl=en&co=GENIE.Platform%3DDesktop',
+    sourceLabel: 'Google Chrome Secure DNS guide', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'adguard', scope: 'server', label: 'AdGuard Home', description: 'Encrypted upstream resolver',
+    protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Clients using AdGuard Home',
+    badges: ['Encrypted upstream', 'Network-wide'], source: 'https://github.com/AdguardTeam/AdGuardHome/wiki/Configuration',
+    sourceLabel: 'AdGuard Home upstream configuration', lastVerified: '2026-07-27',
+  },
+  {
+    id: 'pihole', scope: 'server', label: 'Pi-hole', description: 'Needs a local encrypted DNS proxy',
+    protocol: 'CLI proxy', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Clients using Pi-hole',
+    badges: ['Requires proxy', 'Network-wide'], warningBadges: ['Requires proxy'], source: 'https://docs.pi-hole.net/guides/dns/cloudflared/',
+    sourceLabel: 'Pi-hole encrypted upstream pattern', lastVerified: '2026-07-27',
+    secondarySource: 'https://github.com/nextdns/nextdns/wiki/Configuration',
+    secondarySourceLabel: 'NextDNS CLI configuration',
+  },
+  {
+    id: 'synology', scope: 'server', label: 'Synology DSM', description: 'NextDNS CLI on a NAS',
+    protocol: 'CLI', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Clients using the NAS',
+    badges: ['Encrypted', 'Network-wide'], source: 'https://github.com/nextdns/nextdns/wiki/Synology-DSM',
+    sourceLabel: 'NextDNS Synology DSM guide', lastVerified: '2026-07-27',
+  },
+];
+
+let selectedSetupScope = null;
+let selectedSetupDevice = null;
+let selectedSetupVariant = null;
+let setupRunbookVisible = false;
+let latestSetupContext = {
+  hasBenchmark: false,
+  benchmarkAt: null,
+  configId: '{config-id}',
+  config: null,
+  routingTiers: null,
+};
+
+function currentSetupDevice() {
+  return SETUP_DEVICES.find(d => d.id === selectedSetupDevice) || null;
+}
+
+function currentSetupVariant() {
+  const device = currentSetupDevice();
+  return device && device.variants
+    ? device.variants.find(v => v.id === selectedSetupVariant) || null
+    : null;
+}
+
+function effectiveDevice(device, variant) {
+  return {
+    ...device,
+    protocol: variant && variant.protocol ? variant.protocol : device.protocol,
+    routes: variant && variant.routes ? variant.routes : device.routes,
+    badges: [...(device.badges || []), ...((variant && variant.badges) || [])],
+  };
+}
+
+function buildStandardRoutingTiers(configId) {
+  return [
+    {
+      id: 'anycast', label: 'Standard / Anycast', available: true,
+      url: `https://anycast.dns1.nextdns.io/${configId}`,
+      addresses: {
+        ipv4: [ANYCAST_FALLBACK.ipv4.dns1],
+        ipv6: [ANYCAST_FALLBACK.ipv6.dns1],
+      },
+      fallbackAddresses: {
+        ipv4: [ANYCAST_FALLBACK.ipv4.dns2],
+        ipv6: [ANYCAST_FALLBACK.ipv6.dns2],
+      },
+      results: { ipv4: [], ipv6: [] },
+      latency: { ipv4: null, ipv6: null },
+      tradeoff: 'Stable global addresses with automatic routing failover.',
+    },
+    {
+      id: 'ultralow', label: 'Standard / Steered', available: true,
+      url: `https://dns.nextdns.io/${configId}`,
+      addresses: { ipv4: [], ipv6: [] },
+      fallbackAddresses: { ipv4: [], ipv6: [] },
+      results: { ipv4: [], ipv6: [] },
+      latency: { ipv4: null, ipv6: null },
+      tradeoff: 'NextDNS chooses a nearby healthy location automatically.',
+    },
+  ];
+}
+
+function selectCompatibleSetup(device, variant, context = latestSetupContext) {
+  const effective = effectiveDevice(device, variant);
+  const tiers = context.routingTiers || buildStandardRoutingTiers(context.configId);
+  const allowed = effective.routes || ['ultralow', 'anycast'];
+  const available = tiers.filter(t => t.available && allowed.includes(t.id));
+  let tier = null;
+
+  if (context.hasBenchmark && context.config) {
+    const globallyRecommended = context.config.recommendedTier;
+    if (globallyRecommended && allowed.includes(globallyRecommended.id)) tier = globallyRecommended;
+    if (!tier) {
+      tier = available
+        .filter(t => t.latency && (t.latency.ipv4 != null || t.latency.ipv6 != null))
+        .sort((a, b) => (a.latency.ipv4 ?? a.latency.ipv6 ?? Infinity)
+          - (b.latency.ipv4 ?? b.latency.ipv6 ?? Infinity))[0] || null;
+    }
+  }
+
+  if (!tier) {
+    const standardOrder = effective.protocol === 'DoT' && device.id === 'android'
+      ? ['ultralow', 'anycast']
+      : ['anycast', 'ultralow'];
+    tier = standardOrder.map(id => available.find(t => t.id === id)).find(Boolean)
+      || available[0] || tiers.find(t => t.available);
+  }
+
+  const globalTier = context.config && context.config.recommendedTier;
+  const adapted = !!(context.hasBenchmark && globalTier && tier && globalTier.id !== tier.id);
+  const reason = context.hasBenchmark
+    ? adapted
+      ? `${globalTier.label} was the overall result, but ${device.label} cannot use it safely. This is the fastest compatible route measured.`
+      : `Compatible with ${device.label} and selected from your latest measurements.`
+    : 'A neutral encrypted route that works without a benchmark. Run the benchmark to personalize it.';
+
+  return { device: effective, variant, tier, adapted, reason };
+}
+
+function routeUrl(tierId, configId, dnsNum = 1, pinnedUrl = null) {
+  if (tierId === 'pinned') return pinnedUrl;
+  if (tierId === 'anycast') return `https://anycast.dns${dnsNum}.nextdns.io/${configId}`;
+  return `https://dns.nextdns.io/${configId}`;
+}
+
+// Return complete endpoint records. Address, profile template, route and fallback
+// policy travel together so a renderer cannot accidentally mix routing tiers.
+function buildEndpointPairs(tier, configId, protocol = 'DoH') {
+  if (!tier) return [];
+  const hostname = `${configId}.dns.nextdns.io`;
+  const pairs = [];
+  const seen = new Set();
+  const add = (address, family, route, role, template, fallbackPolicy) => {
+    if (!address || seen.has(`${family}:${address}`)) return;
+    seen.add(`${family}:${address}`);
+    pairs.push({ address, family, template, hostname, route, role, fallbackPolicy });
   };
 
-  document.querySelectorAll('.gv[data-gv]').forEach(el => {
-    const v = vals[el.dataset.gv];
-    if (v) {
-      el.textContent = v;
-      el.classList.remove('unset');
-      return;
+  if (tier.id === 'anycast') {
+    for (const family of ['ipv4', 'ipv6']) {
+      const familyLabel = family === 'ipv4' ? 'IPv4' : 'IPv6';
+      add(tier.addresses[family][0], familyLabel, 'anycast', 'primary',
+        protocol === 'DoH' ? routeUrl('anycast', configId, 1) : hostname, 'same-tier automatic routing');
+      add(tier.fallbackAddresses[family][0], familyLabel, 'anycast', 'alternate',
+        protocol === 'DoH' ? routeUrl('anycast', configId, 2) : hostname, 'independent anycast service');
     }
-    if (el.dataset.gv === 'forwarder') {
-      el.textContent = '(no pinned edge server was measured)';
-      el.classList.add('unset');
+    return pairs;
+  }
+
+  for (const family of ['ipv4', 'ipv6']) {
+    const familyLabel = family === 'ipv4' ? 'IPv4' : 'IPv6';
+    const primaryTemplate = protocol === 'DoH' ? tier.url : hostname;
+    (tier.addresses[family] || []).forEach((address, index) =>
+      add(address, familyLabel, tier.id, index ? 'alternate' : 'primary',
+        primaryTemplate, tier.id === 'pinned' ? 'none on this endpoint' : 'same steered route'));
+
+    const measuredAddresses = new Set((tier.results[family] || []).map(r => r && r.resolvedIP).filter(Boolean));
+    (tier.fallbackAddresses[family] || []).forEach(address => {
+      const sameRoute = measuredAddresses.has(address) && tier.id !== 'pinned';
+      const fallbackRoute = sameRoute ? tier.id : 'anycast';
+      add(address, familyLabel, fallbackRoute, 'fallback',
+        protocol === 'DoH' ? routeUrl(fallbackRoute, configId, 1, tier.url) : hostname,
+        sameRoute ? 'same steered route' : 'falls back to stable anycast');
+    });
+  }
+  return pairs;
+}
+
+function renderSetupChoices() {
+  const scopeBox = document.getElementById('scopeChoices');
+  scopeBox.innerHTML = SETUP_SCOPES.map(scope => `
+    <button type="button" class="setup-choice" aria-pressed="${scope.id === selectedSetupScope}"
+      onclick="chooseSetupScope('${scope.id}')">
+      <strong>${escHtml(scope.label)}</strong><small>${escHtml(scope.description)}</small>
+    </button>`).join('');
+
+  const deviceStage = document.getElementById('deviceStage');
+  const deviceBox = document.getElementById('deviceChoices');
+  const devices = SETUP_DEVICES.filter(d => d.scope === selectedSetupScope);
+  deviceStage.disabled = !selectedSetupScope;
+  document.getElementById('deviceHint').textContent = selectedSetupScope
+    ? `${devices.length} compatible starting points — choose the closest match.`
+    : 'Choose a category first.';
+  deviceBox.innerHTML = devices.map(device => `
+    <button type="button" class="setup-choice" aria-pressed="${device.id === selectedSetupDevice}"
+      onclick="chooseSetupDevice('${device.id}')">
+      <strong>${escHtml(device.label)}</strong><small>${escHtml(device.description)}</small>
+    </button>`).join('');
+
+  const device = currentSetupDevice();
+  const variantStage = document.getElementById('variantStage');
+  const variantBox = document.getElementById('variantChoices');
+  variantStage.hidden = !(device && device.variants);
+  if (device && device.variants) {
+    document.getElementById('variantHint').textContent = device.variantHint || 'Choose the closest match.';
+    variantBox.innerHTML = device.variants.map(variant => `
+      <button type="button" class="setup-choice" aria-pressed="${variant.id === selectedSetupVariant}"
+        onclick="chooseSetupVariant('${variant.id}')">
+        <strong>${escHtml(variant.label)}</strong><small>${escHtml(variant.description)}</small>
+      </button>`).join('');
+  } else {
+    variantBox.innerHTML = '';
+  }
+
+  const ready = !!(device && (!device.variants || selectedSetupVariant));
+  document.getElementById('showSetupBtn').disabled = !ready;
+  document.getElementById('setupActionHint').textContent = ready
+    ? 'Ready — the next view will contain every step and value.'
+    : device && device.variants ? 'Choose a version or capability to continue.'
+      : 'Select a category and device to continue.';
+}
+
+function chooseSetupScope(scopeId) {
+  selectedSetupScope = scopeId;
+  selectedSetupDevice = null;
+  selectedSetupVariant = null;
+  setupRunbookVisible = false;
+  document.getElementById('setupRunbook').hidden = true;
+  renderSetupChoices();
+}
+
+function chooseSetupDevice(deviceId) {
+  const device = SETUP_DEVICES.find(d => d.id === deviceId);
+  if (!device) return;
+  selectedSetupScope = device.scope;
+  selectedSetupDevice = device.id;
+  selectedSetupVariant = device.variants ? null : '';
+  setupRunbookVisible = false;
+  document.getElementById('setupRunbook').hidden = true;
+  renderSetupChoices();
+  renderAiPrompt(latestSetupContext.config, latestSetupContext.hasBenchmark);
+}
+
+function chooseSetupVariant(variantId) {
+  selectedSetupVariant = variantId;
+  setupRunbookVisible = false;
+  document.getElementById('setupRunbook').hidden = true;
+  renderSetupChoices();
+  renderAiPrompt(latestSetupContext.config, latestSetupContext.hasBenchmark);
+}
+
+function setupValue(label, value, copyLabel = label) {
+  return `<div class="setup-value"><div><span class="setup-value-label">${escHtml(label)}</span>`
+    + `<code>${escHtml(value)}</code></div>`
+    + `<button type="button" data-copy="${escAttr(value)}" data-copy-label="${escAttr(copyLabel)}"`
+    + ` onclick="clickCopy(this)">copy</button></div>`;
+}
+
+function commandBlock(command) {
+  return `<code class="inline-command">${escHtml(command)}</code>`;
+}
+
+function setupUsesEndpointPairs(setup) {
+  if (setup.device.protocol === 'DoT') return setup.device.id !== 'android';
+  if (setup.device.protocol !== 'DoH') return false;
+  return setup.device.id === 'windows'
+    || (setup.device.id === 'other-router' && setup.variant && setup.variant.id === 'doh');
+}
+
+function limitEndpointPairsForDevice(device, pairs) {
+  return device.id === 'windows'
+    ? ['IPv4', 'IPv6'].flatMap(family => pairs.filter(pair => pair.family === family).slice(0, 2))
+    : pairs;
+}
+
+function buildGuideValues(setup, pairs, context) {
+  const protocol = setup.device.protocol;
+  const tier = setup.tier;
+  const id = context.configId;
+  const values = [];
+  if (protocol === 'Apple profile') {
+    values.push(['Profile generator', `https://apple.nextdns.io/?configuration=${id}`]);
+  } else if (protocol === 'CLI' || protocol === 'CLI proxy') {
+    values.push(['Profile ID', id]);
+    values.push(['Profile command', `nextdns config set -profile=${id}`]);
+    if (tier && tier.id === 'pinned' && tier.forwarder) values.push(['Pinned + failover forwarder', tier.forwarder]);
+  } else if (protocol === 'Plain DNS') {
+    values.push(['Linked IP setup', 'https://my.nextdns.io → Setup → Linked IP']);
+    values.push(['IPv4 servers', 'Copy the profile-specific addresses from Linked IP']);
+  } else if (protocol === 'DoT') {
+    values.push(['TLS hostname', `${id}.dns.nextdns.io`]);
+    values.push(['Port', '853']);
+    pairs.forEach((pair, index) =>
+      values.push([`${pair.family} ${pair.role} · ${pair.route}`, pair.address]));
+  } else {
+    values.push(['DoH URL', tier.url]);
+    if (setupUsesEndpointPairs(setup)) {
+      pairs.forEach(pair => {
+        const pairLabel = `${pair.family} ${pair.role} · ${pair.route}`;
+        values.push([`${pairLabel} address`, pair.address]);
+        values.push([`${pairLabel} template`, pair.template]);
+      });
     }
-    if (el.dataset.gv === 'bestV6') {
-      el.textContent = '(no matching IPv6 address was measured)';
-      el.classList.add('unset');
+  }
+  return values;
+}
+
+function buildDeviceSteps(setup, pairs, context) {
+  const { device, variant, tier } = setup;
+  const id = context.configId;
+  const dot = `${id}.dns.nextdns.io`;
+  const primary = pairs.find(p => p.family === 'IPv4' && p.role === 'primary') || pairs[0];
+  const alternates = pairs.filter(p => p.family === 'IPv4' && p !== primary).slice(0, 1);
+  const windowsPairs = pairs.filter(p => p.address).slice(0, 4);
+  const windowsCommands = windowsPairs.map(pair =>
+    `Add-DnsClientDohServerAddress -ServerAddress '${pair.address}' -DohTemplate '${pair.template}' -AllowFallbackToUdp $False -AutoUpgrade $True`
+  ).join('\n');
+  const cliForwarder = tier && tier.id === 'pinned' && tier.forwarder
+    ? `\nnextdns config set -forwarder '${tier.forwarder}'`
+    : '';
+
+  switch (device.id) {
+    case 'windows':
+      return [
+        `<strong>Open PowerShell as Administrator.</strong> Register every preferred and alternate address independently. Each command keeps its address paired with the matching DoH template.${commandBlock(windowsCommands)}`,
+        '<strong>Open Settings → Network & internet.</strong> Choose Wi-Fi or Ethernet, open the active connection, then find <em>DNS server assignment</em> and select <strong>Edit</strong>.',
+        `<strong>Switch to Manual.</strong> Turn on IPv4, enter ${escHtml(primary ? primary.address : 'the IPv4 primary')} as Preferred DNS, and use ${escHtml(alternates[0] ? alternates[0].address : 'the IPv4 alternate')} as Alternate DNS.`,
+        '<strong>Choose “Encrypted only (DNS over HTTPS)”</strong> for each address. If the dropdown is disabled, the matching PowerShell registration did not succeed.',
+        '<strong>Repeat for IPv6</strong> when your network supports it, then Save. Disconnect and reconnect the network if Windows keeps the old DHCP values.',
+      ];
+    case 'android':
+      return [
+        '<strong>Open Settings → Network & internet → Private DNS.</strong> On some Android skins, search Settings for “Private DNS.”',
+        `<strong>Select Private DNS provider hostname.</strong> Enter ${commandBlock(dot)}`,
+        '<strong>Tap Save.</strong> Android validates the hostname before accepting it; a VPN or captive portal can make this fail temporarily.',
+      ];
+    case 'apple': {
+      const path = variant && variant.id === 'macos'
+        ? 'Open the downloaded file, then use System Settings → Privacy & Security → Profiles to review and install it.'
+        : variant && variant.id === 'tvos'
+          ? 'Follow the Apple TV instructions shown by the generator; tvOS profile delivery differs from iPhone and Mac.'
+          : 'After downloading, open Settings → Profile Downloaded, review the NextDNS profile, then tap Install.';
+      return [
+        `<strong>Open the official profile generator.</strong> Use <a href="https://apple.nextdns.io/?configuration=${encodeURIComponent(id)}" target="_blank" rel="noopener">apple.nextdns.io with this profile</a>.`,
+        `<strong>Choose ${escHtml(variant ? variant.label : 'your Apple device')}</strong> and download the signed configuration profile.`,
+        `<strong>Install the profile.</strong> ${path}`,
+        '<strong>Confirm the DNS setting is active.</strong> VPNs and some security apps can install their own DNS profile and take priority.',
+      ];
     }
-  });
+    case 'firefox':
+      return [
+        '<strong>Open Firefox Settings → Privacy & Security.</strong> Scroll to DNS over HTTPS.',
+        '<strong>Choose a custom provider.</strong> Depending on Firefox version, select Increased/Max Protection, then Custom in the provider list.',
+        `<strong>Paste the DoH URL</strong> and save.${commandBlock(tier.url)}`,
+        '<strong>Test in Firefox.</strong> This changes Firefox only; other apps still use the operating system resolver.',
+      ];
+    case 'chrome':
+    case 'chromeos':
+      return [
+        '<strong>Open Chrome Settings → Privacy and security → Security.</strong> Find <em>Use secure DNS</em>.',
+        '<strong>Turn it on and choose a custom provider.</strong> If Chrome only offers preset providers, update Chrome and check managed-browser policies.',
+        `<strong>Paste the DoH URL.</strong>${commandBlock(tier.url)}`,
+        `<strong>Test in Chrome.</strong> ${device.id === 'chromeos' ? 'ChromeOS custom name servers are not the same as system-wide encrypted DNS; this guide protects Chrome browsing only.' : 'Other apps on the device are not covered.'}`,
+      ];
+    case 'asus':
+      if (variant && variant.id === 'merlin-cli') {
+        return [
+          '<strong>Enable SSH and connect to the router.</strong> Confirm your Merlin build is supported before installing third-party services.',
+          `<strong>Install and configure NextDNS CLI</strong> using the official platform instructions, then set the profile.${commandBlock(`nextdns config set -profile=${id}${cliForwarder}`)}`,
+          '<strong>Enable router setup in the CLI.</strong> Make sure the LAN DHCP server hands the router itself to clients for DNS.',
+          '<strong>Restart the service and renew one client lease.</strong> Confirm that client now uses the router as its resolver.',
+        ];
+      }
+      return [
+        '<strong>Open WAN → Internet Connection.</strong> Set <em>DNS Privacy Protocol</em> to DNS-over-TLS (DoT); the server list appears after this change.',
+        `<strong>Add the IPv4 entries.</strong> Put each IP in <em>IP Address</em>, use ${escHtml(dot)} as <em>TLS Hostname</em>, leave TLS Port blank (853), and leave SPKI Fingerprint blank.`,
+        '<strong>Add IPv6 entries on the IPv6 page</strong> if IPv6 is enabled. Asus keeps IPv4 and IPv6 DNS on separate screens.',
+        '<strong>Apply the change and renew a client lease.</strong> Confirm the LAN/DHCP settings distribute the router as DNS; WAN DNS fields may affect only the router.',
+      ];
+    case 'pfsense': {
+      const forwarders = pairs.map(p => `    forward-addr: ${p.address}#${dot}`).join('\n');
+      return [
+        '<strong>Open Services → DNS Resolver → General Settings.</strong> Keep Unbound enabled and open <em>Custom Options</em>.',
+        `<strong>Add an encrypted forward zone.</strong>${commandBlock(`server:\n  forward-zone:\n    name: "."\n    forward-tls-upstream: yes\n${forwarders}`)}`,
+        '<strong>Save and Apply Changes.</strong> If your pfSense version exposes TLS forwarding in the GUI, do not configure the same upstreams in both places.',
+        '<strong>Confirm DHCP distributes pfSense as DNS.</strong> Renew a test client lease before verifying.',
+      ];
+    }
+    case 'opnsense':
+      return [
+        '<strong>Open Services → Unbound DNS → DNS over TLS.</strong> Add one row for each endpoint shown in this guide.',
+        `<strong>For every row</strong>, leave Domain blank, enter the Server IP, use port 853, and set Verify CN to ${escHtml(dot)}.`,
+        '<strong>Apply the configuration.</strong> Review Unbound General settings so conflicting system nameservers are not used as alternative upstreams.',
+        '<strong>Confirm DHCP distributes OPNsense as DNS.</strong> Renew a test client lease before verifying.',
+      ];
+    case 'openwrt':
+      return [
+        '<strong>SSH into OpenWrt.</strong> Confirm the device has persistent storage and a supported CPU architecture.',
+        `<strong>Install NextDNS CLI using the official OpenWrt guide</strong>, then set this profile.${commandBlock(`nextdns config set -profile=${id}${cliForwarder}`)}`,
+        '<strong>Run the CLI router setup / activate step.</strong> It should integrate with dnsmasq rather than leaving two resolvers competing for port 53.',
+        '<strong>Restart DNS and renew a LAN client lease.</strong> Confirm the client receives the router as its DNS server.',
+      ];
+    case 'unifi':
+      return [
+        '<strong>Before installing, disable conflicting UniFi DNS features.</strong> Native Content Filtering / Ad Blocking can compete with the CLI and must not own the same DNS path.',
+        '<strong>SSH into the UniFi OS console</strong> and follow the official NextDNS UniFi OS installer for your current firmware.',
+        `<strong>Set the profile and enable router setup.</strong>${commandBlock(`nextdns config set -profile=${id}${cliForwarder}`)}`,
+        '<strong>Restart the NextDNS service and renew one client lease.</strong> Firmware upgrades can remove third-party integrations, so re-check after upgrades.',
+      ];
+    case 'other-router':
+      if (variant && variant.id === 'plain') {
+        return [
+          '<strong>Open my.nextdns.io → Setup → Linked IP.</strong> Link the public IPv4 address used by this router.',
+          '<strong>Copy the profile-specific IPv4 addresses from that Linked IP section.</strong> Do not use the generic anycast addresses ending in .0.',
+          '<strong>Open the router LAN / DHCP DNS settings.</strong> Enter the profile-specific addresses and disable ISP/automatic DNS.',
+          '<strong>Renew a client lease and verify.</strong> If your public IP changes, linking must be updated; CGNAT can make this method unusable.',
+        ];
+      }
+      if (variant && variant.id === 'cli') {
+        return [
+          '<strong>Confirm the firmware supports persistent packages and SSH.</strong> Find a model-specific NextDNS CLI install path before changing DNS.',
+          `<strong>Install the CLI and set the profile.</strong>${commandBlock(`nextdns config set -profile=${id}${cliForwarder}`)}`,
+          '<strong>Enable router setup and restart the service.</strong> Make sure the built-in DNS forwarder is integrated, not competing on port 53.',
+          '<strong>Renew one client lease and verify.</strong>',
+        ];
+      }
+      if (variant && variant.id === 'doh') {
+        return [
+          '<strong>Find the router’s encrypted DNS / DoH page.</strong> It may be under WAN, Internet, Security, or DNS.',
+          `<strong>Enter the DoH URL.</strong>${commandBlock(tier.url)}`,
+          '<strong>If bootstrap addresses are required, add only the IP/template pairs shown here.</strong> Do not mix an address from one route with a URL from another.',
+          '<strong>Apply, renew one client lease, and verify.</strong> Confirm the DHCP server actually distributes the router as DNS.',
+        ];
+      }
+      return [
+        '<strong>Find DNS-over-TLS / DNS Privacy.</strong> It may be under WAN, Internet, Security, or DNS.',
+        `<strong>Add each endpoint.</strong> Use the address as Server IP, ${escHtml(dot)} as TLS hostname / certificate name, and port 853.`,
+        '<strong>Disable ISP / automatic DNS fallback</strong> if the firmware would otherwise send unencrypted queries in parallel.',
+        '<strong>Apply, renew one client lease, and verify.</strong> Confirm LAN/DHCP distributes the router as DNS.',
+      ];
+    case 'linux':
+      return [
+        '<strong>Choose your distribution from the official NextDNS CLI platform index</strong> and install the matching package.',
+        `<strong>Set the profile.</strong>${commandBlock(`sudo nextdns config set -profile=${id}${cliForwarder}`)}`,
+        '<strong>Activate or restart NextDNS.</strong> Check that systemd-resolved, NetworkManager, or another local resolver is not competing for the same listener.',
+        '<strong>Inspect service status</strong> with your init system, then re-check this browser connection.',
+      ];
+    case 'adguard':
+      return [
+        '<strong>Open AdGuard Home → Settings → DNS settings.</strong> Find <em>Upstream DNS servers</em>.',
+        `<strong>Add the compatible DoH URL.</strong>${commandBlock(tier.url)}`,
+        '<strong>Remove or deliberately order conflicting upstreams.</strong> A non-NextDNS resolver in parallel can bypass the profile.',
+        '<strong>Use “Test upstreams,” then Apply.</strong> Confirm clients receive AdGuard Home as their DNS server.',
+      ];
+    case 'pihole':
+      return [
+        '<strong>Install a local encrypted DNS proxy on the Pi-hole host.</strong> NextDNS CLI is the most direct profile-aware option; Pi-hole does not accept a DoH URL in its normal upstream field.',
+        `<strong>Configure the proxy on a local port.</strong>${commandBlock(`sudo nextdns config set -profile=${id} -listen=127.0.0.1:5353${cliForwarder}`)}`,
+        '<strong>In Pi-hole → Settings → DNS, clear public upstream resolvers.</strong> Add <code>127.0.0.1#5353</code> as the custom upstream and save.',
+        '<strong>Restart both services and test a client.</strong> If port 5353 is occupied, choose another unused local port in both configurations.',
+      ];
+    case 'synology':
+      return [
+        '<strong>Give the NAS a static LAN address and enable SSH temporarily.</strong> Clients need a stable target.',
+        `<strong>Follow the official Synology DSM CLI install guide</strong>, then set the profile.${commandBlock(`sudo nextdns config set -profile=${id}${cliForwarder}`)}`,
+        '<strong>Configure the router DHCP server to advertise the NAS address as DNS.</strong> Do not expose the DNS listener to the public internet.',
+        '<strong>Renew one client lease and verify.</strong> Re-check the package after major DSM upgrades.',
+      ];
+    default:
+      return ['Follow the official platform guide linked below and use the paired values in this runbook.'];
+  }
+}
+
+function buildPrerequisites(setup, context) {
+  const items = [];
+  if (context.configId === '{config-id}') {
+    items.push('Enter your NextDNS profile ID at the top of this page before copying values.');
+  } else {
+    items.push(`Your NextDNS profile ID: ${context.configId}`);
+  }
+  if (setup.device.scope === 'network' || setup.device.scope === 'server') {
+    items.push('Administrator access and a way to renew one test client’s DHCP lease.');
+  } else {
+    items.push('Administrator or device-owner access to change DNS settings.');
+  }
+  if (setup.device.protocol === 'CLI' || setup.device.protocol === 'CLI proxy') {
+    items.push('A supported device, SSH or terminal access, and a backup path if DNS stops.');
+  }
+  if (setup.device.protocol === 'Plain DNS') {
+    items.push('A stable public IPv4 address or DDNS; Linked IP may not work behind carrier-grade NAT.');
+  }
+  return items;
+}
+
+function renderSetupRunbook() {
+  const device = currentSetupDevice();
+  if (!device) return;
+  const variant = currentSetupVariant();
+  const setup = selectCompatibleSetup(device, variant);
+  const allPairs = buildEndpointPairs(setup.tier, latestSetupContext.configId,
+    setup.device.protocol === 'DoH' ? 'DoH' : 'DoT');
+  // Windows exposes one preferred and one alternate slot per address family.
+  // Do not render extra endpoints it has nowhere to store.
+  const pairs = limitEndpointPairsForDevice(device, allPairs);
+  const values = buildGuideValues(setup, pairs, latestSetupContext);
+  const steps = buildDeviceSteps(setup, pairs, latestSetupContext);
+  const prerequisites = buildPrerequisites(setup, latestSetupContext);
+  const warningBadges = new Set([...(device.warningBadges || []), ...((variant && variant.warningBadges) || [])]);
+  const badgeHtml = (setup.device.badges || []).map(badge =>
+    `<span class="setup-badge${warningBadges.has(badge) ? ' warning' : ''}">${escHtml(badge)}</span>`
+  ).join('');
+  const measuredAt = latestSetupContext.hasBenchmark && latestSetupContext.benchmarkAt
+    ? `Measured ${latestSetupContext.benchmarkAt.toLocaleString()}`
+    : 'Not benchmarked — standard compatible route';
+  const limitation = device.id === 'android'
+    ? 'Android Private DNS accepts a hostname, not a bootstrap IP, so it cannot stay pinned to one measured edge.'
+    : (device.scope === 'browser'
+      ? 'This protects browser lookups only. It does not change DNS for other apps or prove system-wide coverage.'
+      : (setup.tier && setup.tier.id === 'pinned'
+        ? 'Pinned endpoints can reduce latency, but the pinned endpoint itself has no automatic failover. Keep the paired anycast fallback where the client supports it.'
+        : 'The selected encrypted route keeps NextDNS routing or failover behavior.'));
+  const platformCheck = device.scope === 'network' || device.scope === 'server'
+    ? 'Also test from a second client and confirm its DNS server is the router or resolver you configured.'
+    : device.scope === 'browser'
+      ? `Also open <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a> in ${escHtml(device.label)} and compare the reported profile.`
+      : `Also open <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a> on this device and compare the reported profile.`;
+  const recoveryItems = [
+    'Confirm the expected profile ID is shown at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>, not merely “connected to NextDNS.”',
+    device.scope === 'network' || device.scope === 'server'
+      ? 'Confirm the test client received the new DNS server through DHCP; WAN DNS alone may affect only the router.'
+      : 'Disable VPN, browser Secure DNS, or another DNS profile temporarily to find which setting is taking priority.',
+  ];
+  if (setupUsesEndpointPairs(setup) && pairs.length) {
+    recoveryItems.push('Re-copy each endpoint as a pair. A working address with the wrong template can use the wrong route or prevent encrypted DNS from activating.');
+  } else if (device.id === 'android') {
+    recoveryItems.push('If Android reports “Couldn’t connect,” leave the captive portal, pause the VPN, and re-check the Private DNS hostname for a typo.');
+  } else if (device.id === 'pihole') {
+    recoveryItems.push('Confirm the local proxy is listening on the same loopback port Pi-hole uses, and that no other service owns that port.');
+  } else {
+    recoveryItems.push('Re-copy the profile URL or hostname and confirm the app did not silently switch back to its automatic resolver.');
+  }
+  if (setup.tier.id === 'pinned') {
+    recoveryItems.push('Rerun the benchmark if the pinned edge no longer responds; edge addresses can rotate.');
+  } else if (setup.device.routes.includes('anycast') && setup.tier.id !== 'anycast') {
+    recoveryItems.push('Try Standard / Anycast if this device supports it and the steered route is unavailable on this network.');
+  } else {
+    recoveryItems.push('Return to the previous setting if DNS stops, then compare the platform check with this browser result.');
+  }
+
+  const runbook = document.getElementById('setupRunbook');
+  runbook.innerHTML = `
+    <div class="runbook-hero">
+      <div class="runbook-eyebrow">Best compatible setup · ${escHtml(measuredAt)}</div>
+      <div class="runbook-title-row">
+        <div>
+          <h2 id="setupRunbookTitle">${escHtml(device.label)}${variant ? ` · ${escHtml(variant.label)}` : ''}</h2>
+          <p>${escHtml(setup.device.scopeLabel)} · ${escHtml(setup.device.protocol)} · ${escHtml(setup.tier.label)}</p>
+        </div>
+        <button type="button" class="share-guide-btn" onclick="copyGuideLink(this)">Share guide</button>
+      </div>
+      <div class="badge-row">${badgeHtml}</div>
+    </div>
+    <div class="runbook-body">
+      <section class="runbook-section">
+        <h3>Setup summary</h3>
+        <div class="setup-recommendation">
+          <span class="route-mark" aria-hidden="true">↳</span>
+          <div><strong>${escHtml(setup.tier.label)}</strong>
+            <p>${escHtml(setup.reason)}</p></div>
+        </div>
+        <div class="setup-caution"><strong>Compatibility note:</strong> ${escHtml(limitation)}</div>
+      </section>
+      <section class="runbook-section">
+        <h3>Before you start</h3>
+        <ul class="prereq-list">${prerequisites.map(item => `<li>${escHtml(item)}</li>`).join('')}</ul>
+      </section>
+      <section class="runbook-section">
+        <h3>Values you’ll use</h3>
+        <div class="value-list">
+          ${values.map(([label, value]) => setupValue(label, value)).join('')}
+          ${setupUsesEndpointPairs(setup) && pairs.length ? '<p class="endpoint-pair-note">Values with the same family, role, and route label form one endpoint pair. Keep them together when entering preferred and alternate servers.</p>' : ''}
+        </div>
+      </section>
+      <section class="runbook-section">
+        <h3>Do this</h3>
+        <ol class="runbook-steps">${steps.map(step => `<li>${step}</li>`).join('')}</ol>
+      </section>
+      <section class="runbook-section">
+        <h3>Verify</h3>
+        <div class="verification-panel">
+          <div class="verification-copy"><strong>Re-check this browser’s connection</strong>
+            <p>This can confirm which NextDNS profile this browser reached. It cannot prove every device or the transport used.</p></div>
+          <button type="button" class="verification-btn" id="verifySetupBtn" onclick="verifySetupConnection()">Re-check connection</button>
+          <div class="verification-result" id="setupVerificationResult" hidden role="status" aria-live="polite"></div>
+        </div>
+        <p class="scope-caveat">${platformCheck}</p>
+      </section>
+      <section class="runbook-section">
+        <h3>If it didn’t work</h3>
+        <ul class="recovery-list">${recoveryItems.map(item => `<li>${item}</li>`).join('')}</ul>
+      </section>
+      <section class="runbook-section source-row">
+        <span>Instructions last checked ${escHtml(device.lastVerified)}</span>
+        <span class="source-links">
+          <a href="${escAttr(device.source)}" target="_blank" rel="noopener">${escHtml(device.sourceLabel)} ↗</a>
+          ${device.secondarySource ? `<a href="${escAttr(device.secondarySource)}" target="_blank" rel="noopener">${escHtml(device.secondarySourceLabel)} ↗</a>` : ''}
+        </span>
+      </section>
+    </div>`;
+  runbook.hidden = false;
+}
+
+function showSelectedSetup() {
+  if (!currentSetupDevice()) return;
+  setupRunbookVisible = true;
+  renderSetupRunbook();
+  const params = new URLSearchParams(window.location.search);
+  params.set('device', selectedSetupDevice);
+  if (selectedSetupVariant) params.set('variant', selectedSetupVariant);
+  else params.delete('variant');
+  history.replaceState(null, '', `${window.location.pathname}${params.toString() ? '?' + params : ''}${window.location.hash}`);
+  const heading = document.getElementById('setupRunbookTitle');
+  if (heading) {
+    heading.tabIndex = -1;
+    heading.focus({ preventScroll: true });
+    document.getElementById('setupRunbook').scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      block: 'start',
+    });
+  }
+}
+
+function buildGuideShareUrl() {
+  const url = new URL(window.location.href);
+  // A shared guide contains device state only. Drop profile IDs and unrelated
+  // query parameters so copied links cannot leak or inherit local app state.
+  url.search = '';
+  url.searchParams.set('device', selectedSetupDevice);
+  if (selectedSetupVariant) url.searchParams.set('variant', selectedSetupVariant);
+  else url.searchParams.delete('variant');
+  url.hash = 'setupGuide';
+  return url.toString();
+}
+
+async function copyGuideLink(btn) {
+  try {
+    await navigator.clipboard.writeText(buildGuideShareUrl());
+    btn.textContent = 'Link copied';
+    btn.classList.add('copied');
+    showCopyToast('Copied guide link without your profile ID');
+    setTimeout(() => { btn.textContent = 'Share guide'; btn.classList.remove('copied'); }, 1600);
+  } catch {
+    showCopyToast('Copy failed — copy the address bar after removing your profile ID', true);
+  }
+}
+
+function focusBenchmark() {
+  const input = document.getElementById('configId');
+  if (input) {
+    input.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'center' });
+    input.focus({ preventScroll: true });
+  }
+}
+
+function resetSetupContextForInput() {
+  const enteredId = document.getElementById('configId').value.trim();
+  const configId = CONFIG_ID_PATTERN.test(enteredId) ? enteredId : '{config-id}';
+  latestSetupContext = {
+    hasBenchmark: false,
+    benchmarkAt: null,
+    configId,
+    config: null,
+    routingTiers: buildStandardRoutingTiers(configId),
+  };
+  const banner = document.getElementById('setupStateBanner');
+  banner.classList.remove('measured');
+  banner.innerHTML = `<span class="setup-state-icon" aria-hidden="true">1</span>`
+    + `<div><strong>Standard encrypted setup is ready.</strong> Run the benchmark first if you want this guide personalized to your measured route.</div>`
+    + `<button type="button" class="text-action" onclick="focusBenchmark()">Run benchmark</button>`;
+  if (setupRunbookVisible) renderSetupRunbook();
+  renderAiPrompt(null, false);
+}
+
+function updateSetupContext(configId, config) {
+  latestSetupContext = {
+    hasBenchmark: true,
+    benchmarkAt: new Date(),
+    configId,
+    config,
+    routingTiers: config.routingTiers,
+  };
+  const banner = document.getElementById('setupStateBanner');
+  banner.classList.add('measured');
+  banner.innerHTML = `<span class="setup-state-icon" aria-hidden="true">✓</span>`
+    + `<div><strong>Personalized setup ready.</strong> Routes measured ${escHtml(latestSetupContext.benchmarkAt.toLocaleString())}.</div>`
+    + `<button type="button" class="text-action" onclick="focusBenchmark()">Rerun benchmark</button>`;
+  if (setupRunbookVisible) renderSetupRunbook();
+  renderAiPrompt(config, true);
+}
+
+function initSetupGuide() {
+  const params = new URLSearchParams(window.location.search);
+  const requestedDevice = SETUP_DEVICES.find(d => d.id === params.get('device'));
+  if (requestedDevice) {
+    selectedSetupScope = requestedDevice.scope;
+    selectedSetupDevice = requestedDevice.id;
+    const requestedVariant = params.get('variant');
+    selectedSetupVariant = requestedDevice.variants && requestedDevice.variants.some(v => v.id === requestedVariant)
+      ? requestedVariant : (requestedDevice.variants ? null : '');
+  }
+  const enteredId = document.getElementById('configId').value.trim();
+  latestSetupContext.configId = CONFIG_ID_PATTERN.test(enteredId) ? enteredId : '{config-id}';
+  latestSetupContext.routingTiers = buildStandardRoutingTiers(latestSetupContext.configId);
+  renderSetupChoices();
+  renderAiPrompt(null, false);
+  if (requestedDevice && (!requestedDevice.variants || selectedSetupVariant)) {
+    setupRunbookVisible = true;
+    renderSetupRunbook();
+  }
 }
 
 // ─── Copy-paste AI prompt ─────────────────────────────────────────────────────
@@ -2643,16 +3746,28 @@ const AI_ID = '{your-config-id}';
 
 function buildAiPrompt(config, hasRun) {
   const L = [];
-  L.push('Set up NextDNS on: [YOUR ROUTER, DEVICE OR OS — include make, model and firmware version if you know them]');
+  const selectedDevice = currentSetupDevice();
+  const selectedVariant = currentSetupVariant();
+  const selectedLabel = selectedDevice
+    ? selectedDevice.label + (selectedVariant ? ' — ' + selectedVariant.label : '')
+    : '[YOUR ROUTER, DEVICE OR OS — include make, model and firmware version if you know them]';
+  L.push('Set up NextDNS on: ' + selectedLabel);
   L.push('');
   L.push('Values to use. Leave ' + AI_ID + ' exactly as written; I will substitute my real ID afterwards.');
   L.push('');
 
   if (hasRun && config) {
-    L.push('Benchmark recommendation: ' + config.recommendedTier.label);
+    const compatible = selectedDevice
+      ? selectCompatibleSetup(selectedDevice, selectedVariant, latestSetupContext)
+      : null;
+    L.push('Benchmark recommendation: ' + (compatible ? compatible.tier.label : config.recommendedTier.label));
+    if (compatible && compatible.adapted) {
+      L.push('Compatibility adjustment: the overall benchmark winner is not supported by this device, so use the compatible route named above.');
+    }
     L.push('');
-    for (const tier of config.routingTiers.filter(t => t.available)) {
-      const marker = tier.recommended ? '  [RECOMMENDED]' : '';
+    for (const tier of config.routingTiers.filter(t => t.available
+      && (!selectedDevice || effectiveDevice(selectedDevice, selectedVariant).routes.includes(t.id)))) {
+      const marker = compatible ? (tier.id === compatible.tier.id ? '  [RECOMMENDED]' : '') : (tier.recommended ? '  [RECOMMENDED]' : '');
       const aiUrl = tier.url.replace(/\/[^/]+$/, '/' + AI_ID);
       L.push('  ' + tier.label + marker);
       L.push('    DoH template: ' + aiUrl);
@@ -2701,9 +3816,6 @@ async function copyAiPrompt(btn) {
     setTimeout(() => { btn.textContent = 'copy prompt'; }, 2500);
   }
 }
-
-// Render the generic form on load; a benchmark run refreshes it with real results.
-renderAiPrompt(null, false);
 
 // ─── Main Entry ───────────────────────────────────────────────────────────────
 
@@ -2845,8 +3957,7 @@ async function runBenchmark() {
 
     renderConfig(config);
     renderPinSection(routingTiers);
-    fillGuideVars(configId, config);
-    renderAiPrompt(config, true);
+    updateSetupContext(configId, config);
 
     setProgress('Done!', 100);
 
@@ -2870,6 +3981,10 @@ async function runBenchmark() {
 document.getElementById('configId').addEventListener('keydown', e => {
   if (e.key === 'Enter') runBenchmark();
 });
+document.getElementById('configId').addEventListener('input', () => {
+  const enteredId = document.getElementById('configId').value.trim();
+  if (enteredId !== latestSetupContext.configId) resetSetupContextForInput();
+});
 
 
 // ─── URL Parameter Pre-fill ───────────────────────────────────────────────────
@@ -2881,14 +3996,32 @@ document.getElementById('configId').addEventListener('keydown', e => {
     input.value = id.trim();
   }
 })();
+initSetupGuide();
 
 /* Auto-detect NextDNS connection via test.nextdns.io */
 let detectedServer = null; // Global: server pop from test.nextdns.io (e.g. "zepto-xrs")
 let detectedRtt = null;    // Global: RTT in ms from /info
 let hasIPv6 = false;       // Global: IPv6 connectivity to NextDNS
-(function detectNextDNS() {
+let detectedProfile = null;
+
+function normalizeDetectedProfile(profile) {
+  if (!profile) return null;
+  if (typeof profile === 'string') return profile;
+  if (Array.isArray(profile)) return profile.map(normalizeDetectedProfile).filter(Boolean).join(', ');
+  if (typeof profile === 'object') return profile.id || profile.name || JSON.stringify(profile);
+  return String(profile);
+}
+
+function profileMatchesExpected(profile, expectedId) {
+  if (!profile || !expectedId || !CONFIG_ID_PATTERN.test(expectedId)) return false;
+  const normalized = normalizeDetectedProfile(profile);
+  return normalized === expectedId
+    || normalized.split(/[\s,;/]+/).includes(expectedId)
+    || normalized.includes(expectedId);
+}
+
+async function checkNextDNSConnection(updateHeader = true) {
   const el = document.getElementById('connectionStatus');
-  if (!el) return;
   // Random subdomain triggers DNS lookup — NextDNS sees the query if user is on NextDNS.
   // The root path returns { profile } if connected; /info returns { pop, locationName, rtt }.
   const rnd = Math.random().toString(36).substring(2, 10);
@@ -2896,33 +4029,75 @@ let hasIPv6 = false;       // Global: IPv6 connectivity to NextDNS
   // Also check IPv6 connectivity
   const ipv6Check = fetch('https://test-ipv6.nextdns.io/', { mode: 'cors' })
     .then(r => r.text()).then(t => t.trim() === 'OK').catch(() => false);
-  Promise.all([
+  try {
+    const [test, info, v6] = await Promise.all([
     fetch(base + '/', { mode: 'cors' }).then(r => r.json()),
     fetch(base + '/info', { mode: 'cors' }).then(r => r.json()),
     ipv6Check,
-  ])
-    .then(([test, info, v6]) => {
-      hasIPv6 = v6;
-      if (test.profile && info.pop) {
-        detectedServer = info.pop; // e.g. "zepto-xrs"
-        detectedRtt = info.rtt ? Math.round(info.rtt / 1000 * 100) / 100 : null; // μs → ms
-        const loc = (info.locationName || '').replace(/^[\p{Emoji}\s]+/u, '').trim();
+    ]);
+    hasIPv6 = v6;
+    detectedProfile = normalizeDetectedProfile(test.profile);
+    if (test.profile && info.pop) {
+      detectedServer = info.pop; // e.g. "zepto-xrs"
+      detectedRtt = info.rtt ? Math.round(info.rtt / 1000 * 100) / 100 : null; // μs → ms
+      const loc = (info.locationName || '').replace(/^[\p{Emoji}\s]+/u, '').trim();
+      if (updateHeader && el) {
         el.innerHTML = '<span class="status-dot active"></span>'
           + 'Connected to NextDNS via <span class="status-server">' + escHtml(info.pop) + '</span>'
           + (loc ? ' <span class="text-dim">' + escHtml(loc) + '</span>' : '')
           + (detectedRtt ? ' &middot; <span class="status-rtt">~' + detectedRtt + 'ms</span>' : '')
           + (v6 ? ' <span class="status-ipv6">IPv6</span>' : '');
-      } else {
+      }
+    } else {
+      detectedServer = null;
+      detectedRtt = null;
+      if (updateHeader && el) {
         el.innerHTML = '<span class="status-dot inactive"></span>'
           + 'Not connected to NextDNS &mdash; enter your Config ID to benchmark'
           + (v6 ? ' <span class="status-ipv6">IPv6 ready</span>' : '');
       }
-      el.classList.add('visible');
-    })
-    .catch(() => {
-      // Network error or CORS — silently skip
-    });
-})();
+    }
+    if (updateHeader && el) el.classList.add('visible');
+    return { connected: !!test.profile, profile: detectedProfile, info, ipv6: v6, networkError: false };
+  } catch {
+    return { connected: false, profile: null, info: null, ipv6: false, networkError: true };
+  }
+}
+
+async function verifySetupConnection() {
+  const btn = document.getElementById('verifySetupBtn');
+  const result = document.getElementById('setupVerificationResult');
+  if (!btn || !result) return;
+  btn.disabled = true;
+  btn.textContent = 'Checking…';
+  result.hidden = false;
+  result.className = 'verification-result';
+  result.textContent = 'Testing a fresh randomized hostname from this browser…';
+  const check = await checkNextDNSConnection(true);
+  const expected = latestSetupContext.configId;
+  if (check.networkError) {
+    result.classList.add('error');
+    result.textContent = 'Could not complete the check. A network filter, browser policy, or temporary CORS failure blocked the test.';
+  } else if (!check.connected) {
+    result.classList.add('error');
+    result.textContent = 'Not detected: this browser did not reach NextDNS for the fresh test lookup.';
+  } else if (CONFIG_ID_PATTERN.test(expected) && profileMatchesExpected(check.profile, expected)) {
+    result.classList.add('success');
+    result.textContent = `Verified expected profile: this browser reached NextDNS using ${expected}.`;
+  } else if (check.profile) {
+    result.classList.add('warning');
+    result.textContent = CONFIG_ID_PATTERN.test(expected)
+      ? `Connected to a different profile: this browser reported ${check.profile}, not ${expected}.`
+      : `Connected to NextDNS: this browser reported ${check.profile}. Enter your profile ID to compare it.`;
+  } else {
+    result.classList.add('warning');
+    result.textContent = 'Connected to NextDNS, but the profile could not be identified from this browser check.';
+  }
+  btn.disabled = false;
+  btn.textContent = 'Re-check connection';
+}
+
+checkNextDNSConnection(true);
 
 /* Matrix rain canvas effect for banner */
 /* Matrix rain — slowed down */

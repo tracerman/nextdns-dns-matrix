@@ -7,9 +7,14 @@ All notable changes to NextDNS DNS Matrix are documented here.
 ### Added
 - **Unified routing cards** — Stable / Anycast, Steered / Ultralow, and Direct / Pinned now appear as comparable choices with their own DoH URL, IPv4 and IPv6 latency, matching addresses, trade-off, and one shared recommendation badge.
 - **Copy feedback and keyboard semantics** — generated values are real buttons with visible copy confirmation; scrollable result tables and the AI prompt are named, focusable regions.
+- **Guided setup flow** — the former accordion catalog is now Scope → Device / variant → Show setup → Best compatible setup → visible runbook → scoped verification. It covers routers and firewalls, computers and mobile, browsers and ChromeOS, and server/DNS deployments without showing every platform at once.
+- **Capability-aware runbooks** — every primary path includes prerequisites, paste-ready values, numbered steps, platform-specific recovery, official sources, and a last-checked date. Android automatically avoids pinned routes; Pi-hole requires a local encrypted proxy; browser paths are labeled browser-only.
+- **Safe guide sharing** — generated device/variant deep links remove `id`, `ID`, `configId`, and `config` before copying.
+- **Active connection re-check** — a randomized `test.nextdns.io` lookup distinguishes expected profile, different profile, unknown profile, and not detected while explicitly limiting the claim to this browser.
 
 ### Fixed
 - **Windows could receive an address and DoH template from different routes.** Setup-guide values now come from the recommended routing tier as one matched pair, with an explicit warning not to mix cards.
+- **Windows alternate servers could be under-specified.** Every preferred and alternate address is now registered independently with its matching DoH template, limited to the two slots Windows exposes per address family.
 - **Recommendations could contradict each other.** The insight box, routing cards, pin section, device guide, and AI prompt now consume one routing model. Direct pinning is recommended only when it clears the measured threshold.
 - **Dual-stack URLs were presented with IPv4-only latency.** Each routing card now reports IPv4 and IPv6 separately and keeps both family addresses with the URL they belong to.
 - **Raw addresses could look profile-aware when used as plain DNS.** The linked-IP warning now sits directly beside the bootstrap addresses and distinguishes encrypted-DNS bootstrap from unencrypted DNS use.
@@ -19,6 +24,8 @@ All notable changes to NextDNS DNS Matrix are documented here.
 - Pinned details remain available as an informed alternative even when automatic steering is recommended.
 - JavaScript animation respects `prefers-reduced-motion`; semantic landmarks, live status, progress metadata, focus treatment, and contrast were tightened across the page.
 - Config-ID validation and URL prefill now accept only the supported identifier format.
+- Setup remains useful before benchmarking with a neutral Standard encrypted route and no performance claim; a completed run adds the measurement timestamp and device-compatible personalization.
+- The assistant fallback is collapsed by default and inherits the selected device and compatible route while keeping the real config ID out of the prompt.
 
 ## [1.6.0] — 2026-07-26
 
