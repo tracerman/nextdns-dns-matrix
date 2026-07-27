@@ -436,10 +436,22 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .lat-yellow { color: var(--yellow); }
 .lat-red { color: var(--red); }
 .text-dim { color: var(--text-dim); }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 /* Summary row: insight + config side by side */
 .summary-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.72fr) minmax(32rem, 1.28fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -448,11 +460,10 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   margin-bottom: 0;
 }
 .summary-row > .config-inline {
-  flex: 1;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
-  padding: 0.6rem 0.75rem;
+  padding: 0.85rem;
   display: none;
 }
 .config-inline .config-table {
@@ -468,7 +479,7 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.6rem;
 }
 
 .config-entry {
@@ -485,6 +496,12 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 }
 .config-value, .copyable {
   cursor: pointer;
+  background: none;
+  border: 0;
+  color: inherit;
+  padding: 0;
+  font: inherit;
+  text-align: left;
 }
 .config-value {
   color: var(--cyan);
@@ -499,28 +516,131 @@ tr:hover td { background: rgba(88,166,255,0.04); }
 .config-value.copied { color: var(--green) !important; }
 .config-sep { color: var(--text-dim); font-size: 0.75rem; }
 
-/* DoH tier rows in the config panel */
-.doh-group-label {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  margin-top: 0.35rem;
+/* Unified routing-mode cards */
+.routing-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.8rem;
 }
-.doh-entry {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.05rem;
-  margin: 0.2rem 0 0.35rem 0.6rem;
+.tier-card {
+  position: relative;
+  min-width: 0;
+  padding: 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: rgba(13,17,23,0.72);
+  overflow: hidden;
 }
-.doh-head {
+.tier-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: var(--border);
+}
+.tier-card.recommended {
+  border-color: rgba(88,166,255,0.65);
+  background: rgba(88,166,255,0.055);
+  box-shadow: inset 0 0 18px rgba(88,166,255,0.035);
+}
+.tier-card.recommended::before { background: var(--cyan); }
+.tier-card.pinned::before { background: var(--yellow); }
+.tier-card.unavailable { opacity: 0.58; }
+.tier-card-head {
   display: flex;
-  align-items: baseline;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.4rem;
   flex-wrap: wrap;
+  margin-bottom: 0.35rem;
 }
-.doh-head .config-entry-label { font-size: 0.72rem; }
-.doh-ms { font-size: 0.72rem; font-weight: 700; }
-.doh-note { font-size: 0.68rem; color: var(--text-dim); }
-.doh-note.warn { color: var(--yellow); }
+.tier-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+}
+.tier-badge {
+  padding: 0.1rem 0.35rem;
+  border: 1px solid rgba(88,166,255,0.45);
+  border-radius: 999px;
+  color: var(--cyan);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+.tier-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  min-height: 1.35rem;
+  margin-bottom: 0.3rem;
+}
+.tier-metric {
+  padding: 0.08rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(139,148,158,0.07);
+  font-size: 0.66rem;
+  white-space: nowrap;
+}
+.tier-tradeoff {
+  min-height: 2.4em;
+  margin-bottom: 0.45rem;
+  color: var(--text-dim);
+  font-size: 0.67rem;
+  line-height: 1.35;
+}
+.tier-card .config-value {
+  display: block;
+  width: 100%;
+  color: var(--cyan);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+.tier-addresses {
+  display: grid;
+  gap: 0.15rem;
+  margin-top: 0.4rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(139,148,158,0.12);
+}
+.tier-address-row {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.25rem;
+  color: var(--text-dim);
+  font-size: 0.62rem;
+}
+.tier-address-row .config-value { font-size: 0.65rem; }
+.config-section-label {
+  margin: 0.15rem 0 0.35rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+.bootstrap-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 0.75rem;
+}
+.plain-dns-warning {
+  margin-top: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-left: 3px solid var(--yellow);
+  border-radius: 0 4px 4px 0;
+  background: rgba(210,153,34,0.065);
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+.plain-dns-warning strong { color: var(--yellow); }
 .cfg-note {
   font-size: 0.7rem;
   line-height: 1.45;
@@ -530,6 +650,39 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   margin: 0.3rem 0 0.4rem 0.1rem;
 }
 .cfg-note strong { color: var(--text); font-weight: 600; }
+
+.routing-verdict {
+  margin: 0.55rem 0;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid var(--cyan);
+  border-radius: 0 4px 4px 0;
+  background: rgba(88,166,255,0.045);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.routing-verdict .verdict-tier { color: var(--cyan); font-weight: 700; }
+.routing-verdict .verdict-reason { color: var(--text-dim); }
+
+.copy-toast {
+  position: fixed;
+  z-index: 50;
+  right: 1rem;
+  bottom: 1rem;
+  max-width: min(24rem, calc(100vw - 2rem));
+  padding: 0.55rem 0.75rem;
+  border: 1px solid rgba(63,185,80,0.5);
+  border-radius: 4px;
+  background: rgba(13,17,23,0.96);
+  color: var(--green);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  font-size: 0.72rem;
+  opacity: 0;
+  transform: translateY(0.5rem);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.copy-toast.visible { opacity: 1; transform: translateY(0); }
+.copy-toast.error { color: var(--red); border-color: rgba(248,81,73,0.5); }
 
 /* Pin-to-server section */
 .pin-box {
@@ -819,11 +972,13 @@ tbody tr {
 }
 
 @media (max-width: 860px) {
-  .summary-row { flex-direction: column; }
+  .summary-row { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
   .config-table { grid-template-columns: 1fr; gap: 0.15rem 0; }
   .config-cell.span2 { grid-column: span 1; }
+  .routing-tier-grid { grid-template-columns: 1fr; }
+  .bootstrap-grid { grid-template-columns: 1fr; }
 }
 
 /* "Where do I paste this?" guide */
@@ -886,6 +1041,12 @@ tbody tr {
   border-left: 2px solid var(--border);
   padding-left: 0.6rem;
   margin-top: 0.6rem;
+}
+.guide-route {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(88,166,255,0.22);
+  border-radius: 4px;
+  background: rgba(88,166,255,0.04);
 }
 .guide-pre {
   background: var(--bg);
@@ -995,8 +1156,14 @@ tbody tr {
   margin-bottom: 0.5rem;
 }
 .footer-credit {
-  color: rgba(139,148,158,0.4);
+  color: var(--text-dim);
   font-size: 0.7rem;
+}
+
+.results-table-wrap:focus-visible,
+.ai-prompt-box:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
 }
 
 /* Focus states (keyboard a11y) */
@@ -1083,19 +1250,21 @@ tbody tr {
 </head>
 <body>
 
-<div class="container">
-  <div class="banner">
-    <canvas id="matrixRain" style="position:absolute;inset:0;z-index:0;opacity:0.2;pointer-events:none;"></canvas>
+<main class="container" id="mainContent">
+  <header class="banner">
+    <canvas id="matrixRain" aria-hidden="true" style="position:absolute;inset:0;z-index:0;opacity:0.2;pointer-events:none;"></canvas>
     <div class="banner-sweep"></div>
     <h1><span class="pulse-dot"></span><span id="bannerTitle" data-text="NextDNS DNS Matrix"></span><span class="title-cursor"></span></h1>
     <p>Benchmark NextDNS servers and find the lowest-latency DNS server for your network</p>
-  </div>
+  </header>
 
   <div class="form-section">
     <div class="form-row">
       <div class="form-group" style="flex:1;min-width:140px">
         <label for="configId">NextDNS Config ID &mdash; <a href="https://my.nextdns.io" target="_blank" rel="noopener" style="color:var(--text-dim);font-size:0.75rem">my.nextdns.io</a></label>
-        <input type="text" id="configId" placeholder="e.g. abc123" spellcheck="false" autocomplete="off">
+        <input type="text" id="configId" placeholder="e.g. abc123" spellcheck="false" autocomplete="off"
+          autocapitalize="none" maxlength="64" aria-describedby="configIdHelp">
+        <span class="sr-only" id="configIdHelp">Use the profile identifier shown on the NextDNS Setup page.</span>
       </div>
       <div class="form-group">
         <label for="rounds">Rounds</label>
@@ -1128,14 +1297,15 @@ tbody tr {
     </div>
   </div>
 
-  <div class="connection-status" id="connectionStatus"></div>
+  <div class="connection-status" id="connectionStatus" role="status" aria-live="polite"></div>
 
-  <div class="error-box" id="errorBox"></div>
+  <div class="error-box" id="errorBox" role="alert"></div>
 
   <div class="progress-section" id="progressSection">
-    <div class="progress-status" id="progressStatus">Discovering servers...</div>
+    <div class="progress-status" id="progressStatus" role="status" aria-live="polite">Discovering servers...</div>
     <div class="progress-bar-track">
-      <div class="progress-bar-fill" id="progressFill">0%</div>
+      <div class="progress-bar-fill" id="progressFill" role="progressbar"
+        aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</div>
     </div>
   </div>
 
@@ -1145,7 +1315,7 @@ tbody tr {
     <div class="summary-row">
       <div class="insight-box" id="insightBox"></div>
       <div class="config-inline" id="configInline">
-        <div class="config-inline-header">Recommended Configuration</div>
+        <div class="config-inline-header">Routing Configuration</div>
         <div class="config-table" id="configTable"></div>
       </div>
     </div>
@@ -1172,14 +1342,14 @@ tbody tr {
 
     <div id="ipv4Section">
       <div class="sub-header" id="ipv4Header">IPv4 Servers</div>
-      <div class="results-table-wrap">
+      <div class="results-table-wrap" role="region" tabindex="0" aria-label="Scrollable IPv4 benchmark results">
         <table id="ipv4Table"><thead></thead><tbody></tbody></table>
       </div>
     </div>
 
     <div id="ipv6Section" style="display:none">
       <div class="sub-header" id="ipv6Header">IPv6 Servers</div>
-      <div class="results-table-wrap">
+      <div class="results-table-wrap" role="region" tabindex="0" aria-label="Scrollable IPv6 benchmark results">
         <table id="ipv6Table"><thead></thead><tbody></tbody></table>
       </div>
     </div>
@@ -1295,6 +1465,8 @@ tbody tr {
     <details class="guide-item">
       <summary>Windows 11</summary>
       <div class="guide-body">
+        <p class="guide-route">Recommended route: <strong><span class="gv" data-gv="tier">run a benchmark</span></strong>.
+          The command below always keeps the server address and DoH template on that same route.</p>
         <p>Windows only offers its encrypted-DNS dropdown for resolvers it already knows &mdash; Cloudflare,
           Google and Quad9. NextDNS is not on that list, so register the template first, in PowerShell as
           Administrator:</p>
@@ -1323,8 +1495,10 @@ tbody tr {
         <p>Verify either way at <a href="https://test.nextdns.io" target="_blank" rel="noopener">test.nextdns.io</a>
           &mdash; it should name your profile rather than saying
           <em>&ldquo;using NextDNS with no profile&rdquo;</em>.</p>
-        <p class="guide-note">Because Windows pairs an IP with a DoH template, this is one of the few clients
-          where you can pin: register your pinned edge IP against the pinned DoH URL above.</p>
+        <p class="guide-note">Windows stores the IP and DoH template as a pair. Never mix an anycast address,
+          a steered template, or a pinned edge URL from different routing cards. To add IPv6, repeat the
+          registration with <span class="gv" data-gv="bestV6">the matching IPv6 address</span> and the same
+          template.</p>
       </div>
     </details>
 
@@ -1386,14 +1560,14 @@ tbody tr {
       <p class="guide-intro" style="margin:0 0 0.5rem">Paste this into Google AI Mode, ChatGPT, Claude, or
         whatever you use, and add your device. It carries the NextDNS facts that models most often get wrong,
         so you get steps for your hardware instead of invented ones.</p>
-      <pre class="ai-prompt-box" id="aiPromptBox"></pre>
+      <pre class="ai-prompt-box" id="aiPromptBox" tabindex="0" role="region" aria-label="Generated setup prompt"></pre>
       <p class="guide-note" style="margin-top:0.5rem">Your config ID is deliberately left as a placeholder.
         Anyone holding it can send queries through your profile and pollute your analytics, and no AI needs it
         to tell you which menu to open. Swap it in yourself once you have the steps.</p>
     </div>
   </div>
 
-  <div class="footer">
+  <footer class="footer">
     <div class="footer-links">
       <a href="https://nextdns.io/" target="_blank" rel="noopener" class="footer-link">NextDNS</a>
       <a href="https://github.com/yokoffing/NextDNS-Config" target="_blank" rel="noopener" class="footer-link">yokoffing/NextDNS-Config</a>
@@ -1401,8 +1575,9 @@ tbody tr {
     </div>
     <div class="footer-note">All node IPs rotate &mdash; always run fresh before using results.</div>
     <div class="footer-credit">Made with Love, Blood, and Coffee</div>
-  </div>
-</div>
+  </footer>
+  <div class="copy-toast" id="copyToast" role="status" aria-live="polite" aria-atomic="true"></div>
+</main>
 
 <script>
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -1410,6 +1585,7 @@ tbody tr {
 const PING_TIMEOUT = 3000;
 const MAX_CONCURRENT = 6;
 const STAGGER_MS = 80;
+const CONFIG_ID_PATTERN = /^[A-Za-z0-9_-]{4,64}$/;
 
 const ANYCAST_HOSTNAMES = [
   { hostname: 'ipv4-anycast.dns1.nextdns.io', family: 'IPv4', dnsNum: 1 },
@@ -1452,6 +1628,7 @@ function setProgress(status, pct) {
   const fill = document.getElementById('progressFill');
   fill.style.width = pct + '%';
   fill.textContent = pct + '%';
+  fill.setAttribute('aria-valuenow', String(pct));
 }
 
 function latencyClass(ms) {
@@ -1492,16 +1669,33 @@ async function copyToClipboard(text, btn) {
     await navigator.clipboard.writeText(text);
     btn.textContent = 'copied';
     btn.classList.add('copied');
+    showCopyToast('Copied to clipboard');
     setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 1500);
-  } catch { /* ignore */ }
+  } catch {
+    showCopyToast('Copy failed — select the value manually', true);
+  }
 }
 
 async function clickCopy(el) {
   try {
     await navigator.clipboard.writeText(el.dataset.copy);
     el.classList.add('copied');
+    showCopyToast('Copied ' + (el.dataset.copyLabel || 'value'));
     setTimeout(() => el.classList.remove('copied'), 1200);
-  } catch { /* ignore */ }
+  } catch {
+    showCopyToast('Copy failed — select the value manually', true);
+  }
+}
+
+let copyToastTimer = null;
+function showCopyToast(message, isError = false) {
+  const toast = document.getElementById('copyToast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.toggle('error', isError);
+  toast.classList.add('visible');
+  clearTimeout(copyToastTimer);
+  copyToastTimer = setTimeout(() => toast.classList.remove('visible'), 1800);
 }
 
 // ─── Server Discovery ─────────────────────────────────────────────────────────
@@ -1781,49 +1975,54 @@ async function resolveAllIPs(results, onProgress, resolver = 'google') {
 
 // ─── Config Generation ────────────────────────────────────────────────────────
 
-function generateConfig(ranked, configId, pin) {
-  const ok = ranked.filter(r => r.status === 'ok');
-  const ipv4 = ok.filter(r => r.family === 'IPv4');
-  const ipv6 = ok.filter(r => r.family === 'IPv6');
+function generateConfig(configId, routingTiers) {
+  const recommendedTier = routingTiers.find(t => t.recommended)
+    || routingTiers.find(t => t.available)
+    || null;
 
-  const bestV4 = ipv4[0] || null;
-  const secondV4 = ipv4[1] || null;
-  const bestV6 = ipv6[0] || null;
-  const secondV6 = ipv6[1] || null;
+  const tierEntry = (family, fallback) => {
+    const addresses = recommendedTier ? recommendedTier.addresses[family] : [];
+    const fallbacks = recommendedTier ? recommendedTier.fallbackAddresses[family] : [];
+    const results = recommendedTier ? recommendedTier.results[family] : [];
+    return {
+      best: {
+        ip: addresses[0] || fallback.dns1,
+        result: results[0] || null,
+        tier: recommendedTier,
+      },
+      backup: {
+        ip: fallbacks[0] || fallback.dns2,
+        result: results[1] || null,
+        tier: recommendedTier,
+      },
+    };
+  };
 
-  const anycastV4 = ipv4.filter(r => r.type === 'anycast');
-  const anycastV6 = ipv6.filter(r => r.type === 'anycast');
-
-  // Use already-resolved IPs from the bulk resolution phase
-  const primaryIP = (bestV4 && bestV4.resolvedIP) || ANYCAST_FALLBACK.ipv4.dns1;
-  const secondaryIP = (secondV4 && secondV4.resolvedIP) || ANYCAST_FALLBACK.ipv4.dns2;
-
-  const anycastIP1 = (anycastV4[0] && anycastV4[0].resolvedIP) || ANYCAST_FALLBACK.ipv4.dns1;
-  const anycastIP2 = (anycastV4[1] && anycastV4[1].resolvedIP) || ANYCAST_FALLBACK.ipv4.dns2;
-
-  const bestV6IP = (bestV6 && bestV6.resolvedIP) || ANYCAST_FALLBACK.ipv6.dns1;
-  const secondV6IP = (secondV6 && secondV6.resolvedIP) || ANYCAST_FALLBACK.ipv6.dns2;
-  const anycastV6IP1 = (anycastV6[0] && anycastV6[0].resolvedIP) || ANYCAST_FALLBACK.ipv6.dns1;
-  const anycastV6IP2 = (anycastV6[1] && anycastV6[1].resolvedIP) || ANYCAST_FALLBACK.ipv6.dns2;
+  const v4 = tierEntry('ipv4', ANYCAST_FALLBACK.ipv4);
+  const v6 = tierEntry('ipv6', ANYCAST_FALLBACK.ipv6);
 
   const dotHostname = `${configId}.dns.nextdns.io`;
 
   return {
     ipv4: {
-      best:     { ip: primaryIP,   hostname: dotHostname, result: bestV4 },
-      backup:   { ip: secondaryIP, hostname: dotHostname, result: secondV4 },
-      anycast1: { ip: anycastIP1,  hostname: dotHostname },
-      anycast2: { ip: anycastIP2,  hostname: dotHostname },
+      best:     { ...v4.best, hostname: dotHostname },
+      backup:   { ...v4.backup, hostname: dotHostname },
+      anycast1: { ip: ANYCAST_FALLBACK.ipv4.dns1, hostname: dotHostname },
+      anycast2: { ip: ANYCAST_FALLBACK.ipv4.dns2, hostname: dotHostname },
     },
     ipv6: {
-      best:     { ip: bestV6IP,      hostname: dotHostname, result: bestV6 },
-      backup:   { ip: secondV6IP,    hostname: dotHostname, result: secondV6 },
-      anycast1: { ip: anycastV6IP1,  hostname: dotHostname },
-      anycast2: { ip: anycastV6IP2,  hostname: dotHostname },
+      best:     { ...v6.best, hostname: dotHostname },
+      backup:   { ...v6.backup, hostname: dotHostname },
+      anycast1: { ip: ANYCAST_FALLBACK.ipv6.dns1, hostname: dotHostname },
+      anycast2: { ip: ANYCAST_FALLBACK.ipv6.dns2, hostname: dotHostname },
     },
-    dohOptions: buildDohOptions(ok, configId, pin),
     dot: dotHostname,
-    bestV4, secondV4, bestV6, secondV6,
+    routingTiers,
+    recommendedTier,
+    bestV4: v4.best.result,
+    secondV4: v4.backup.result,
+    bestV6: v6.best.result,
+    secondV6: v6.backup.result,
   };
 }
 
@@ -1917,8 +2116,8 @@ function renderTable(tableId, servers, currentPop = null) {
       <td>${escHtml(serverLabel(r))}${viaBadges}</td>
       <td class="text-dim">${locCell}</td>
       <td class="${typeClass(effectiveType)}">${typeLabel}</td>
-      <td class="text-dim" style="font-size:0.75rem"><span class="copyable" data-copy="${escHtml(r.hostname)}" onclick="clickCopy(this)" title="Click to copy">${escHtml(r.hostname)}</span></td>
-      <td>${ip ? '<span class="copyable" data-copy="' + escHtml(ip) + '" onclick="clickCopy(this)" title="Click to copy">' + escHtml(ip) + '</span>' : '<span class="text-dim">-</span>'}</td>
+      <td class="text-dim" style="font-size:0.75rem"><button type="button" class="copyable" data-copy="${escAttr(r.hostname)}" data-copy-label="hostname" onclick="clickCopy(this)" title="Copy hostname">${escHtml(r.hostname)}</button></td>
+      <td>${ip ? '<button type="button" class="copyable" data-copy="' + escAttr(ip) + '" data-copy-label="IP address" onclick="clickCopy(this)" title="Copy IP address">' + escHtml(ip) + '</button>' : '<span class="text-dim">-</span>'}</td>
       <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span>${isDetected ? (i === 0 ? '<span class="delta-badge optimal">optimal</span>' : '<span class="delta-badge slower">+' + Math.round((r.avgMs - displayed[0].avgMs) * 100) / 100 + 'ms</span>') : ''}<span class="spark-bar" style="width:${barWidth}px"></span></td>
       <td class="text-dim">${r.minMs}ms</td>
       <td class="text-dim">${r.jitter}ms</td>
@@ -1929,52 +2128,37 @@ function renderTable(tableId, servers, currentPop = null) {
   });
 }
 
-function renderConfig(config, configId) {
+function renderConfig(config) {
   const section = document.getElementById('configInline');
   section.style.display = 'block';
-  const hasV6 = !!config.bestV6;
+  const hasV6 = !!(config.recommendedTier && config.recommendedTier.addresses.ipv6[0]);
 
-  const sp = hasV6 ? '' : ' span2';
-  function cell(label, value, dim) {
-    return `<div class="config-cell${dim ? '' : sp}">${configEntry(label, value, dim)}</div>`;
-  }
-  function cellSp2(label, value, dim) {
-    return `<div class="config-cell">${configEntry(label, value, dim)}</div>`;
-  }
-  function cellRec(entry, label) {
+  function bootstrapEntry(entry, label) {
     const r = entry.result;
     const nodeLabel = r ? serverLabel(r) : '';
     const badge = r
       ? ' &middot; <span class="' + latencyClass(r.avgMs) + '">' + r.avgMs + 'ms</span> ' + escHtml(nodeLabel)
       : '';
-    return `<div class="config-cell${sp}">${configEntry(escHtml(label) + badge, entry.ip)}</div>`;
+    return `<div class="config-cell">${configEntry(escHtml(label) + badge, entry.ip, false, 'IP address')}</div>`;
   }
 
-  let html = '';
-
-  // Row 1: Best
-  html += cellRec(config.ipv4.best, 'IPv4 Best');
-  if (hasV6) html += cellRec(config.ipv6.best, 'IPv6 Best');
-
-  // Row 2: Backup
-  html += cellRec(config.ipv4.backup, 'IPv4 Backup');
-  if (hasV6) html += cellRec(config.ipv6.backup, 'IPv6 Backup');
-
-  // Row 3: Anycast Fallback (both IPs per cell)
-  html += `<div class="config-cell${sp}">${configEntry2('IPv4 Fallback', config.ipv4.anycast1.ip, config.ipv4.anycast2.ip)}</div>`;
-  if (hasV6) html += `<div class="config-cell">${configEntry2('IPv6 Fallback', config.ipv6.anycast1.ip, config.ipv6.anycast2.ip)}</div>`;
-
-  // Row 4: Encrypted DNS — DoT, then every DoH tier so the user picks on numbers.
-  // Both carry a pairing note: the hostname alone is not enough for DoT clients,
-  // which want an IP alongside it, and the addresses they need are the rows above.
-  html += `<div class="config-cell">${configEntry('DNS-over-TLS/QUIC', config.dot)}`
-    + `<div class="cfg-note">Most DoT clients want an <strong>IP plus this hostname</strong>. `
-    + `Use the addresses above &mdash; one IPv4 and one IPv6, so a failure on either stack still resolves.</div></div>`;
-  html += `<div class="config-cell"><div class="doh-group-label">DNS-over-HTTPS</div>`
-    + config.dohOptions.map(dohEntry).join('')
-    + `<div class="cfg-note">These are hostnames and resolve dual-stack &mdash; one URL covers IPv4 and IPv6, `
-    + `so there is no separate address per family. Clients that pair an IP with a DoH template `
-    + `(Windows 11) take the addresses above.</div></div>`;
+  let html = `<div class="routing-tier-grid">${config.routingTiers.map(routingTierCard).join('')}</div>`;
+  html += `<div class="config-section-label">Recommended DoT / router bootstrap</div>`;
+  html += `<div class="bootstrap-grid">`;
+  html += bootstrapEntry(config.ipv4.best, 'IPv4 Primary');
+  html += bootstrapEntry(config.ipv4.backup, 'IPv4 Backup');
+  if (hasV6) {
+    html += bootstrapEntry(config.ipv6.best, 'IPv6 Primary');
+    html += bootstrapEntry(config.ipv6.backup, 'IPv6 Backup');
+  }
+  html += `</div>`;
+  html += `<div class="config-cell" style="margin-top:0.35rem">${configEntry('DNS-over-TLS / QUIC hostname', config.dot, false, 'TLS hostname')}`
+    + `<div class="cfg-note">Pair this hostname with the primary and backup addresses in this section. `
+    + `They all belong to the recommended <strong>${escHtml(config.recommendedTier.label)}</strong> route.</div></div>`;
+  html += `<div class="plain-dns-warning"><strong>Raw IPv4 is not profile-aware.</strong> `
+    + `These addresses are for encrypted DNS bootstrap and advanced manual setups. For plain, unencrypted IPv4, `
+    + `link your public IP and copy the profile-specific addresses from my.nextdns.io &rarr; Setup &rarr; Linked IP. `
+    + `Using an unlinked address can resolve normally while none of your blocklists apply.</div>`;
 
   document.getElementById('configTable').innerHTML = html;
 
@@ -1993,56 +2177,61 @@ function escAttr(s) {
     .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function configEntry(label, value, dim = false) {
+function configEntry(label, value, dim = false, copyLabel = 'value') {
   const safeValue = escAttr(value);
   return `<div class="config-entry">
     ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
-    <span class="config-value${dim ? ' dim' : ''}" data-copy="${safeValue}" onclick="clickCopy(this)" title="Click to copy">${escHtml(value)}</span>
+    <button type="button" class="config-value${dim ? ' dim' : ''}" data-copy="${safeValue}" data-copy-label="${escAttr(copyLabel)}" onclick="clickCopy(this)" title="Copy ${escAttr(copyLabel)}">${escHtml(value)}</button>
   </div>`;
 }
 
-// dohEntry: one DoH tier — label, measured latency, and its trade-off, above the URL.
-// Stacked rather than inline because the config panel is a narrow single column.
-function dohEntry(o) {
-  const msCls = o.ms != null ? latencyClass(o.ms) : 'text-dim';
-  return `<div class="config-entry doh-entry">
-    <div class="doh-head">
-      <span class="config-entry-label">${escHtml(o.label)}</span>
-      ${o.ms != null ? `<span class="doh-ms ${msCls}">${o.ms}ms</span>` : ''}
-      <span class="doh-note${o.warn ? ' warn' : ''}">${escHtml(o.note)}</span>
+function routingTierCard(tier) {
+  const metric = (family, label) => {
+    const ms = tier.latency[family];
+    return ms == null
+      ? `<span class="tier-metric text-dim">${label} n/a</span>`
+      : `<span class="tier-metric ${latencyClass(ms)}">${label} ${ms}ms</span>`;
+  };
+  const address = (family, label) => {
+    const value = tier.addresses[family][0];
+    if (!value) return '';
+    return `<div class="tier-address-row"><span>${label}</span>`
+      + `<button type="button" class="config-value" data-copy="${escAttr(value)}" data-copy-label="${label} address" `
+      + `onclick="clickCopy(this)" title="Copy ${label} address">${escHtml(value)}</button></div>`;
+  };
+  const classes = ['tier-card', tier.id, tier.recommended ? 'recommended' : '', tier.available ? '' : 'unavailable']
+    .filter(Boolean).join(' ');
+  return `<article class="${classes}">
+    <div class="tier-card-head">
+      <span class="tier-name">${escHtml(tier.label)}</span>
+      ${tier.recommended ? '<span class="tier-badge">recommended</span>' : ''}
     </div>
-    <span class="config-value" data-copy="${escAttr(o.url)}" onclick="clickCopy(this)" title="Click to copy">${escHtml(o.url)}</span>
-  </div>`;
+    <div class="tier-metrics">${metric('ipv4', 'v4')}${metric('ipv6', 'v6')}</div>
+    <div class="tier-tradeoff">${escHtml(tier.tradeoff)}</div>
+    ${tier.available
+      ? `<button type="button" class="config-value" data-copy="${escAttr(tier.url)}" data-copy-label="${escAttr(tier.label)} DoH URL" `
+        + `onclick="clickCopy(this)" title="Copy ${escAttr(tier.label)} DoH URL">${escHtml(tier.url)}</button>`
+      : '<span class="text-dim" style="font-size:0.68rem">No measured endpoint available</span>'}
+    <div class="tier-addresses">${address('ipv4', 'v4')}${address('ipv6', 'v6')}</div>
+  </article>`;
 }
 
-function configEntry2(label, val1, val2) {
-  const safe1 = escAttr(val1);
-  const safe2 = escAttr(val2);
-  return `<div class="config-entry">
-    ${label ? '<span class="config-entry-label">' + label + '</span>' : ''}
-    <span class="config-value" data-copy="${safe1}" onclick="clickCopy(this)" title="Click to copy">${escHtml(val1)}</span>
-    <span class="config-sep">/</span>
-    <span class="config-value dim" data-copy="${safe2}" onclick="clickCopy(this)" title="Click to copy">${escHtml(val2)}</span>
-  </div>`;
-}
-
-// renderPinSection: render the pinned-server recommendation, or the
-// "you don't need to pin" state. Uses configEntry for values so they inherit its
-// quote-safe attribute escaping — escHtml alone is not safe in a data-copy="".
-function renderPinSection(pin, configId) {
+// Render the pinned alternative from the same routing-tier object used everywhere
+// else. The URL, addresses, verdict, guide, and AI prompt therefore cannot drift.
+function renderPinSection(routingTiers) {
   const section = document.getElementById('pinSection');
   const box = document.getElementById('pinBox');
-  if (!pin) { section.style.display = 'none'; return; }
+  const tier = routingTiers.find(t => t.id === 'pinned');
+  if (!tier || !tier.available || !tier.pin) { section.style.display = 'none'; return; }
   section.style.display = 'block';
 
+  const pin = tier.pin;
   const b = pin.best;
   const { flag, city } = parseLocation(b.location || '');
   const loc = city ? (flag ? `[${flag}] ${city}` : city) : (b.pop || '');
 
-  const dohUrl = `https://${b.server}.edge.nextdns.io/${configId}`;
-  const bootstrap = b.resolvedIP ? `#${b.resolvedIP}` : '';
-  const forwarder = `https://${b.server}.edge.nextdns.io/${configId}${bootstrap}`
-    + `,https://anycast.dns1.nextdns.io/${configId}`;
+  const dohUrl = tier.url;
+  const forwarder = tier.forwarder;
 
   // The verdict changes, the strings do not. An earlier version returned early when
   // pinning was not worthwhile, which removed the pinned URL from the page entirely
@@ -2071,7 +2260,7 @@ function renderPinSection(pin, configId) {
         + `${escHtml(pin.baseline.type === 'anycast' ? 'anycast' : 'ultralow')} routes you to `
         + `<strong>${escHtml(b.pop)}</strong> <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span>, `
         + `the same PoP you would be pinning to.</div>`
-        + `<div class="pin-sub" style="margin:0.4rem 0 0">Pinning would target the same hardware while giving up `
+        + `<div class="pin-sub" style="margin:0.4rem 0 0">Pinning would target the same PoP while giving up `
         + `automatic failover. The recommended configuration above is the better choice.</div>`
       : `<div class="pin-ok">No pinning needed &mdash; `
         + `${escHtml(serverLabel(pin.baseline))} <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span> `
@@ -2086,8 +2275,8 @@ function renderPinSection(pin, configId) {
 
   // Both families for the pinned server. Pinning gives up automatic failover, so
   // dual-stack is the nearest substitute: if one stack breaks, the other resolves.
-  const v4ip = b.resolvedIP || null;
-  const v6ip = pin.v6 ? pin.v6.resolvedIP : null;
+  const v4ip = tier.addresses.ipv4[0] || null;
+  const v6ip = tier.addresses.ipv6[0] || null;
   if (v4ip || v6ip) {
     html += `<div><div class="pin-format-label">Pinned server addresses &mdash; set one of each</div>`
       + (v4ip ? configEntry('IPv4', v4ip) : '')
@@ -2102,11 +2291,11 @@ function renderPinSection(pin, configId) {
       + `</div></div>`;
   }
 
-  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>${configEntry('', dohUrl)}`
+  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>${configEntry('', dohUrl, false, 'pinned DoH URL')}`
     + `<div class="pin-format-note">This hostname is dual-stack, so a DoH client will use whichever family it `
     + `has &mdash; one URL covers both.</div></div>`;
   html += `<div><div class="pin-format-label">NextDNS CLI &mdash; pinned, with anycast failover</div>`
-    + configEntry('', forwarder)
+    + configEntry('', forwarder, false, 'CLI forwarder')
     + `<div class="pin-format-note">NextDNS CLI only &mdash; falls back to anycast if the pinned server stops answering. `
     + `The bootstrap suffix uses the IPv4 address, which is the only form NextDNS documents. `
     + `Router DoT setups cannot use this syntax; pin by bootstrap IP using the Asus fields above.</div></div>`;
@@ -2121,45 +2310,147 @@ function renderPinSection(pin, configId) {
   box.innerHTML = html;
 }
 
-// buildDohOptions: the DoH endpoint tiers, each with its measured latency and its
-// trade-off, so the choice can be made on numbers rather than on our ranking.
-// Ordered stable → steered → pinned, i.e. increasing latency benefit and
-// increasing risk. The pinned tier is listed whenever an edge server resolved,
-// not only when it wins: withholding the URL because we advise against it removes
-// the user's ability to decide. The note says which case they are in.
-function buildDohOptions(ok, configId, pin) {
-  const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
-  const bestOf = t => v4.filter(r => r.type === t).sort((a, b) => a.avgMs - b.avgMs)[0] || null;
-  const anycast = bestOf('anycast');
-  const ultralow = bestOf('ultralow');
+function compactAddresses(...values) {
+  return [...new Set(values.flat().filter(Boolean))];
+}
 
-  const opts = [
+function tierResults(ok, type, family) {
+  return ok
+    .filter(r => r.family === family && r.type === type && r.metric === 'server')
+    .sort((a, b) => a.avgMs - b.avgMs);
+}
+
+// Build one source of truth for every configuration surface. Each tier owns its
+// URL, matching addresses, per-family measurements, trade-off, and recommendation.
+function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
+  const anyV4 = tierResults(ok, 'anycast', 'IPv4');
+  const anyV6 = tierResults(ok, 'anycast', 'IPv6');
+  const ultraV4 = tierResults(ok, 'ultralow', 'IPv4');
+  const ultraV6 = tierResults(ok, 'ultralow', 'IPv6');
+
+  // The anycast URL names dns1, so its primary address and displayed latency must
+  // also come from dns1. dns2 remains the same-tier backup for DoT/router setups.
+  const anyV4Primary = anyV4.find(r => r.nodeId === 'anycast1') || anyV4[0] || null;
+  const anyV4Backup = anyV4.find(r => r.nodeId === 'anycast2') || anyV4.find(r => r !== anyV4Primary) || null;
+  const anyV6Primary = anyV6.find(r => r.nodeId === 'anycast1') || anyV6[0] || null;
+  const anyV6Backup = anyV6.find(r => r.nodeId === 'anycast2') || anyV6.find(r => r !== anyV6Primary) || null;
+
+  const pinnedV4 = pin ? pin.best : null;
+  const pinnedV6 = pin ? pin.v6 : null;
+  const pinnedUrl = pinnedV4
+    ? `https://${pinnedV4.server}.edge.nextdns.io/${configId}`
+    : null;
+  const pinnedBootstrap = pinnedV4 && pinnedV4.resolvedIP ? `#${pinnedV4.resolvedIP}` : '';
+
+  const tiers = [
     {
-      label: 'anycast',
+      id: 'anycast',
+      label: 'Stable / Anycast',
       url: `https://anycast.dns1.nextdns.io/${configId}`,
-      ms: anycast ? anycast.avgMs : null,
-      note: 'stable IPs, auto-failover',
+      available: true,
+      latency: {
+        ipv4: anyV4Primary ? anyV4Primary.avgMs : null,
+        ipv6: anyV6Primary ? anyV6Primary.avgMs : null,
+      },
+      addresses: {
+        ipv4: [ANYCAST_FALLBACK.ipv4.dns1],
+        ipv6: [ANYCAST_FALLBACK.ipv6.dns1],
+      },
+      fallbackAddresses: {
+        ipv4: [ANYCAST_FALLBACK.ipv4.dns2],
+        ipv6: [ANYCAST_FALLBACK.ipv6.dns2],
+      },
+      results: {
+        ipv4: [anyV4Primary, anyV4Backup].filter(Boolean),
+        ipv6: [anyV6Primary, anyV6Backup].filter(Boolean),
+      },
+      tradeoff: 'Stable global addresses with automatic routing failover.',
     },
     {
-      label: 'ultralow',
+      id: 'ultralow',
+      label: 'Steered / Ultralow',
       url: `https://dns.nextdns.io/${configId}`,
-      ms: ultralow ? ultralow.avgMs : null,
-      note: 'steered to nearest PoP',
+      available: !!(ultraV4[0] || ultraV6[0]),
+      latency: {
+        ipv4: ultraV4[0] ? ultraV4[0].avgMs : null,
+        ipv6: ultraV6[0] ? ultraV6[0].avgMs : null,
+      },
+      addresses: {
+        ipv4: compactAddresses(ultraV4[0] && ultraV4[0].resolvedIP),
+        ipv6: compactAddresses(ultraV6[0] && ultraV6[0].resolvedIP),
+      },
+      fallbackAddresses: {
+        ipv4: compactAddresses(ultraV4[1] && ultraV4[1].resolvedIP, ANYCAST_FALLBACK.ipv4.dns1),
+        ipv6: compactAddresses(ultraV6[1] && ultraV6[1].resolvedIP, ANYCAST_FALLBACK.ipv6.dns1),
+      },
+      results: {
+        ipv4: ultraV4.slice(0, 2),
+        ipv6: ultraV6.slice(0, 2),
+      },
+      tradeoff: 'NextDNS steers each connection to a nearby healthy PoP.',
+    },
+    {
+      id: 'pinned',
+      label: 'Direct / Pinned',
+      url: pinnedUrl,
+      available: !!pinnedV4,
+      latency: {
+        ipv4: pinnedV4 ? pinnedV4.avgMs : null,
+        ipv6: pinnedV6 ? pinnedV6.avgMs : null,
+      },
+      addresses: {
+        ipv4: compactAddresses(pinnedV4 && pinnedV4.resolvedIP),
+        ipv6: compactAddresses(pinnedV6 && pinnedV6.resolvedIP),
+      },
+      fallbackAddresses: {
+        ipv4: [ANYCAST_FALLBACK.ipv4.dns1],
+        ipv6: [ANYCAST_FALLBACK.ipv6.dns1],
+      },
+      results: {
+        ipv4: pinnedV4 ? [pinnedV4] : [],
+        ipv6: pinnedV6 ? [pinnedV6] : [],
+      },
+      tradeoff: pin && pin.worthIt
+        ? 'Lowest measured IPv4 latency, but the edge server has no automatic failover.'
+        : 'Targets one edge server and gives up automatic failover; not recommended for this run.',
+      pin,
+      forwarder: pinnedUrl
+        ? `${pinnedUrl}${pinnedBootstrap},https://anycast.dns1.nextdns.io/${configId}`
+        : null,
     },
   ];
 
-  if (pin && pin.best && pin.best.server) {
-    opts.push({
-      label: 'pinned',
-      url: `https://${pin.best.server}.edge.nextdns.io/${configId}`,
-      ms: pin.best.avgMs,
-      note: pin.worthIt
-        ? 'no failover — see below'
-        : 'no failover — not recommended for you, see below',
-      warn: true,
-    });
+  const byId = Object.fromEntries(tiers.map(t => [t.id, t]));
+  let recommended = null;
+
+  if (pin && pin.worthIt && byId.pinned.available) {
+    recommended = byId.pinned;
+  } else {
+    const routed = [byId.anycast, byId.ultralow]
+      .filter(t => t.available && t.latency.ipv4 != null)
+      .sort((a, b) => a.latency.ipv4 - b.latency.ipv4);
+    const fastest = routed[0] || byId.anycast;
+    const preferred = byId[preference];
+    recommended = preferred
+      && preferred.available
+      && preferred.latency.ipv4 != null
+      && fastest.latency.ipv4 != null
+      && preferred.latency.ipv4 - fastest.latency.ipv4 < 10
+      ? preferred
+      : fastest;
   }
-  return opts;
+
+  for (const tier of tiers) tier.recommended = tier === recommended;
+
+  if (recommended) {
+    recommended.reason = recommended.id === 'pinned'
+      ? `${pin.gainMs}ms lower IPv4 latency than the best routed option.`
+      : recommended.id === 'anycast'
+        ? 'Best balance of measured latency, stable addresses, and automatic failover.'
+        : 'Lowest-latency routed option while retaining automatic steering.';
+  }
+
+  return tiers;
 }
 
 // ─── Pin Target Selection ─────────────────────────────────────────────────────
@@ -2227,7 +2518,7 @@ function crossReferenceServers(servers) {
 
 // ─── Insight Box ─────────────────────────────────────────────────────────────
 
-function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
+function buildInsightHtml(errors, ipv4, ipv6, preference, routingTiers) {
   const visible = ipv4.filter(r => !r.resolvedToEdge);
   const visibleV6 = ipv6.filter(r => !r.resolvedToEdge);
   // Use ALL anycast (including absorbed) for comparison baseline — best anycast latency matters
@@ -2243,45 +2534,15 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
     ${errors.length > 0 ? `<span class="insight-pill err"><span data-count="${errors.length}">0</span>&nbsp;unreachable</span>` : ''}
   </div>`;
 
-  // IPv4 insight — adapts to preference
-  if (preference === 'anycast') {
-    if (bestAnycastV4) {
-      html += `<div class="insight-main" style="color:var(--cyan)">Best anycast: <span class="stat">${bestAnycastV4.avgMs}ms</span> <span class="text-dim">&mdash; ${escHtml(serverLabel(bestAnycastV4))}</span></div>`;
-      if (visible[0] && visible[0].type !== 'anycast' && visible[0].avgMs < bestAnycastV4.avgMs) {
-        const gap = Math.round((bestAnycastV4.avgMs - visible[0].avgMs) * 100) / 100;
-        html += `<div class="insight-note"><span class="text-dim">Edge server ${escHtml(serverLabel(visible[0]))} is</span> <span class="lat-green">${gap}ms faster</span> <span class="text-dim">but anycast preferred</span></div>`;
-      }
-    } else {
-      html += `<div class="insight-main"><span class="text-dim">No anycast IPv4 servers responded</span></div>`;
-    }
-  } else if (preference === 'ultralow') {
-    const bestUltralow = ipv4.filter(r => r.type === 'ultralow').sort((a, b) => a.avgMs - b.avgMs)[0];
-    if (bestUltralow) {
-      html += `<div class="insight-main" style="color:var(--cyan)">Best ultralow: <span class="stat">${bestUltralow.avgMs}ms</span> <span class="text-dim">&mdash; ${escHtml(serverLabel(bestUltralow))}</span></div>`;
-      if (visible[0] && visible[0].type !== 'ultralow' && visible[0].avgMs < bestUltralow.avgMs) {
-        const gap = Math.round((bestUltralow.avgMs - visible[0].avgMs) * 100) / 100;
-        html += `<div class="insight-note"><span class="text-dim">Edge server ${escHtml(serverLabel(visible[0]))} is</span> <span class="lat-green">${gap}ms faster</span> <span class="text-dim">but ultralow preferred</span></div>`;
-      }
-    } else {
-      html += `<div class="insight-main"><span class="text-dim">No ultralow IPv4 servers responded</span></div>`;
-    }
-  } else {
-    // auto — show best overall vs best anycast comparison
-    if (visible[0] && bestAnycastV4) {
-      if (visible[0].type === 'anycast') {
-        html += `<div class="insight-main" style="color:var(--cyan)">Anycast is your lowest-latency option &mdash; no server pinning needed.</div>`;
-      } else {
-        const imp = Math.round((bestAnycastV4.avgMs - visible[0].avgMs) * 100) / 100;
-        if (imp > 0) {
-          html += `<div class="insight-main"><span class="stat">${imp}ms lower latency</span> <span class="text-dim">vs anycast</span></div>`;
-          html += `<div class="insight-note">${escHtml(serverLabel(visible[0]))} <span class="lat-green">${visible[0].avgMs}ms</span> <span class="text-dim">vs anycast</span> <span class="lat-yellow">${bestAnycastV4.avgMs}ms</span></div>`;
-        } else {
-          html += `<div class="insight-main" style="color:var(--cyan)">Anycast is currently your lowest-latency option &mdash; no change needed.</div>`;
-        }
-      }
-    } else if (visible[0]) {
-      html += `<div class="insight-main"><span class="stat">${visible[0].avgMs}ms</span> <span class="text-dim">best IPv4 &mdash; ${escHtml(serverLabel(visible[0]))}</span></div>`;
-    }
+  const recommendedTier = routingTiers.find(t => t.recommended);
+  if (recommendedTier) {
+    const v4 = recommendedTier.latency.ipv4;
+    const v6 = recommendedTier.latency.ipv6;
+    html += `<div class="routing-verdict">Recommended route: `
+      + `<span class="verdict-tier">${escHtml(recommendedTier.label)}</span>`
+      + (v4 != null ? ` <span class="${latencyClass(v4)}">${v4}ms v4</span>` : '')
+      + (v6 != null ? ` <span class="${latencyClass(v6)}">${v6}ms v6</span>` : '')
+      + `<div class="verdict-reason">${escHtml(recommendedTier.reason || recommendedTier.tradeoff)}</div></div>`;
   }
 
   // Anycast routing info
@@ -2329,43 +2590,23 @@ function buildInsightHtml(ranked, ok, errors, ipv4, ipv6, preference) {
     }
   }
 
-  // ── Smart preference suggestion ────────────────────────────────────────────
-  if (visible.length > 0 && bestAnycastV4) {
-    const bestEdge = visible.find(r => r.type === 'server');
-    const bestUltralow = ipv4.filter(r => r.type === 'ultralow').sort((a, b) => a.avgMs - b.avgMs)[0];
-    const anycastMs = bestAnycastV4.avgMs;
-    const edgeMs = bestEdge ? bestEdge.avgMs : Infinity;
-    const ultralowMs = bestUltralow ? bestUltralow.avgMs : Infinity;
-    const bestMs = Math.min(anycastMs, edgeMs, ultralowMs);
-    // Only suggest if there's a meaningful gap (>3ms) between anycast and best alternative
-    if (anycastMs - bestMs > 3 && bestMs < anycastMs) {
-      html += `<div class="insight-note"><span class="opt-suggestion">Tip:</span> <span class="text-dim">Pin to <strong>${bestMs === edgeMs ? escHtml(serverLabel(bestEdge)) : escHtml(serverLabel(bestUltralow))}</strong> for ~${Math.round(anycastMs - bestMs)}ms improvement over anycast. Trade-off: anycast auto-failovers; pinned servers need manual fallback.</span></div>`;
-    } else if (bestMs >= anycastMs) {
-      html += `<div class="insight-note"><span class="opt-suggestion">Tip:</span> <span class="text-dim">Anycast is optimal for your location &mdash; no server pinning needed.</span></div>`;
-    }
-  }
-
   return { html, currentAnycastPop };
 }
 
 // fillGuideVars: substitute the user's real values into the "Where do I paste this?"
 // guide after a benchmark. Before a run the guide still reads correctly with its
 // {configId} placeholders, so it is useful without running anything.
-function fillGuideVars(configId, config, pin) {
-  const bestV4 = config && config.bestV4;
+function fillGuideVars(configId, config) {
+  const recommended = config && config.recommendedTier;
+  const pinned = config && config.routingTiers.find(t => t.id === 'pinned');
   const vals = {
     id: configId,
     dot: `${configId}.dns.nextdns.io`,
-    doh: pin && pin.worthIt
-      ? `https://${pin.best.server}.edge.nextdns.io/${configId}`
-      : `https://dns.nextdns.io/${configId}`,
-    bestIP: (pin && pin.worthIt && pin.best.resolvedIP)
-      || (bestV4 && bestV4.resolvedIP)
-      || null,
-    forwarder: pin && pin.worthIt && pin.best.resolvedIP
-      ? `https://${pin.best.server}.edge.nextdns.io/${configId}#${pin.best.resolvedIP}`
-        + `,https://anycast.dns1.nextdns.io/${configId}`
-      : null,
+    tier: recommended ? recommended.label : null,
+    doh: recommended ? recommended.url : null,
+    bestIP: recommended ? recommended.addresses.ipv4[0] : null,
+    bestV6: recommended ? recommended.addresses.ipv6[0] : null,
+    forwarder: pinned && pinned.available ? pinned.forwarder : null,
   };
 
   document.querySelectorAll('.gv[data-gv]').forEach(el => {
@@ -2375,13 +2616,12 @@ function fillGuideVars(configId, config, pin) {
       el.classList.remove('unset');
       return;
     }
-    // No pinned forwarder to offer. Don't leave "run a benchmark" sitting there
-    // after a benchmark has run — say why it is absent instead.
-    if (el.dataset.gv === 'forwarder' && pin) {
-      el.textContent = pin.worthIt
-        ? '(pinned server has no resolved IP — omit the #bootstrap suffix)'
-        : '(not needed — steered routing is already within '
-          + PIN_MIN_GAIN_MS + 'ms of your lowest-latency server)';
+    if (el.dataset.gv === 'forwarder') {
+      el.textContent = '(no pinned edge server was measured)';
+      el.classList.add('unset');
+    }
+    if (el.dataset.gv === 'bestV6') {
+      el.textContent = '(no matching IPv6 address was measured)';
       el.classList.add('unset');
     }
   });
@@ -2401,33 +2641,36 @@ function fillGuideVars(configId, config, pin) {
 //    rather than guess a menu path. Wrong paths are this guide's main failure mode.
 const AI_ID = '{your-config-id}';
 
-// hasRun distinguishes "no benchmark yet" from "benchmarked, pinning not worth it".
-// Without it the pre-run prompt claims a benchmark result the user never produced.
-function buildAiPrompt(pin, hasRun) {
+function buildAiPrompt(config, hasRun) {
   const L = [];
   L.push('Set up NextDNS on: [YOUR ROUTER, DEVICE OR OS — include make, model and firmware version if you know them]');
   L.push('');
   L.push('Values to use. Leave ' + AI_ID + ' exactly as written; I will substitute my real ID afterwards.');
   L.push('');
-  L.push('  DoH, anycast (most stable):        https://anycast.dns1.nextdns.io/' + AI_ID);
-  L.push('  DoH, steered (NextDNS picks):      https://dns.nextdns.io/' + AI_ID);
-  L.push('  DoT hostname:                      ' + AI_ID + '.dns.nextdns.io');
 
-  if (pin && pin.worthIt) {
-    const b = pin.best;
-    L.push('  DoH, pinned to one server:         https://' + b.server + '.edge.nextdns.io/' + AI_ID);
-    if (b.resolvedIP) L.push('  That server\'s IPv4:                ' + b.resolvedIP);
-    if (pin.v6 && pin.v6.resolvedIP) L.push('  That server\'s IPv6:                ' + pin.v6.resolvedIP);
-  } else if (hasRun) {
+  if (hasRun && config) {
+    L.push('Benchmark recommendation: ' + config.recommendedTier.label);
     L.push('');
-    L.push('Pinning to a single server would not help me, so ignore that option.');
+    for (const tier of config.routingTiers.filter(t => t.available)) {
+      const marker = tier.recommended ? '  [RECOMMENDED]' : '';
+      const aiUrl = tier.url.replace(/\/[^/]+$/, '/' + AI_ID);
+      L.push('  ' + tier.label + marker);
+      L.push('    DoH template: ' + aiUrl);
+      if (tier.addresses.ipv4[0]) L.push('    Matching IPv4: ' + tier.addresses.ipv4[0]);
+      if (tier.addresses.ipv6[0]) L.push('    Matching IPv6: ' + tier.addresses.ipv6[0]);
+      L.push('    Trade-off: ' + tier.tradeoff);
+    }
   } else {
-    L.push('');
-    L.push('I have not benchmarked yet — assume the steered or anycast option.');
+    L.push('I have not benchmarked yet — use one of these routed options:');
+    L.push('  Stable / Anycast:   https://anycast.dns1.nextdns.io/' + AI_ID);
+    L.push('  Steered / Ultralow: https://dns.nextdns.io/' + AI_ID);
   }
 
   L.push('');
+  L.push('  DoT hostname for any matching address above: ' + AI_ID + '.dns.nextdns.io');
+  L.push('');
   L.push('NextDNS mechanics you must not contradict:');
+  L.push('- Keep each IP paired with the DoH template from the same routing option. Do not mix an anycast IP, a steered template, or a pinned URL.');
   L.push('- DoT cannot be pinned to one server by hostname. To pin over DoT, use that server\'s IP together with the hostname ' + AI_ID + '.dns.nextdns.io.');
   L.push('- Plain unencrypted IPv4 cannot carry a config ID. NextDNS identifies you by Linked IP, registered at my.nextdns.io under Setup, using the profile-specific IPv4 addresses shown there — NOT the anycast addresses ending in .0. Without linking, DNS resolves normally but no filtering applies.');
   L.push('- Plain IPv6 needs no linking; the config ID is encoded in the address.');
@@ -2438,9 +2681,9 @@ function buildAiPrompt(pin, hasRun) {
   return L.join('\n');
 }
 
-function renderAiPrompt(pin, hasRun) {
+function renderAiPrompt(config, hasRun) {
   const box = document.getElementById('aiPromptBox');
-  if (box) box.textContent = buildAiPrompt(pin, hasRun);
+  if (box) box.textContent = buildAiPrompt(config, hasRun);
 }
 
 async function copyAiPrompt(btn) {
@@ -2450,9 +2693,11 @@ async function copyAiPrompt(btn) {
     await navigator.clipboard.writeText(box.textContent);
     btn.textContent = 'copied';
     btn.classList.add('copied');
+    showCopyToast('Copied setup prompt');
     setTimeout(() => { btn.textContent = 'copy prompt'; btn.classList.remove('copied'); }, 1500);
   } catch {
     btn.textContent = 'copy failed — select manually';
+    showCopyToast('Copy failed — select the prompt manually', true);
     setTimeout(() => { btn.textContent = 'copy prompt'; }, 2500);
   }
 }
@@ -2468,8 +2713,8 @@ async function runBenchmark() {
   const preference = document.getElementById('preference').value;
   const resolver = document.getElementById('dohResolver').value;
 
-  if (!configId || configId.length < 4) {
-    showError('Please enter a valid NextDNS config ID (at least 4 characters). Find it at my.nextdns.io → Setup.');
+  if (!CONFIG_ID_PATTERN.test(configId)) {
+    showError('Enter the profile ID exactly as shown at my.nextdns.io → Setup (letters, numbers, hyphen or underscore).');
     return;
   }
 
@@ -2532,12 +2777,19 @@ async function runBenchmark() {
     const ipv4Xref = crossReferenceServers(ipv4);
     const ipv6Xref = crossReferenceServers(ipv6);
 
+    // Phase 5: one configuration model for every rendered surface.
+    setProgress('Generating config...', 98);
+    const pin = selectPinTarget(ok);
+    const routingTiers = buildRoutingTiers(ok, configId, pin, preference);
+    const config = generateConfig(configId, routingTiers);
+
     // Render results
     resultsSection.style.display = 'block';
 
     // Insight box
     const insightBox = document.getElementById('insightBox');
-    const { html: insightHtml, currentAnycastPop } = buildInsightHtml(ranked, ok, errors, ipv4Xref, ipv6Xref, preference);
+    const { html: insightHtml, currentAnycastPop } =
+      buildInsightHtml(errors, ipv4Xref, ipv6Xref, preference, routingTiers);
     insightBox.innerHTML = insightHtml;
 
     // Animate stat pill counters (skip animation if reduced motion preferred)
@@ -2581,7 +2833,7 @@ async function runBenchmark() {
       document.getElementById('errorServersSection').style.display = 'block';
       const shown = errors.slice(0, 15);
       const badges = shown.map(r =>
-        `<span class="server-badge">${escHtml(serverLabel(r))} <span style="opacity:0.55">${r.family}</span></span>`
+        `<span class="server-badge">${escHtml(serverLabel(r))} <span>${r.family}</span></span>`
       ).join('');
       const extra = errors.length > 15
         ? `<span class="text-dim" style="font-size:0.75rem;vertical-align:middle"> +${errors.length - 15} more</span>`
@@ -2591,23 +2843,10 @@ async function runBenchmark() {
       document.getElementById('errorServersSection').style.display = 'none';
     }
 
-    // Phase 5: Config
-    // generateConfig intentionally receives `ranked` (pre-xref data), NOT xref'd arrays.
-    // Reason: anycast IPs are globally stable BGP addresses (45.90.28.0 / 45.90.30.0).
-    // Filtering absorbed anycast/ultralow entries from config would give users unstable
-    // edge IPs that rotate. The xref boundary applies to DISPLAY only (insight box, table,
-    // headers) — config recommendations need the full ranked set. (DA-4-001)
-    setProgress('Generating config...', 98);
-    // Pin target is computed first: the config panel's pinned DoH row and the
-    // pin section below must agree on the same server. Takes `ok` (not ranked or
-    // xref'd) because pin selection ignores `preference` and needs the raw edge
-    // rows that carry the `server` field.
-    const pin = selectPinTarget(ok);
-    const config = generateConfig(ranked, configId, pin);
-    renderConfig(config, configId);
-    renderPinSection(pin, configId);
-    fillGuideVars(configId, config, pin);
-    renderAiPrompt(pin, true);
+    renderConfig(config);
+    renderPinSection(routingTiers);
+    fillGuideVars(configId, config);
+    renderAiPrompt(config, true);
 
     setProgress('Done!', 100);
 
@@ -2637,9 +2876,9 @@ document.getElementById('configId').addEventListener('keydown', e => {
 (function () {
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id') || params.get('ID') || params.get('configId') || params.get('config');
-  if (id) {
+  if (id && CONFIG_ID_PATTERN.test(id.trim())) {
     const input = document.getElementById('configId');
-    input.value = id.replace(/['"]/g, '').trim();
+    input.value = id.trim();
   }
 })();
 
@@ -2690,6 +2929,10 @@ let hasIPv6 = false;       // Global: IPv6 connectivity to NextDNS
 (function initMatrixRain() {
   const canvas = document.getElementById('matrixRain');
   if (!canvas) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    canvas.hidden = true;
+    return;
+  }
   const ctx = canvas.getContext('2d');
   const banner = canvas.parentElement;
   const chars = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω0123456789ABCDEF.:;=+*#@%&';
@@ -2741,6 +2984,10 @@ let hasIPv6 = false;       // Global: IPv6 connectivity to NextDNS
   const el = document.getElementById('bannerTitle');
   if (!el) return;
   const target = el.dataset.text;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    el.textContent = target;
+    return;
+  }
   const glyphs = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδ0123456789@#$%&+=.:;';
   const h1 = el.closest('h1');
   const len = target.length;

@@ -20,6 +20,12 @@ Most DNS benchmarks tell you which server is quickest and stop there. This one c
 
 That's it. No server, no build step, no dependencies.
 
+To run the routing regression tests while developing:
+
+```powershell
+node --test tests\routing.test.cjs
+```
+
 ### Pre-fill your Config ID via URL
 
 Pass your config ID as a URL parameter to skip the input step:
@@ -63,20 +69,21 @@ Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns
 
 **Detected server** — highlighted with a golden row background and green dot. If it's not rank #1, a latency delta badge shows how much slower it is than the best option.
 
-**Insight box** — stat pills showing server / IPv4 / IPv6 / unreachable counts, optimization insight comparing your current server to the best, and a smart preference suggestion (anycast vs pinned server trade-offs)
+**Insight box** — stat pills showing server / IPv4 / IPv6 / unreachable counts, detected-route context, and the same routing recommendation used everywhere else on the page
 
-**IPv4 and IPv6 recommendations** — best + backup server for each family, with resolved IPs and anycast fallbacks
+**Routing choices** — three side-by-side choices for Stable / Anycast, Steered / Ultralow, and Direct / Pinned. Every card keeps its DoH URL, measured IPv4 and IPv6 latency, and matching addresses together so values from different routes cannot be accidentally mixed.
 
-**Pin to Lowest-Latency Server** — when a specific edge server beats both anycast and ultralow by more than 3ms, a dedicated section gives you the pinned DoH URL and a CLI forwarder string with failover. When it doesn't, the section says so instead of inventing a reason to pin. See [Pinning to a Specific Server](#pinning-to-a-specific-server).
+**Pin to Lowest-Latency Server** — always shows the measured pinned option, both address families, the DoH URL, and a CLI forwarder string with failover. It only recommends pinning when the edge server beats the routed choices by more than 3ms; otherwise it explains why automatic steering is the safer default. See [Pinning to a Specific Server](#pinning-to-a-specific-server).
 
 **Config panel** — ready-to-paste config formats:
-- Best / backup / anycast-fallback IPs for IPv4 and IPv6
-- DNS-over-TLS hostname
-- **DNS-over-HTTPS — all three tiers**, each with its measured latency and trade-off:
+- A single **Recommended** badge driven by the benchmark's unified routing model
+- DNS-over-HTTPS for all three tiers, each paired with its own measured latency and addresses:
   - `anycast` — `https://anycast.dns1.nextdns.io/{id}` · stable IPs, auto-failover
   - `ultralow` — `https://dns.nextdns.io/{id}` · steered to nearest PoP
-  - `pinned` — `https://{server}.edge.nextdns.io/{id}` · lowest latency, no failover (shown only when it beats the other two by >3ms)
-- Plain DNS IPs (best, backup, anycast fallback)
+  - `pinned` — `https://{server}.edge.nextdns.io/{id}` · one measured edge, no automatic failover
+- Recommended primary / backup bootstrap addresses for IPv4 and IPv6
+- DNS-over-TLS hostname paired with those bootstrap addresses
+- A prominent warning beside raw addresses explaining when plain IPv4 loses profile filtering
 
 Color-coded latency: green (<20ms), yellow (<40ms), red (≥40ms)
 
@@ -97,11 +104,11 @@ Both support browser CORS (`Access-Control-Allow-Origin: *`) and return the same
 
 | Mode | Best For |
 |------|----------|
-| **Auto** (default) | Most users — pure latency wins |
+| **Auto** (default) | Most users — fastest safe routed choice; pin only for a meaningful gain |
 | **Ultralow** | ISPs with good NextDNS peering |
 | **Anycast** | Maximum reliability, stable IPs |
 
-**How preference works:** Within a tolerance window (default 10ms), preferred servers win. So if you prefer ultralow and ultralow is 25ms vs another server at 20ms, ultralow wins. But if the other server is 5ms and ultralow is 25ms, latency still wins — preference doesn't override large differences.
+**How preference works:** Within a tolerance window (default 10ms), a preferred routed tier wins. So if you prefer ultralow and ultralow is 25ms vs anycast at 20ms, ultralow wins. But if anycast is 5ms and ultralow is 25ms, latency still wins. A direct edge is recommended separately, only when its measured gain clears the 3ms pinning threshold.
 
 ## Pinning to a Specific Server
 
@@ -149,8 +156,8 @@ Since browsers can't resolve DNS directly, IPs are resolved via a **public DoH A
 1. **Discovery** — fetch server list from `router.nextdns.io`, add anycast + ultralow endpoints
 2. **Benchmark** — hit `/info` on each hostname (3 rounds, 6 concurrent, 3s timeout)
 3. **IP Resolution** — bulk-resolve all hostnames via the selected DoH resolver
-4. **Ranking** — sort by latency with optional type preference boost
-5. **Config** — generate all output formats using resolved IPs
+4. **Routing model** — compare anycast, ultralow, and the best direct edge once, applying preference tolerance and the pinning threshold
+5. **Config** — generate every recommendation, setup-guide value, and AI prompt from that same routing decision
 
 ## Config Output Formats
 
@@ -167,7 +174,7 @@ The DoT server list only appears once DNS Privacy Protocol is switched off `None
 | **TLS Port** | leave blank (defaults to 853) |
 | **SPKI Fingerprint** | leave blank |
 
-Includes: Primary (lowest latency), Secondary (backup), and two Anycast fallbacks.
+Includes the recommended route's primary and backup bootstrap addresses for both families. The hostname and addresses shown in that section belong to the same route.
 
 Two things that catch people out: the DNS servers *above* the DoT section are only used by the router itself and have no effect on your devices once DoT is on — and IPv6 DNS servers go on the **IPv6** page, not the WAN page.
 
@@ -203,7 +210,7 @@ The tool has a built-in, collapsible setup guide at the bottom of the page cover
 
 Two findings worth calling out, because neither is obvious:
 
-- **Windows 11** only offers its encrypted-DNS dropdown for resolvers it already knows (Cloudflare, Google, Quad9). NextDNS isn't on that list — you must register the template with `Add-DnsClientDohServerAddress` first. Because Windows pairs an *IP* with a *DoH template*, it's one of the few clients that can pin to a specific edge server.
+- **Windows 11** only offers its encrypted-DNS dropdown for resolvers it already knows (Cloudflare, Google, Quad9). NextDNS isn't on that list — you must register the template with `Add-DnsClientDohServerAddress` first. Windows stores an *IP* and a *DoH template* as one route, so the built-in guide always fills both from the same routing card. Never mix an anycast address with the steered or pinned template.
 - **Android** takes a DoT hostname only, and DoT can't address an individual edge server — so pinning isn't available there at all.
 
 ## NextDNS API Reference
