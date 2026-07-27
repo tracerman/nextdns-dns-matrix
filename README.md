@@ -20,12 +20,6 @@ Most DNS benchmarks tell you which server is quickest and stop there. This one c
 
 That's it. No server, no build step, no dependencies.
 
-To run the routing regression tests while developing:
-
-```powershell
-node --test tests\routing.test.cjs
-```
-
 ### Pre-fill your Config ID via URL
 
 Pass your config ID as a URL parameter to skip the input step:

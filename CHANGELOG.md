@@ -6,7 +6,6 @@ All notable changes to NextDNS DNS Matrix are documented here.
 
 ### Added
 - **Unified routing cards** — Stable / Anycast, Steered / Ultralow, and Direct / Pinned now appear as comparable choices with their own DoH URL, IPv4 and IPv6 latency, matching addresses, trade-off, and one shared recommendation badge.
-- **Routing regression tests** — a dependency-free Node test suite covers tier pairing, the pinning threshold, preference tolerance, AI-prompt alternatives, and attribute escaping.
 - **Copy feedback and keyboard semantics** — generated values are real buttons with visible copy confirmation; scrollable result tables and the AI prompt are named, focusable regions.
 
 ### Fixed
