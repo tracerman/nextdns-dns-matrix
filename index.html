@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>NextDNS DNS Matrix v2 — Benchmark &amp; Recommend</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -586,6 +587,11 @@ tr:hover td { background: rgba(88,166,255,0.04); }
   font-size: 0.66rem;
   white-space: nowrap;
 }
+.tier-variation {
+  color: var(--text-dim);
+  font-size: 0.58rem;
+  font-weight: 400;
+}
 .tier-tradeoff {
   min-height: 2.4em;
   margin-bottom: 0.45rem;
@@ -848,6 +854,20 @@ tbody tr {
 
 /* Best row subtle highlight */
 .best-row { background: rgba(63,185,80,0.03); }
+.fallback-metric-row { opacity: 0.72; }
+.metric-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.08rem 0.28rem;
+  border: 1px solid rgba(210,153,34,0.35);
+  border-radius: 3px;
+  color: var(--yellow);
+  font-size: 0.56rem;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
 
 /* Current anycast routing line */
 .insight-routing {
@@ -1128,6 +1148,67 @@ tbody tr {
   color: var(--green);
   border-color: var(--green);
 }
+.pin-health-panel {
+  margin-bottom: 0.8rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(88,166,255,0.28);
+  border-left: 3px solid var(--cyan);
+  border-radius: 6px;
+  background: rgba(88,166,255,0.05);
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+.pin-health-panel.urgent {
+  border-color: rgba(248,81,73,0.42);
+  border-left-color: var(--red);
+  background: rgba(248,81,73,0.06);
+}
+.pin-health-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: start;
+}
+.pin-health-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.55rem;
+}
+.pin-health-actions button,
+.pin-monitor-btn,
+.history-clear-btn {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--cyan);
+  padding: 0.3rem 0.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+.run-history {
+  margin-top: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface);
+}
+.run-history summary {
+  padding: 0.75rem 0.9rem;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.run-history-body { padding: 0 0.9rem 0.9rem; }
+.history-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, auto) 1fr auto;
+  gap: 0.65rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--border);
+  font-size: 0.7rem;
+}
+.history-row span { color: var(--text-dim); }
 .text-action {
   border: 0;
   background: transparent;
@@ -1181,6 +1262,7 @@ tbody tr {
   gap: 0.5rem;
 }
 .choice-grid--scope { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.choice-grid--mode { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .setup-choice {
   appearance: none;
   text-align: left;
@@ -1194,6 +1276,10 @@ tbody tr {
   font-family: var(--mono);
 }
 .setup-choice:hover { border-color: rgba(88,166,255,0.55); }
+.setup-choice:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
 .setup-choice[aria-pressed="true"] {
   border-color: var(--cyan);
   box-shadow: inset 3px 0 var(--cyan);
@@ -1211,6 +1297,13 @@ tbody tr {
   font-size: 0.67rem;
   line-height: 1.4;
 }
+.mode-estimate {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--green);
+  font-size: 0.7rem;
+}
+.mode-estimate.unavailable { color: var(--text-dim); }
 .setup-actions {
   display: flex;
   align-items: center;
@@ -1319,6 +1412,24 @@ tbody tr {
   font-size: 1.15rem;
 }
 .setup-recommendation p { margin: 0.2rem 0 0; color: var(--text-dim); }
+.asus-effective {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid rgba(88,166,255,0.28);
+  border-radius: 6px;
+  background: rgba(88,166,255,0.06);
+  font-size: 0.7rem;
+}
+.asus-effective > span:first-child {
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.asus-effective > span:last-child { color: var(--green); }
 .setup-caution,
 .setup-blocker {
   border-left: 3px solid var(--yellow);
@@ -1644,6 +1755,8 @@ tbody tr {
   .choice-grid,
   .choice-grid--scope { grid-template-columns: 1fr; }
   .setup-choice { min-height: 0; }
+  .asus-effective,
+  .history-row { grid-template-columns: 1fr; }
   .setup-actions { align-items: stretch; flex-direction: column; }
   .setup-show-btn { width: 100%; }
   .runbook-title-row { display: block; }
@@ -1814,6 +1927,7 @@ tbody tr {
         Run the benchmark first if you want this guide personalized to your measured route.</div>
       <button type="button" class="text-action" onclick="focusBenchmark()">Run benchmark</button>
     </div>
+    <div class="pin-health-panel" id="pinHealthPanel" hidden role="status" aria-live="polite"></div>
 
     <div class="setup-chooser" role="group" aria-label="Setup guide choices">
       <fieldset class="setup-stage">
@@ -1833,6 +1947,12 @@ tbody tr {
         <div class="choice-grid" id="variantChoices"></div>
       </fieldset>
 
+      <fieldset class="setup-stage setup-stage--mode" id="modeStage" hidden>
+        <legend><span>4</span> Choose the availability trade-off</legend>
+        <p class="stage-hint" id="modeHint">Native Asus DoT treats every listed server as an active upstream.</p>
+        <div class="choice-grid choice-grid--mode" id="modeChoices"></div>
+      </fieldset>
+
       <div class="setup-actions">
         <button type="button" class="btn setup-show-btn" id="showSetupBtn" onclick="showSelectedSetup()" disabled>
           Show setup
@@ -1842,6 +1962,11 @@ tbody tr {
     </div>
 
     <article class="setup-runbook" id="setupRunbook" hidden aria-live="polite"></article>
+
+    <details class="run-history" id="runHistorySection" hidden>
+      <summary>Recent benchmark history <span id="runHistoryCount"></span></summary>
+      <div class="run-history-body" id="runHistoryBody"></div>
+    </details>
 
     <details class="advanced-reference">
       <summary>Advanced reference &amp; less common platforms</summary>
@@ -1889,7 +2014,7 @@ tbody tr {
       <a href="https://github.com/yokoffing/NextDNS-Config" target="_blank" rel="noopener" class="footer-link">yokoffing/NextDNS-Config</a>
       <a href="https://github.com/tracerman/nextdns-dns-matrix" target="_blank" rel="noopener" class="footer-link">NextDNS DNS Matrix</a>
     </div>
-    <div class="footer-note">All node IPs rotate &mdash; always run fresh before using results.</div>
+    <div class="footer-note">Pinned node IPs can rotate &mdash; benchmark fresh or use the local pin monitor.</div>
     <div class="footer-credit">Made with Love, Blood, and Coffee</div>
   </footer>
   <div class="copy-toast" id="copyToast" role="status" aria-live="polite" aria-atomic="true"></div>
@@ -1901,6 +2026,12 @@ tbody tr {
 const PING_TIMEOUT = 3000;
 const MAX_CONCURRENT = 6;
 const STAGGER_MS = 80;
+const REFINEMENT_ROUNDS = 7;
+const CLEAR_GAIN_FLOOR_MS = 3;
+const CLEAR_GAIN_RATIO = 0.05;
+const PIN_STATE_KEY = 'nextdns-matrix:pin:v1';
+const RUN_HISTORY_KEY = 'nextdns-matrix:runs:v1';
+const RUN_HISTORY_LIMIT = 10;
 const CONFIG_ID_PATTERN = /^[A-Za-z0-9_-]{4,64}$/;
 
 const ANYCAST_HOSTNAMES = [
@@ -1926,6 +2057,46 @@ const ANYCAST_FALLBACK = {
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
+}
+
+function roundMs(value) {
+  return Math.round(value * 100) / 100;
+}
+
+function median(values) {
+  if (!values.length) return Infinity;
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
+function medianAbsoluteDeviation(values) {
+  if (!values.length) return Infinity;
+  const center = median(values);
+  return median(values.map(value => Math.abs(value - center)));
+}
+
+function measurementThreshold(candidate, baseline) {
+  if (!candidate || !baseline) return Infinity;
+  return roundMs(Math.max(
+    CLEAR_GAIN_FLOOR_MS,
+    baseline.medianMs * CLEAR_GAIN_RATIO,
+    (candidate.madMs || 0) + (baseline.madMs || 0),
+  ));
+}
+
+function clearMeasuredAdvantage(candidate, baseline) {
+  if (!candidate || !baseline) return false;
+  return baseline.medianMs - candidate.medianMs > measurementThreshold(candidate, baseline);
+}
+
+function measurementsAreClose(a, b) {
+  if (!a || !b) return false;
+  const faster = a.medianMs <= b.medianMs ? a : b;
+  const slower = faster === a ? b : a;
+  return !clearMeasuredAdvantage(faster, slower);
 }
 
 function showError(msg) {
@@ -2014,6 +2185,199 @@ function showCopyToast(message, isError = false) {
   copyToastTimer = setTimeout(() => toast.classList.remove('visible'), 1800);
 }
 
+function readLocalRecord(key, fallback = null) {
+  try {
+    if (!window.localStorage) return fallback;
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeLocalRecord(key, value) {
+  try {
+    if (!window.localStorage) return false;
+    window.localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function removeLocalRecord(key) {
+  try {
+    if (window.localStorage) window.localStorage.removeItem(key);
+  } catch {
+    // Storage can be unavailable under hardened browser policies.
+  }
+}
+
+function savedPinRecord() {
+  const record = readLocalRecord(PIN_STATE_KEY);
+  return record && record.version === 1 && record.hostname && record.resolvedIP
+    ? record : null;
+}
+
+function renderPinHealth(state = null) {
+  const panel = document.getElementById('pinHealthPanel');
+  if (!panel) return;
+  const record = savedPinRecord();
+  if (!record) {
+    panel.hidden = true;
+    panel.classList.remove('urgent');
+    panel.innerHTML = '';
+    return;
+  }
+  const measured = new Date(record.measuredAt).toLocaleString();
+  const status = state || { kind: 'saved', message: `Monitoring ${record.server || record.hostname} from ${measured}.` };
+  panel.hidden = false;
+  panel.classList.toggle('urgent', status.kind === 'rotated');
+  panel.innerHTML = `<div class="pin-health-head"><div><strong>${status.kind === 'rotated'
+    ? 'Pinned bootstrap address changed'
+    : status.kind === 'degraded' ? 'Pinned route has degraded' : 'Pinned route monitor'}</strong>`
+    + `<div>${escHtml(status.message)}</div></div>`
+    + `<span class="text-dim">${escHtml(record.family)} · ${escHtml(record.resolvedIP)}</span></div>`
+    + `<div class="pin-health-actions">`
+    + `<button type="button" onclick="checkSavedPinRotation(true)">Check address</button>`
+    + `<button type="button" onclick="recheckSavedPinPerformance(this)">Recheck performance</button>`
+    + `<button type="button" onclick="forgetSavedPin()">Forget pin</button></div>`;
+}
+
+function monitorPinnedServer(button) {
+  const record = {
+    version: 1,
+    hostname: button.dataset.hostname,
+    server: button.dataset.server,
+    family: button.dataset.family,
+    resolvedIP: button.dataset.ip,
+    medianMs: Number(button.dataset.median),
+    madMs: Number(button.dataset.mad),
+    measuredAt: new Date().toISOString(),
+  };
+  if (writeLocalRecord(PIN_STATE_KEY, record)) {
+    renderPinHealth({ kind: 'saved', message: `Saved ${record.server} without storing your NextDNS profile ID.` });
+    showCopyToast('Monitoring this pin locally');
+  } else {
+    showCopyToast('This browser did not allow local pin monitoring', true);
+  }
+}
+
+async function checkSavedPinRotation(announce = false) {
+  const record = savedPinRecord();
+  if (!record) return;
+  const resolverEl = document.getElementById('dohResolver');
+  const resolver = resolverEl ? resolverEl.value : 'google';
+  const qtype = record.family === 'IPv6' ? 'AAAA' : 'A';
+  const current = await resolveHostname(record.hostname, qtype, resolver);
+  if (!current) {
+    renderPinHealth({ kind: 'unknown', message: 'Could not resolve the saved edge hostname. Your saved router value was not changed.' });
+    return;
+  }
+  if (current !== record.resolvedIP) {
+    renderPinHealth({
+      kind: 'rotated',
+      message: `The saved value is ${record.resolvedIP}; DNS now returns ${current}. Update the router urgently, but do not assume the old address has already stopped serving.`,
+    });
+  } else {
+    renderPinHealth({ kind: 'healthy', message: `Address unchanged as of ${new Date().toLocaleString()}. This checks rotation, not route performance.` });
+    if (announce) showCopyToast('Pinned address is unchanged');
+  }
+}
+
+async function recheckSavedPinPerformance(button) {
+  const record = savedPinRecord();
+  if (!record) return;
+  button.disabled = true;
+  button.textContent = 'Checking…';
+  const result = await benchmarkServer({
+    hostname: record.hostname,
+    server: record.server,
+    nodeId: record.server,
+    family: record.family,
+    type: 'server',
+  }, REFINEMENT_ROUNDS);
+  button.disabled = false;
+  button.textContent = 'Recheck performance';
+  if (result.status !== 'ok' || result.metric !== 'server') {
+    renderPinHealth({ kind: 'unknown', message: 'The saved edge could not produce a comparable server RTT during this recheck.' });
+    return;
+  }
+  const baseline = { medianMs: record.medianMs, madMs: record.madMs || 0 };
+  const threshold = measurementThreshold(result, baseline);
+  const change = roundMs(result.medianMs - record.medianMs);
+  if (change > threshold) {
+    renderPinHealth({
+      kind: 'degraded',
+      message: `Median RTT rose from ${record.medianMs}ms to ${result.medianMs}ms, beyond the ${threshold}ms change window. Rerun the full benchmark before changing routes.`,
+    });
+  } else {
+    renderPinHealth({
+      kind: 'healthy',
+      message: `Median RTT is ${result.medianMs}ms versus ${record.medianMs}ms when saved; no clear degradation was measured.`,
+    });
+  }
+}
+
+function forgetSavedPin() {
+  removeLocalRecord(PIN_STATE_KEY);
+  renderPinHealth();
+  showCopyToast('Forgot the saved pin');
+}
+
+function saveRunHistory(ok, routingTiers) {
+  const comparable = ok.filter(result => result.metric === 'server');
+  const recommended = routingTiers.find(tier => tier.recommended);
+  const entry = {
+    at: new Date().toISOString(),
+    recommended: recommended ? recommended.id : null,
+    endpoints: comparable.map(result => ({
+      hostname: result.hostname,
+      server: result.server || null,
+      nodeId: result.nodeId || null,
+      family: result.family,
+      type: result.type,
+      resolvedIP: result.resolvedIP || null,
+      medianMs: result.medianMs,
+      madMs: result.madMs,
+    })),
+  };
+  const existing = readLocalRecord(RUN_HISTORY_KEY, { version: 1, runs: [] });
+  const runs = existing && existing.version === 1 && Array.isArray(existing.runs)
+    ? existing.runs : [];
+  writeLocalRecord(RUN_HISTORY_KEY, {
+    version: 1,
+    runs: [entry, ...runs].slice(0, RUN_HISTORY_LIMIT),
+  });
+  renderRunHistory();
+}
+
+function renderRunHistory() {
+  const section = document.getElementById('runHistorySection');
+  const body = document.getElementById('runHistoryBody');
+  const count = document.getElementById('runHistoryCount');
+  if (!section || !body || !count) return;
+  const record = readLocalRecord(RUN_HISTORY_KEY, { version: 1, runs: [] });
+  const runs = record && record.version === 1 && Array.isArray(record.runs) ? record.runs : [];
+  section.hidden = runs.length === 0;
+  count.textContent = runs.length ? `(${runs.length} local)` : '';
+  body.innerHTML = runs.map(run => {
+    const comparable = [...(run.endpoints || [])].sort((a, b) => a.medianMs - b.medianMs);
+    const best = comparable[0];
+    return `<div class="history-row"><span>${escHtml(new Date(run.at).toLocaleString())}</span>`
+      + `<strong>${escHtml(run.recommended || 'unavailable')}</strong>`
+      + `<span>${best ? `${escHtml(best.nodeId || best.hostname)} · ${best.medianMs}ms` : 'no comparable result'}</span></div>`;
+  }).join('') + (runs.length
+    ? '<button type="button" class="history-clear-btn" onclick="clearRunHistory()">Clear local history</button>'
+    : '');
+}
+
+function clearRunHistory() {
+  removeLocalRecord(RUN_HISTORY_KEY);
+  renderRunHistory();
+  showCopyToast('Cleared local benchmark history');
+}
+
 // ─── Server Discovery ─────────────────────────────────────────────────────────
 
 async function discoverServers(onStatus) {
@@ -2088,78 +2452,83 @@ async function discoverServers(onStatus) {
 
 // ─── Benchmark Single Server ──────────────────────────────────────────────────
 
-async function benchmarkServer(server, rounds) {
-  const results = [];
-
-  for (let i = 0; i < rounds; i++) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), PING_TIMEOUT);
-
-      const t0 = performance.now();
-      const resp = await fetch(`https://${server.hostname}/info`, {
-        signal: controller.signal,
-        cache: 'no-store',
-      });
-      const t1 = performance.now();
-      clearTimeout(timer);
-
-      if (resp.ok) {
-        const data = await resp.json();
-        results.push({
-          clientMs: Math.round((t1 - t0) * 100) / 100,
-          serverRttUs: data.rtt || null,
-          pop: data.pop || null,
-          location: data.locationName || null,
-        });
-      }
-    } catch {
-      // timeout or network error — skip this round
-    }
-
-    if (i < rounds - 1) await sleep(STAGGER_MS);
+async function probeServer(server) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), PING_TIMEOUT);
+  try {
+    const t0 = performance.now();
+    const resp = await fetch(`https://${server.hostname}/info`, {
+      signal: controller.signal,
+      cache: 'no-store',
+    });
+    const t1 = performance.now();
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return {
+      clientMs: roundMs(t1 - t0),
+      serverRttUs: data.rtt || null,
+      pop: data.pop || null,
+      location: data.locationName || null,
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
+}
 
-  if (results.length === 0) {
+function summarizeBenchmark(server, samples, rounds) {
+  if (samples.length === 0) {
     return {
       ...server,
-      avgMs: Infinity,
+      medianMs: Infinity,
       minMs: Infinity,
       maxMs: Infinity,
-      jitter: Infinity,
+      madMs: Infinity,
       successRate: 0,
       status: 'error',
+      metric: null,
+      samplesMs: [],
       pop: null,
       location: null,
     };
   }
 
   // Use server-reported RTT (microseconds → ms) as primary metric.
-  // Filter per-sample rather than deciding from results[0]: if any later round
+  // Filter per-sample rather than deciding from samples[0]: if any later round
   // returns no `rtt`, `null / 1000` evaluates to 0, which zeroes minMs and drags
-  // the average down — making the server look FASTER than it really is.
+  // the median down — making the server look lower-latency than it really is.
   // `metric` is recorded because server RTT and clientMs are not comparable
   // (clientMs is a full HTTPS round trip incl. TLS), so ranking must not mix them.
-  const serverRtts = results.filter(r => r.serverRttUs != null).map(r => r.serverRttUs / 1000);
+  const serverRtts = samples.filter(r => r.serverRttUs != null).map(r => r.serverRttUs / 1000);
   const usedServerRtt = serverRtts.length > 0;
-  const times = usedServerRtt ? serverRtts : results.map(r => r.clientMs);
-
-  const avg = times.reduce((a, b) => a + b, 0) / times.length;
+  const times = usedServerRtt ? serverRtts : samples.map(r => r.clientMs);
   const min = Math.min(...times);
   const max = Math.max(...times);
 
   return {
     ...server,
-    avgMs: Math.round(avg * 100) / 100,
-    minMs: Math.round(min * 100) / 100,
-    maxMs: Math.round(max * 100) / 100,
-    jitter: Math.round((max - min) * 100) / 100,
-    successRate: Math.round((results.length / rounds) * 100),
+    medianMs: roundMs(median(times)),
+    minMs: roundMs(min),
+    maxMs: roundMs(max),
+    madMs: roundMs(medianAbsoluteDeviation(times)),
+    successRate: Math.round((samples.length / rounds) * 100),
     status: 'ok',
     metric: usedServerRtt ? 'server' : 'client',
-    pop: results[0].pop,
-    location: results[0].location,
+    samplesMs: times.map(roundMs),
+    pop: samples.find(sample => sample.pop)?.pop || null,
+    location: samples.find(sample => sample.location)?.location || null,
   };
+}
+
+async function benchmarkServer(server, rounds) {
+  const samples = [];
+  for (let i = 0; i < rounds; i++) {
+    const sample = await probeServer(server);
+    if (sample) samples.push(sample);
+    if (i < rounds - 1) await sleep(STAGGER_MS);
+  }
+  return summarizeBenchmark(server, samples, rounds);
 }
 
 // ─── Full Benchmark ───────────────────────────────────────────────────────────
@@ -2179,40 +2548,78 @@ async function runFullBenchmark(servers, rounds, onProgress) {
   return results;
 }
 
+function shuffle(values) {
+  const shuffled = [...values];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function selectRefinementFinalists(results) {
+  const comparableV4 = results
+    .filter(result => result.status === 'ok' && result.metric === 'server' && result.family === 'IPv4')
+    .sort((a, b) => a.medianMs - b.medianMs);
+  const ofType = (type, limit) => comparableV4
+    .filter(result => result.type === type)
+    .slice(0, limit);
+  return [
+    ...ofType('anycast', 2),
+    ...ofType('ultralow', 2),
+    ...comparableV4.filter(result => result.type === 'server').slice(0, 2),
+  ].filter((result, index, all) =>
+    result && all.findIndex(other => other.hostname === result.hostname) === index);
+}
+
+async function refineFinalists(results, rounds = REFINEMENT_ROUNDS, onProgress = () => {}) {
+  const finalists = selectRefinementFinalists(results);
+  if (finalists.length < 2) return results;
+  const samples = new Map(finalists.map(finalist => [finalist.hostname, []]));
+  const total = finalists.length * rounds;
+  let completed = 0;
+
+  for (let round = 0; round < rounds; round++) {
+    for (const finalist of shuffle(finalists)) {
+      const sample = await probeServer(finalist);
+      if (sample) samples.get(finalist.hostname).push(sample);
+      completed++;
+      onProgress(completed, total);
+      await sleep(STAGGER_MS);
+    }
+  }
+
+  const refined = new Map(finalists.map(finalist => [
+    finalist.hostname,
+    summarizeBenchmark(finalist, samples.get(finalist.hostname), rounds),
+  ]));
+  return results.map(result => refined.get(result.hostname) || result);
+}
+
 // ─── Ranking ──────────────────────────────────────────────────────────────────
 
-// rankResults: sort servers by latency with optional type preference boost.
-//
-// (a) When preference === 'auto', pure latency sort applies (a.avgMs - b.avgMs).
-//     No type boost — the fastest server always wins regardless of type.
-//
-// (b) When a preference is set (e.g. 'ultralow' or 'anycast'), the tolerance window
-//     applies: a preferred-type server is promoted ONLY if the latency penalty for
-//     choosing it is less than `toleranceMs` (default 10ms). For example, if ultralow
-//     is 8ms slower than edge, ultralow wins. If ultralow is 12ms slower, edge wins.
-//
-// (c) Preference NEVER overrides a latency gap >= toleranceMs. Outside the tolerance
-//     window, pure latency sort decides. This prevents recommending a preferred server
-//     that is significantly slower than a non-preferred one.
-function rankResults(results, preference, toleranceMs = 10) {
-  const sorted = [...results];
-  sorted.sort((a, b) => {
-    // Error results always sort to the bottom
-    if (a.status !== b.status) return a.status === 'ok' ? -1 : 1;
-    // (a) Auto mode: pure latency sort, no preference boost
-    if (preference === 'auto') return a.avgMs - b.avgMs;
+// Comparable server RTTs rank first. Browser-duration fallbacks remain visible
+// but cannot receive a numeric rank or influence a route recommendation.
+function rankResults(results, preference) {
+  const ok = results.filter(result => result.status === 'ok');
+  const errors = results.filter(result => result.status !== 'ok');
+  const comparable = ok
+    .filter(result => result.metric === 'server')
+    .sort((a, b) => a.medianMs - b.medianMs);
+  const fallback = ok
+    .filter(result => result.metric !== 'server')
+    .sort((a, b) => a.medianMs - b.medianMs);
 
-    const diff = a.avgMs - b.avgMs; // positive = a is slower
-    const aP = a.type === preference; // a is preferred type
-    const bP = b.type === preference; // b is preferred type
-    // (b) Promote a if it's preferred AND its latency penalty is within tolerance
-    if (aP && !bP && diff < toleranceMs) return -1;
-    // (b) Promote b if it's preferred AND its latency penalty is within tolerance
-    if (!aP && bP && -diff < toleranceMs) return 1;
-    // (c) Outside tolerance window: fall back to pure latency sort
-    return a.avgMs - b.avgMs;
-  });
-  return sorted;
+  if (preference !== 'auto' && comparable.length) {
+    const best = comparable[0];
+    comparable.sort((a, b) => {
+      const aPreferredClose = a.type === preference && measurementsAreClose(a, best);
+      const bPreferredClose = b.type === preference && measurementsAreClose(b, best);
+      if (aPreferredClose !== bPreferredClose) return aPreferredClose ? -1 : 1;
+      return a.medianMs - b.medianMs;
+    });
+  }
+  return [...comparable, ...fallback, ...errors];
 }
 
 // ─── IP Resolution via DoH ────────────────────────────────────────────────────
@@ -2295,21 +2702,24 @@ function generateConfig(configId, routingTiers) {
   const recommendedTier = routingTiers.find(t => t.recommended)
     || routingTiers.find(t => t.available)
     || null;
+  const bootstrapTier = recommendedTier && recommendedTier.id === 'ultralow'
+    ? routingTiers.find(tier => tier.id === 'anycast') || recommendedTier
+    : recommendedTier;
 
   const tierEntry = (family, fallback) => {
-    const addresses = recommendedTier ? recommendedTier.addresses[family] : [];
-    const fallbacks = recommendedTier ? recommendedTier.fallbackAddresses[family] : [];
-    const results = recommendedTier ? recommendedTier.results[family] : [];
+    const addresses = bootstrapTier ? bootstrapTier.addresses[family] : [];
+    const fallbacks = bootstrapTier ? bootstrapTier.fallbackAddresses[family] : [];
+    const results = bootstrapTier ? bootstrapTier.results[family] : [];
     return {
       best: {
         ip: addresses[0] || fallback.dns1,
         result: results[0] || null,
-        tier: recommendedTier,
+        tier: bootstrapTier,
       },
       backup: {
         ip: fallbacks[0] || fallback.dns2,
         result: results[1] || null,
-        tier: recommendedTier,
+        tier: bootstrapTier,
       },
     };
   };
@@ -2335,6 +2745,7 @@ function generateConfig(configId, routingTiers) {
     dot: dotHostname,
     routingTiers,
     recommendedTier,
+    bootstrapTier,
     bestV4: v4.best.result,
     secondV4: v4.backup.result,
     bestV6: v6.best.result,
@@ -2363,7 +2774,7 @@ function renderTable(tableId, servers, currentPop = null) {
     colgroup = document.createElement('colgroup');
     table.prepend(colgroup);
   }
-  //          #    NodeID  Location Type  Hostname     IP       Avg   Min   Jitter OK%
+  //          #    NodeID  Location Type  Hostname     IP       Median Min   MAD   OK%
   colgroup.innerHTML = `
     <col style="width:3.5%"><col style="width:13%"><col style="width:12%"><col style="width:7%">
     <col style="width:22%"><col style="width:16%">
@@ -2373,7 +2784,7 @@ function renderTable(tableId, servers, currentPop = null) {
   thead.innerHTML = `<tr>
     <th>#</th><th>Node ID</th><th>Location</th><th>Type</th>
     <th>Hostname</th><th>IP</th>
-    <th>Avg</th><th>Min</th><th>Jitter</th><th>OK%</th>
+    <th>Median</th><th>Min</th><th title="Median absolute deviation">MAD</th><th>OK%</th>
   </tr>`;
 
   // Build map: edge nodeId → routing entries { label, type } that resolve to it
@@ -2387,9 +2798,12 @@ function renderTable(tableId, servers, currentPop = null) {
 
   // Remove anycast/ultralow rows that are absorbed by an edge row
   const displayed = servers.filter(r => !r.resolvedToEdge);
+  const comparable = displayed.filter(result => result.metric === 'server');
+  const comparableRanks = new Map(comparable.map((result, index) => [result, index + 1]));
+  const bestComparable = comparable[0] || null;
 
   tbody.innerHTML = '';
-  const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.avgMs)) : 1;
+  const maxMs = displayed.length > 0 ? Math.max(...displayed.map(s => s.medianMs)) : 1;
   displayed.forEach((r, i) => {
     const isCurrent = currentPop && (r.nodeId === currentPop || r.pop === currentPop);
     // Highlight the detected PoP wherever it appears. This previously guessed the
@@ -2397,9 +2811,12 @@ function renderTable(tableId, servers, currentPop = null) {
     // the BROWSER can reach NextDNS over IPv6 — not which family the DNS connection
     // actually uses. On dual-stack (the common case) the guess lands in the wrong table.
     const isDetected = detectedServer && (r.nodeId === detectedServer || r.pop === detectedServer);
-    const rank = i === 0
+    const comparableRank = comparableRanks.get(r) || null;
+    const rank = comparableRank === 1
       ? '<span class="rank-star">&#9733;</span>'
-      : `<span class="text-dim">${i + 1}</span>`;
+      : comparableRank
+        ? `<span class="text-dim">${comparableRank}</span>`
+        : '<span class="text-dim" title="Client-measured rows are not comparably ranked">—</span>';
     const currentMarker = isCurrent
       ? '<span class="current-marker" title="Anycast currently routes here"></span>'
       : '';
@@ -2410,7 +2827,7 @@ function renderTable(tableId, servers, currentPop = null) {
       ? `<span class="via-badge via-badge--${r.type}">${escHtml(r.nodeId)}</span>`
       : '';
     const viaBadges = viaEntries.map(v =>
-      `<span class="via-badge via-badge--${v.type}">${escHtml(v.label)}</span>`
+      `<span class="via-badge via-badge--${v.type}" title="${escAttr(v.label)} currently reaches this PoP; the RTT shown is the direct edge measurement">via ${escHtml(v.label)}</span>`
     ).join('') || selfBadge;
 
     const { flag, city } = parseLocation(r.location || r.pop || '');
@@ -2418,15 +2835,22 @@ function renderTable(tableId, servers, currentPop = null) {
       ? `<span class="cc-badge">${escHtml(flag)}</span> ${escHtml(city)}`
       : escHtml(city || r.pop || '');
     const ip = r.resolvedIP || '';
-    // If edge row has absorbed anycast/ultralow, show that type instead of 'edge'
-    const absorbedType = viaEntries.length > 0 ? viaEntries[0].type : null;
-    const effectiveType = absorbedType || r.type;
+    // A routing badge identifies where anycast/ultralow currently lands; it must
+    // not relabel this direct-edge row or imply that the two RTTs are identical.
+    const effectiveType = r.type;
     const typeLabel = effectiveType === 'server' ? 'edge' : effectiveType;
-    const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.avgMs / maxMs) * 60)) : 4;
+    const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.medianMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
     if (isCurrent) tr.classList.add('current-pop-row');
     if (isDetected) tr.classList.add('detected-server-row');
-    if (i === 0) tr.classList.add('best-row');
+    if (comparableRank === 1) tr.classList.add('best-row');
+    if (!comparableRank) tr.classList.add('fallback-metric-row');
+    const delta = isDetected && bestComparable && r.metric === 'server'
+      ? roundMs(r.medianMs - bestComparable.medianMs)
+      : null;
+    const metricBadge = r.metric === 'client'
+      ? '<span class="metric-badge" title="Full browser HTTPS duration; not comparable with server RTT">client measured</span>'
+      : '';
     tr.innerHTML = `
       <td>${rank}${currentMarker}</td>
       <td>${escHtml(serverLabel(r))}${viaBadges}</td>
@@ -2434,9 +2858,9 @@ function renderTable(tableId, servers, currentPop = null) {
       <td class="${typeClass(effectiveType)}">${typeLabel}</td>
       <td class="text-dim" style="font-size:0.75rem"><button type="button" class="copyable" data-copy="${escAttr(r.hostname)}" data-copy-label="hostname" onclick="clickCopy(this)" title="Copy hostname">${escHtml(r.hostname)}</button></td>
       <td>${ip ? '<button type="button" class="copyable" data-copy="' + escAttr(ip) + '" data-copy-label="IP address" onclick="clickCopy(this)" title="Copy IP address">' + escHtml(ip) + '</button>' : '<span class="text-dim">-</span>'}</td>
-      <td class="${latencyClass(r.avgMs)}"><span>${r.avgMs}ms</span>${isDetected ? (i === 0 ? '<span class="delta-badge optimal">optimal</span>' : '<span class="delta-badge slower">+' + Math.round((r.avgMs - displayed[0].avgMs) * 100) / 100 + 'ms</span>') : ''}<span class="spark-bar" style="width:${barWidth}px"></span></td>
+      <td class="${latencyClass(r.medianMs)}"><span>${r.medianMs}ms</span>${metricBadge}${delta != null ? (delta <= 0 ? '<span class="delta-badge optimal">optimal</span>' : '<span class="delta-badge slower">+' + delta + 'ms</span>') : ''}<span class="spark-bar" style="width:${barWidth}px"></span></td>
       <td class="text-dim">${r.minMs}ms</td>
-      <td class="text-dim">${r.jitter}ms</td>
+      <td class="text-dim">${r.madMs}ms</td>
       <td>${r.successRate === 100 ? '<span class="lat-green">100%</span>' : '<span class="lat-yellow">' + r.successRate + '%</span>'}</td>
     `;
     tr.style.animationDelay = (i * 25) + 'ms';
@@ -2447,30 +2871,38 @@ function renderTable(tableId, servers, currentPop = null) {
 function renderConfig(config) {
   const section = document.getElementById('configInline');
   section.style.display = 'block';
-  const hasV6 = !!(config.recommendedTier && config.recommendedTier.addresses.ipv6[0]);
+  const hasV6 = !!(config.bootstrapTier && config.bootstrapTier.addresses.ipv6[0]);
 
   function bootstrapEntry(entry, label) {
     const r = entry.result;
     const nodeLabel = r ? serverLabel(r) : '';
     const badge = r
-      ? ' &middot; <span class="' + latencyClass(r.avgMs) + '">' + r.avgMs + 'ms</span> ' + escHtml(nodeLabel)
+      ? ' &middot; <span class="' + latencyClass(r.medianMs) + '">' + r.medianMs + 'ms</span> ' + escHtml(nodeLabel)
       : '';
     return `<div class="config-cell">${configEntry(escHtml(label) + badge, entry.ip, false, 'IP address')}</div>`;
   }
 
   let html = `<div class="routing-tier-grid">${config.routingTiers.map(routingTierCard).join('')}</div>`;
-  html += `<div class="config-section-label">Recommended DoT / router bootstrap</div>`;
+  const bootstrapAdjusted = config.bootstrapTier && config.recommendedTier
+    && config.bootstrapTier.id !== config.recommendedTier.id;
+  html += `<div class="config-section-label">${bootstrapAdjusted
+    ? 'Bootstrap-compatible reference · Stable / Anycast'
+    : 'Bootstrap address reference'}</div>`;
   html += `<div class="bootstrap-grid">`;
-  html += bootstrapEntry(config.ipv4.best, 'IPv4 Primary');
-  html += bootstrapEntry(config.ipv4.backup, 'IPv4 Backup');
+  html += bootstrapEntry(config.ipv4.best, 'IPv4 address 1');
+  html += bootstrapEntry(config.ipv4.backup, 'IPv4 address 2');
   if (hasV6) {
-    html += bootstrapEntry(config.ipv6.best, 'IPv6 Primary');
-    html += bootstrapEntry(config.ipv6.backup, 'IPv6 Backup');
+    html += bootstrapEntry(config.ipv6.best, 'IPv6 address 1');
+    html += bootstrapEntry(config.ipv6.backup, 'IPv6 address 2');
   }
   html += `</div>`;
   html += `<div class="config-cell" style="margin-top:0.35rem">${configEntry('DNS-over-TLS / QUIC hostname', config.dot, false, 'TLS hostname')}`
-    + `<div class="cfg-note">Pair this hostname with the primary and backup addresses in this section. `
-    + `They all belong to the recommended <strong>${escHtml(config.recommendedTier.label)}</strong> route.</div></div>`;
+    + `<div class="cfg-note">Pair this hostname only with addresses from the same route. `
+    + (bootstrapAdjusted
+      ? `Ultralow uses short-lived steering records, so bootstrap-IP clients use stable anycast instead of freezing the current steered answer.`
+      : `They all belong to the recommended <strong>${escHtml(config.recommendedTier.label)}</strong> route.`)
+    + ` Do not assume address 2 waits as a fallback; some clients actively distribute queries across every configured address. Use the guided setup below for an exact entry set.`
+    + `</div></div>`;
   html += `<div class="plain-dns-warning"><strong>Raw IPv4 is not profile-aware.</strong> `
     + `These addresses are for encrypted DNS bootstrap and advanced manual setups. For plain, unencrypted IPv4, `
     + `link your public IP and copy the profile-specific addresses from my.nextdns.io &rarr; Setup &rarr; Linked IP. `
@@ -2504,9 +2936,11 @@ function configEntry(label, value, dim = false, copyLabel = 'value') {
 function routingTierCard(tier) {
   const metric = (family, label) => {
     const ms = tier.latency[family];
+    const mad = tier.variation && tier.variation[family];
     return ms == null
       ? `<span class="tier-metric text-dim">${label} n/a</span>`
-      : `<span class="tier-metric ${latencyClass(ms)}">${label} ${ms}ms</span>`;
+      : `<span class="tier-metric ${latencyClass(ms)}">${label} ${ms}ms`
+        + `${mad != null ? ` <span class="tier-variation">MAD ${mad}</span>` : ''}</span>`;
   };
   const address = (family, label) => {
     const value = tier.addresses[family][0];
@@ -2559,13 +2993,14 @@ function renderPinSection(routingTiers) {
     html =
       `<div class="pin-headline"><strong>${escHtml(b.server)}</strong> `
       + `<span class="text-dim">${escHtml(loc)}</span> `
-      + `<span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>`
+      + `<span class="${latencyClass(b.medianMs)}">${b.medianMs}ms</span>`
       + (pin.gainMs != null
           ? ` &mdash; <span class="pin-gain">${pin.gainMs}ms lower</span> <span class="text-dim">than `
-            + `${escHtml(serverLabel(pin.baseline))} (${pin.baseline.avgMs}ms)</span>`
+            + `${escHtml(serverLabel(pin.baseline))} (${pin.baseline.medianMs}ms)</span>`
           : '')
       + `</div>`
-      + `<div class="pin-sub">Dual-stack hostname &mdash; one URL covers both IPv4 and IPv6.</div>`;
+      + `<div class="pin-sub">Clear measured advantage: ${pin.gainMs}ms gain exceeds the ${pin.thresholdMs}ms decision window. `
+      + `The dual-stack hostname covers both IPv4 and IPv6.</div>`;
   } else {
     // Common case: steering already lands on the same PoP the best edge server
     // belongs to. Saying "zepto-iad is within 3ms of zepto-iad-1" reads as nonsense,
@@ -2574,20 +3009,29 @@ function renderPinSection(routingTiers) {
     html = samePop
       ? `<div class="pin-ok">Already on your lowest-latency PoP &mdash; `
         + `${escHtml(pin.baseline.type === 'anycast' ? 'anycast' : 'ultralow')} routes you to `
-        + `<strong>${escHtml(b.pop)}</strong> <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span>, `
+        + `<strong>${escHtml(b.pop)}</strong> <span class="${latencyClass(pin.baseline.medianMs)}">${pin.baseline.medianMs}ms</span>, `
         + `the same PoP you would be pinning to.</div>`
         + `<div class="pin-sub" style="margin:0.4rem 0 0">Pinning would target the same PoP while giving up `
         + `automatic failover. The recommended configuration above is the better choice.</div>`
       : `<div class="pin-ok">No pinning needed &mdash; `
-        + `${escHtml(serverLabel(pin.baseline))} <span class="${latencyClass(pin.baseline.avgMs)}">${pin.baseline.avgMs}ms</span> `
-        + `is already within ${PIN_MIN_GAIN_MS}ms of the lowest-latency edge server `
-        + `${escHtml(b.server)} <span class="${latencyClass(b.avgMs)}">${b.avgMs}ms</span>.</div>`
+        + `${escHtml(serverLabel(pin.baseline))} <span class="${latencyClass(pin.baseline.medianMs)}">${pin.baseline.medianMs}ms</span> `
+        + `is inside the ${pin.thresholdMs}ms clear-advantage window around the lowest-latency edge server `
+        + `${escHtml(b.server)} <span class="${latencyClass(b.medianMs)}">${b.medianMs}ms</span>.</div>`
         + `<div class="pin-sub" style="margin:0.4rem 0 0">Steered routing keeps automatic failover, so there is `
         + `little to gain. The recommended configuration above is the better choice.</div>`;
     html += `<div class="pin-anyway">If you want to pin anyway &mdash; ${escHtml(b.server)}</div>`;
   }
 
   html += `<div class="pin-formats">`;
+  html += `<div><div class="pin-format-label">Rotation &amp; degradation monitor</div>`
+    + (b.resolvedIP
+      ? `<button type="button" class="pin-monitor-btn" data-hostname="${escAttr(b.hostname)}" `
+        + `data-server="${escAttr(b.server)}" data-family="${escAttr(b.family)}" `
+        + `data-ip="${escAttr(b.resolvedIP)}" data-median="${escAttr(b.medianMs)}" `
+        + `data-mad="${escAttr(b.madMs || 0)}" onclick="monitorPinnedServer(this)">Monitor this pin locally</button>`
+      : '<span class="text-dim">Resolve this edge address successfully before monitoring it.</span>')
+    + `<div class="pin-format-note">Stores only the edge hostname, address, timing, and timestamp in this browser. `
+    + `Your NextDNS profile ID is never stored.</div></div>`;
 
   // Both families for the pinned server. Pinning gives up automatic failover, so
   // dual-stack is the nearest substitute: if one stack breaks, the other resolves.
@@ -2614,14 +3058,13 @@ function renderPinSection(routingTiers) {
     + configEntry('', forwarder, false, 'CLI forwarder')
     + `<div class="pin-format-note">NextDNS CLI only &mdash; falls back to anycast if the pinned server stops answering. `
     + `The bootstrap suffix uses the IPv4 address, which is the only form NextDNS documents. `
-    + `Router DoT setups cannot use this syntax; pin by bootstrap IP using the Asus fields above.</div></div>`;
+    + `Router DoT setups cannot use this syntax; use the guided setup below to choose a safe bootstrap-IP entry set.</div></div>`;
   html += `</div>`;
 
-  html += `<div class="pin-disclaimer"><strong>Pinning is not officially recommended.</strong> `
-    + `NextDNS steers you automatically for a reason &mdash; if a pinned server goes offline, `
-    + `your DNS stops until you change it. In practice pinning is the only way to lock the `
-    + `lowest-latency PoP, and it measurably helps. If you pin, prefer the failover form above, `
-    + `and run this benchmark fresh from time to time &mdash; edge server IPs rotate.</div>`;
+  html += `<div class="pin-disclaimer"><strong>Pinning trades steering for a fixed route.</strong> `
+    + `If the edge disappears, native clients can produce recurring multi-second lookup stalls while they retry or back off. `
+    + `Verified Merlin settings can wait about 6 seconds on affected queries, then back the dead server off for 15 minutes before trying it again. `
+    + `Edge addresses can also rotate. Prefer a client with explicit failover, and re-check saved pins when this tool warns that the address changed.</div>`;
 
   box.innerHTML = html;
 }
@@ -2633,7 +3076,7 @@ function compactAddresses(...values) {
 function tierResults(ok, type, family) {
   return ok
     .filter(r => r.family === family && r.type === type && r.metric === 'server')
-    .sort((a, b) => a.avgMs - b.avgMs);
+    .sort((a, b) => a.medianMs - b.medianMs);
 }
 
 // Build one source of truth for every configuration surface. Each tier owns its
@@ -2665,8 +3108,12 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
       url: `https://anycast.dns1.nextdns.io/${configId}`,
       available: true,
       latency: {
-        ipv4: anyV4Primary ? anyV4Primary.avgMs : null,
-        ipv6: anyV6Primary ? anyV6Primary.avgMs : null,
+        ipv4: anyV4Primary ? anyV4Primary.medianMs : null,
+        ipv6: anyV6Primary ? anyV6Primary.medianMs : null,
+      },
+      variation: {
+        ipv4: anyV4Primary ? anyV4Primary.madMs : null,
+        ipv6: anyV6Primary ? anyV6Primary.madMs : null,
       },
       addresses: {
         ipv4: [ANYCAST_FALLBACK.ipv4.dns1],
@@ -2680,6 +3127,7 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
         ipv4: [anyV4Primary, anyV4Backup].filter(Boolean),
         ipv6: [anyV6Primary, anyV6Backup].filter(Boolean),
       },
+      decisionResult: { ipv4: anyV4Primary, ipv6: anyV6Primary },
       tradeoff: 'Stable global addresses with automatic routing failover.',
     },
     {
@@ -2688,22 +3136,31 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
       url: `https://dns.nextdns.io/${configId}`,
       available: !!(ultraV4[0] || ultraV6[0]),
       latency: {
-        ipv4: ultraV4[0] ? ultraV4[0].avgMs : null,
-        ipv6: ultraV6[0] ? ultraV6[0].avgMs : null,
+        ipv4: ultraV4[0] ? ultraV4[0].medianMs : null,
+        ipv6: ultraV6[0] ? ultraV6[0].medianMs : null,
+      },
+      variation: {
+        ipv4: ultraV4[0] ? ultraV4[0].madMs : null,
+        ipv6: ultraV6[0] ? ultraV6[0].madMs : null,
       },
       addresses: {
-        ipv4: compactAddresses(ultraV4[0] && ultraV4[0].resolvedIP),
-        ipv6: compactAddresses(ultraV6[0] && ultraV6[0].resolvedIP),
+        ipv4: [],
+        ipv6: [],
       },
       fallbackAddresses: {
-        ipv4: compactAddresses(ultraV4[1] && ultraV4[1].resolvedIP, ANYCAST_FALLBACK.ipv4.dns1),
-        ipv6: compactAddresses(ultraV6[1] && ultraV6[1].resolvedIP, ANYCAST_FALLBACK.ipv6.dns1),
+        ipv4: [],
+        ipv6: [],
+      },
+      observedAddresses: {
+        ipv4: compactAddresses(...ultraV4.slice(0, 2).map(result => result.resolvedIP)),
+        ipv6: compactAddresses(...ultraV6.slice(0, 2).map(result => result.resolvedIP)),
       },
       results: {
         ipv4: ultraV4.slice(0, 2),
         ipv6: ultraV6.slice(0, 2),
       },
-      tradeoff: 'NextDNS steers each connection to a nearby healthy PoP.',
+      decisionResult: { ipv4: ultraV4[0] || null, ipv6: ultraV6[0] || null },
+      tradeoff: 'NextDNS steers each connection to a nearby healthy PoP; its short-lived IP is not a bootstrap target.',
     },
     {
       id: 'pinned',
@@ -2711,8 +3168,12 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
       url: pinnedUrl,
       available: !!pinnedV4,
       latency: {
-        ipv4: pinnedV4 ? pinnedV4.avgMs : null,
-        ipv6: pinnedV6 ? pinnedV6.avgMs : null,
+        ipv4: pinnedV4 ? pinnedV4.medianMs : null,
+        ipv6: pinnedV6 ? pinnedV6.medianMs : null,
+      },
+      variation: {
+        ipv4: pinnedV4 ? pinnedV4.madMs : null,
+        ipv6: pinnedV6 ? pinnedV6.madMs : null,
       },
       addresses: {
         ipv4: compactAddresses(pinnedV4 && pinnedV4.resolvedIP),
@@ -2726,6 +3187,7 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
         ipv4: pinnedV4 ? [pinnedV4] : [],
         ipv6: pinnedV6 ? [pinnedV6] : [],
       },
+      decisionResult: { ipv4: pinnedV4, ipv6: pinnedV6 },
       tradeoff: pin && pin.worthIt
         ? 'Lowest measured IPv4 latency, but the edge server has no automatic failover.'
         : 'Targets one edge server and gives up automatic failover; not recommended for this run.',
@@ -2747,13 +3209,24 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
       .sort((a, b) => a.latency.ipv4 - b.latency.ipv4);
     const fastest = routed[0] || byId.anycast;
     const preferred = byId[preference];
-    recommended = preferred
+    if (preferred
       && preferred.available
-      && preferred.latency.ipv4 != null
-      && fastest.latency.ipv4 != null
-      && preferred.latency.ipv4 - fastest.latency.ipv4 < 10
-      ? preferred
-      : fastest;
+      && preferred.decisionResult.ipv4
+      && fastest.decisionResult.ipv4
+      && measurementsAreClose(preferred.decisionResult.ipv4, fastest.decisionResult.ipv4)) {
+      recommended = preferred;
+    } else if (preference === 'auto'
+      && fastest.id === 'ultralow'
+      && byId.anycast.decisionResult.ipv4
+      && measurementsAreClose(fastest.decisionResult.ipv4, byId.anycast.decisionResult.ipv4)) {
+      recommended = byId.anycast;
+      recommended.closeCall = {
+        other: fastest,
+        thresholdMs: measurementThreshold(fastest.decisionResult.ipv4, byId.anycast.decisionResult.ipv4),
+      };
+    } else {
+      recommended = fastest;
+    }
   }
 
   for (const tier of tiers) tier.recommended = tier === recommended;
@@ -2762,7 +3235,9 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
     recommended.reason = recommended.id === 'pinned'
       ? `${pin.gainMs}ms lower IPv4 latency than the best routed option.`
       : recommended.id === 'anycast'
-        ? 'Best balance of measured latency, stable addresses, and automatic failover.'
+        ? recommended.closeCall
+          ? `Within the ${recommended.closeCall.thresholdMs}ms clear-advantage window; stable routing breaks the close result.`
+          : 'Best balance of measured latency, stable addresses, and automatic failover.'
         : 'Lowest-latency routed option while retaining automatic steering.';
   }
 
@@ -2770,10 +3245,6 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
 }
 
 // ─── Pin Target Selection ─────────────────────────────────────────────────────
-
-// Minimum latency gain over the best steered option before pinning is worth
-// recommending. Matches the tip threshold in buildInsightHtml.
-const PIN_MIN_GAIN_MS = 3;
 
 // selectPinTarget: choose the lowest-latency edge server worth pinning to.
 //
@@ -2790,23 +3261,24 @@ function selectPinTarget(ok) {
   const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
   const edges = v4
     .filter(r => r.type === 'server' && r.server)
-    .sort((a, b) => a.avgMs - b.avgMs);
+    .sort((a, b) => a.medianMs - b.medianMs);
   if (edges.length === 0) return null;
 
   const best = edges[0];
   // Baseline = the best thing the user would get WITHOUT pinning.
   const baseline = v4
     .filter(r => r.type === 'anycast' || r.type === 'ultralow')
-    .sort((a, b) => a.avgMs - b.avgMs)[0] || null;
+    .sort((a, b) => a.medianMs - b.medianMs)[0] || null;
 
-  const gainMs = baseline ? Math.round((baseline.avgMs - best.avgMs) * 100) / 100 : null;
+  const gainMs = baseline ? Math.round((baseline.medianMs - best.medianMs) * 100) / 100 : null;
+  const thresholdMs = baseline ? measurementThreshold(best, baseline) : null;
   // No baseline responded at all — pinning is the only option we can offer.
-  const worthIt = baseline ? gainMs > PIN_MIN_GAIN_MS : true;
+  const worthIt = baseline ? clearMeasuredAdvantage(best, baseline) : true;
 
   // IPv6 row for the same physical server, for an optional v6 bootstrap IP.
   const v6 = ok.find(r => r.family === 'IPv6' && r.server === best.server && r.resolvedIP) || null;
 
-  return { best, baseline, gainMs, worthIt, v6 };
+  return { best, baseline, gainMs, thresholdMs, worthIt, v6 };
 }
 
 // ─── Cross-Reference Servers ──────────────────────────────────────────────────
@@ -2838,7 +3310,7 @@ function buildInsightHtml(errors, ipv4, ipv6, preference, routingTiers) {
   const visible = ipv4.filter(r => !r.resolvedToEdge);
   const visibleV6 = ipv6.filter(r => !r.resolvedToEdge);
   // Use ALL anycast (including absorbed) for comparison baseline — best anycast latency matters
-  const allAnycastV4 = ipv4.filter(r => r.type === 'anycast').sort((a, b) => a.avgMs - b.avgMs);
+  const allAnycastV4 = ipv4.filter(r => r.type === 'anycast').sort((a, b) => a.medianMs - b.medianMs);
   const bestAnycastV4 = allAnycastV4[0] || null;
   const currentAnycastPop = bestAnycastV4 ? bestAnycastV4.pop : null;
 
@@ -2865,41 +3337,54 @@ function buildInsightHtml(errors, ipv4, ipv6, preference, routingTiers) {
   if (currentAnycastPop) {
     const { flag, city } = parseLocation(bestAnycastV4.location || '');
     const locStr = city ? (flag ? `[${flag}] ${city}` : city) : currentAnycastPop;
-    html += `<div class="insight-routing">Anycast routes you to: <strong>${escHtml(currentAnycastPop)}</strong> <span class="text-dim">${escHtml(locStr)} &middot; ${bestAnycastV4.avgMs}ms</span></div>`;
+    html += `<div class="insight-routing">Anycast routes you to: <strong>${escHtml(currentAnycastPop)}</strong> <span class="text-dim">${escHtml(locStr)} &middot; ${bestAnycastV4.medianMs}ms</span></div>`;
+  }
+  const steeredV4 = ipv4.find(result => result.type === 'ultralow' && result.resolvedToEdge);
+  if (steeredV4) {
+    const pinnedTier = routingTiers.find(tier => tier.id === 'pinned');
+    const canRecommendPin = !!(pinnedTier && pinnedTier.pin && pinnedTier.pin.worthIt
+      && pinnedTier.pin.best && pinnedTier.pin.best.nodeId === steeredV4.resolvedToEdge);
+    html += `<div class="insight-routing">Ultralow currently steers to: `
+      + `<strong>${escHtml(steeredV4.resolvedToEdge)}</strong>`
+      + `<span class="text-dim"> &middot; ${canRecommendPin
+        ? 'this PoP also clears the direct-route advantage gate'
+        : 'observed mapping only; not a recommendation to pin'}</span></div>`;
   }
 
   // IPv6 summary
   if (visibleV6.length > 0) {
     const bestV6 = visibleV6[0];
-    html += `<div class="insight-note">Best IPv6: <span class="${latencyClass(bestV6.avgMs)}">${bestV6.avgMs}ms</span> <span class="text-dim">${escHtml(serverLabel(bestV6))}</span></div>`;
+    html += `<div class="insight-note">Best IPv6: <span class="${latencyClass(bestV6.medianMs)}">${bestV6.medianMs}ms</span> <span class="text-dim">${escHtml(serverLabel(bestV6))}</span></div>`;
   }
 
   if (preference !== 'auto') {
-    html += `<div class="insight-note">Ranking boosted <strong>${preference}</strong> servers within 10ms tolerance</div>`;
+    html += `<div class="insight-note">Preference breaks close measured results for <strong>${preference}</strong>; it never overrides a clear latency advantage.</div>`;
   }
 
   // ── Detected-server optimization insight ───────────────────────────────────
   // Compare the detected server against the IPv4 list, falling back to IPv6 only if
   // the detected PoP appears there and not in IPv4. `hasIPv6` is NOT a reliable signal
   // for which family the DNS connection uses — it only reports browser reachability.
-  const inV4 = visible.some(r => r.nodeId === detectedServer || r.pop === detectedServer);
-  const detectedList = inV4 ? visible : visibleV6;
+  const comparableV4 = visible.filter(result => result.metric === 'server');
+  const comparableV6 = visibleV6.filter(result => result.metric === 'server');
+  const inV4 = comparableV4.some(r => r.nodeId === detectedServer || r.pop === detectedServer);
+  const detectedList = inV4 ? comparableV4 : comparableV6;
   if (detectedServer && detectedList.length > 0) {
     const detectedRow = detectedList.find(r => r.nodeId === detectedServer || r.pop === detectedServer);
     const bestRow = detectedList[0];
     if (detectedRow && bestRow) {
-      const delta = Math.round((detectedRow.avgMs - bestRow.avgMs) * 100) / 100;
+      const delta = Math.round((detectedRow.medianMs - bestRow.medianMs) * 100) / 100;
       if (delta > 1 && detectedRow !== bestRow) {
         html += `<div class="optimization-insight">`
           + `<strong>You could have lower latency.</strong> `
-          + `Your current server <span class="opt-current">${escHtml(serverLabel(detectedRow))} (${detectedRow.avgMs}ms)</span> `
+          + `Your current server <span class="opt-current">${escHtml(serverLabel(detectedRow))} (${detectedRow.medianMs}ms)</span> `
           + `is <span class="opt-gain">${delta}ms slower</span> than `
-          + `<span class="opt-suggestion">${escHtml(serverLabel(bestRow))} (${bestRow.avgMs}ms)</span>.`
+          + `<span class="opt-suggestion">${escHtml(serverLabel(bestRow))} (${bestRow.medianMs}ms)</span>.`
           + `</div>`;
       } else {
         html += `<div class="optimization-insight" style="border-left-color:var(--green)">`
           + `<strong>Optimal setup.</strong> `
-          + `Your current server <span class="opt-suggestion">${escHtml(serverLabel(detectedRow))} (${detectedRow.avgMs}ms)</span> `
+          + `Your current server <span class="opt-suggestion">${escHtml(serverLabel(detectedRow))} (${detectedRow.medianMs}ms)</span> `
           + `is already the lowest-latency option.`
           + `</div>`;
       }
@@ -2918,28 +3403,62 @@ const SETUP_SCOPES = [
   { id: 'server', label: 'Servers & DNS', description: 'Forward a network through a local resolver.' },
 ];
 
+const ASUS_NATIVE_MODES = [
+  {
+    id: 'reliable',
+    label: 'Reliable',
+    description: 'Two stable anycast upstreams. Best default for native Asus DoT.',
+  },
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    description: 'One pinned PoP plus one anycast upstream. Requests may use either.',
+    requiresPin: true,
+  },
+  {
+    id: 'performance',
+    label: 'Maximum performance',
+    description: 'One pinned PoP only. Lowest transport RTT, highest availability risk.',
+    requiresPin: true,
+  },
+];
+
 const SETUP_DEVICES = [
   {
     id: 'asus', scope: 'network', label: 'Asus', description: 'AsusWRT or Asuswrt-Merlin',
-    protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    protocol: 'DoT', routes: ['pinned', 'anycast'], scopeLabel: 'Network-wide',
     badges: ['Encrypted', 'Network-wide'], source: 'https://rog.asus.com/support/faq/1051428/',
     sourceLabel: 'Asus DNS-over-TLS guide', lastVerified: '2026-07-27',
     variantHint: 'The available setup differs between stock AsusWRT and Merlin.',
     variants: [
-      { id: 'stock', label: 'Stock AsusWRT', description: 'Native DNS Privacy / DoT' },
-      { id: 'merlin-dot', label: 'Merlin · native DoT', description: 'Use the DNS Privacy screen' },
-      { id: 'merlin-cli', label: 'Merlin · NextDNS CLI', description: 'More control and pinned failover', protocol: 'CLI' },
+      {
+        id: 'stock', label: 'Stock AsusWRT', description: 'Native DNS Privacy / DoT',
+        routes: ['pinned', 'anycast'], requiresBootstrapIp: true,
+        upstreamPolicy: 'active-set', modes: ASUS_NATIVE_MODES,
+      },
+      {
+        id: 'merlin-dot', label: 'Merlin · native DoT', description: 'Use the DNS Privacy screen',
+        routes: ['pinned', 'anycast'], requiresBootstrapIp: true,
+        upstreamPolicy: 'active-set', modes: ASUS_NATIVE_MODES,
+      },
+      {
+        id: 'merlin-cli', label: 'Merlin · NextDNS CLI', description: 'Dynamic routing and explicit forwarders',
+        protocol: 'CLI', routes: ['pinned', 'ultralow', 'anycast'],
+        supportsDynamicHostname: true, upstreamPolicy: 'client-managed',
+      },
     ],
   },
   {
     id: 'pfsense', scope: 'network', label: 'pfSense', description: 'Unbound DNS Resolver',
-    protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    protocol: 'DoT', routes: ['pinned', 'anycast'], scopeLabel: 'Network-wide',
+    requiresBootstrapIp: true, upstreamPolicy: 'client-managed',
     badges: ['Encrypted', 'Network-wide'], source: 'https://github.com/nextdns/nextdns/wiki/pfSense',
     sourceLabel: 'NextDNS pfSense guide', lastVerified: '2026-07-27',
   },
   {
     id: 'opnsense', scope: 'network', label: 'OPNsense', description: 'Native Unbound DNS-over-TLS',
-    protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'Network-wide',
+    protocol: 'DoT', routes: ['pinned', 'anycast'], scopeLabel: 'Network-wide',
+    requiresBootstrapIp: true, upstreamPolicy: 'client-managed',
     badges: ['Encrypted', 'Network-wide'], source: 'https://docs.opnsense.org/manual/unbound.html',
     sourceLabel: 'OPNsense Unbound guide', lastVerified: '2026-07-27',
   },
@@ -2962,7 +3481,7 @@ const SETUP_DEVICES = [
     sourceLabel: 'NextDNS setup type guide', lastVerified: '2026-07-27',
     variantHint: 'Check your router manual or settings for one of these capabilities.',
     variants: [
-      { id: 'dot', label: 'It supports DoT', description: 'IP + TLS hostname, port 853', protocol: 'DoT', routes: ['pinned', 'ultralow', 'anycast'] },
+      { id: 'dot', label: 'It supports DoT', description: 'IP + TLS hostname, port 853', protocol: 'DoT', routes: ['pinned', 'anycast'], requiresBootstrapIp: true },
       { id: 'doh', label: 'It supports custom DoH', description: 'Custom URL, sometimes bootstrap IPs', protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'] },
       { id: 'cli', label: 'It can run NextDNS CLI', description: 'SSH / package-capable firmware', protocol: 'CLI', routes: ['pinned', 'ultralow', 'anycast'] },
       { id: 'plain', label: 'Only plain DNS', description: 'Requires Linked IP for IPv4', protocol: 'Plain DNS', routes: ['anycast'], badges: ['Requires Linked IP'] },
@@ -2970,7 +3489,8 @@ const SETUP_DEVICES = [
   },
   {
     id: 'windows', scope: 'device', label: 'Windows 11', description: 'Native encrypted DNS settings',
-    protocol: 'DoH', routes: ['pinned', 'ultralow', 'anycast'], scopeLabel: 'This Windows device',
+    protocol: 'DoH', routes: ['pinned', 'anycast'], scopeLabel: 'This Windows device',
+    requiresBootstrapIp: true, upstreamPolicy: 'client-managed',
     badges: ['Encrypted', 'System-wide'], source: 'https://learn.microsoft.com/en-us/powershell/module/dnsclient/add-dnsclientdohserveraddress?view=windowsserver2025-ps',
     sourceLabel: 'Microsoft DoH registration', lastVerified: '2026-07-27',
     secondarySource: 'https://support.microsoft.com/en-us/windows/experience/connectivity-networking/essential-network-settings-and-tasks-in-windows',
@@ -3043,6 +3563,7 @@ const SETUP_DEVICES = [
 let selectedSetupScope = null;
 let selectedSetupDevice = null;
 let selectedSetupVariant = null;
+let selectedSetupMode = null;
 let setupRunbookVisible = false;
 let latestSetupContext = {
   hasBenchmark: false,
@@ -3063,12 +3584,24 @@ function currentSetupVariant() {
     : null;
 }
 
+function currentSetupMode() {
+  const variant = currentSetupVariant();
+  return variant && variant.modes
+    ? variant.modes.find(mode => mode.id === selectedSetupMode) || null
+    : null;
+}
+
 function effectiveDevice(device, variant) {
   return {
     ...device,
     protocol: variant && variant.protocol ? variant.protocol : device.protocol,
     routes: variant && variant.routes ? variant.routes : device.routes,
     badges: [...(device.badges || []), ...((variant && variant.badges) || [])],
+    requiresBootstrapIp: variant && variant.requiresBootstrapIp != null
+      ? variant.requiresBootstrapIp : !!device.requiresBootstrapIp,
+    supportsDynamicHostname: variant && variant.supportsDynamicHostname != null
+      ? variant.supportsDynamicHostname : !!device.supportsDynamicHostname,
+    upstreamPolicy: (variant && variant.upstreamPolicy) || device.upstreamPolicy || 'client-managed',
   };
 }
 
@@ -3101,9 +3634,91 @@ function buildStandardRoutingTiers(configId) {
   ];
 }
 
+function buildAsusModeProfiles(tiers) {
+  const anycast = tiers.find(tier => tier.id === 'anycast');
+  const pinned = tiers.find(tier => tier.id === 'pinned');
+  const family = pinned && pinned.addresses.ipv4[0] ? 'ipv4'
+    : pinned && pinned.addresses.ipv6[0] ? 'ipv6'
+      : anycast && anycast.addresses.ipv4[0] ? 'ipv4' : 'ipv6';
+  const familyLabel = family === 'ipv4' ? 'IPv4' : 'IPv6';
+  const anyResults = anycast ? anycast.results[family] || [] : [];
+  const pinnedResult = pinned ? (pinned.results[family] || [])[0] || null : null;
+  const entry = (address, route, label, result) => ({
+    address, route, label, role: 'active', family: familyLabel, result,
+  });
+  const anycastEntries = anycast ? [
+    entry(anycast.addresses[family][0], 'anycast', 'Anycast DNS1', anyResults[0] || null),
+    entry(anycast.fallbackAddresses[family][0], 'anycast', 'Anycast DNS2', anyResults[1] || null),
+  ].filter(item => item.address) : [];
+  const fastestAnycastEntry = anycastEntries
+    .filter(item => item.result)
+    .sort((a, b) => a.result.medianMs - b.result.medianMs)[0]
+    || anycastEntries[0] || null;
+  const pinnedEntry = pinned && pinned.addresses[family][0]
+    ? entry(pinned.addresses[family][0], 'pinned', serverLabel(pinnedResult), pinnedResult)
+    : null;
+  const estimate = entries => entries.length && entries.every(item => item.result)
+    ? roundMs(entries.reduce((sum, item) => sum + item.result.medianMs, 0) / entries.length)
+    : null;
+  const reliableEntries = anycastEntries.slice(0, 2);
+  const reliableEstimate = estimate(reliableEntries);
+  const reliableBaseline = reliableEstimate == null ? null : {
+    medianMs: reliableEstimate,
+    // The active-set estimate is descriptive, not a sampling distribution.
+    // Use the largest member MAD so the advantage gate stays conservative.
+    madMs: Math.max(0, ...reliableEntries.map(item => item.result ? item.result.madMs || 0 : 0)),
+  };
+  const decorate = (definition, entries) => {
+    const estimatedMedianMs = estimate(entries);
+    const candidate = estimatedMedianMs == null ? null : {
+      medianMs: estimatedMedianMs,
+      madMs: Math.max(0, ...entries.map(item => item.result ? item.result.madMs || 0 : 0)),
+    };
+    const clearsGate = !!(pinnedEntry && candidate
+      && (!reliableBaseline || clearMeasuredAdvantage(candidate, reliableBaseline)));
+    const gateThresholdMs = candidate && reliableBaseline
+      ? measurementThreshold(candidate, reliableBaseline) : null;
+    return {
+      ...definition,
+      family,
+      familyLabel,
+      entries,
+      available: !definition.requiresPin || clearsGate,
+      estimatedMedianMs,
+      gateThresholdMs: definition.requiresPin ? gateThresholdMs : null,
+      blockedReason: definition.requiresPin && pinnedEntry && !clearsGate
+        ? `No clear gain over Reliable${gateThresholdMs == null ? '' : ` (needs >${gateThresholdMs}ms)`}`
+        : null,
+    };
+  };
+
+  return ASUS_NATIVE_MODES.map(definition => {
+    if (definition.id === 'reliable') return decorate(definition, reliableEntries);
+    if (definition.id === 'balanced') {
+      return decorate(definition, [pinnedEntry, fastestAnycastEntry].filter(Boolean));
+    }
+    return decorate(definition, pinnedEntry ? [pinnedEntry] : []);
+  });
+}
+
 function selectCompatibleSetup(device, variant, context = latestSetupContext) {
   const effective = effectiveDevice(device, variant);
   const tiers = context.routingTiers || buildStandardRoutingTiers(context.configId);
+  if (device.id === 'asus' && variant && variant.modes) {
+    const profiles = buildAsusModeProfiles(tiers);
+    const requested = profiles.find(profile => profile.id === selectedSetupMode && profile.available);
+    const asusMode = requested || profiles.find(profile => profile.id === 'reliable');
+    const tier = tiers.find(item => item.id === (asusMode.id === 'reliable' ? 'anycast' : 'pinned'))
+      || tiers.find(item => item.id === 'anycast');
+    const reason = context.hasBenchmark
+      ? asusMode.id === 'reliable'
+        ? 'Native Asus DoT uses every listed server as an active upstream, so stable anycast is the default.'
+        : asusMode.id === 'balanced'
+          ? 'One measured PoP and one stable anycast address share live queries.'
+          : 'One measured PoP receives every query; choose this only when the latency gain justifies the availability risk.'
+      : 'Reliable anycast is the safe native-DoT default until a benchmark measures a pinnable alternative.';
+    return { device: effective, variant, tier, adapted: tier && tier.id !== 'anycast', reason, asusMode };
+  }
   const allowed = effective.routes || ['ultralow', 'anycast'];
   const available = tiers.filter(t => t.available && allowed.includes(t.id));
   let tier = null;
@@ -3187,6 +3802,17 @@ function buildEndpointPairs(tier, configId, protocol = 'DoH') {
   return pairs;
 }
 
+function buildAsusEndpointPairs(mode, configId) {
+  if (!mode) return [];
+  const hostname = `${configId}.dns.nextdns.io`;
+  return mode.entries.map(item => ({
+    ...item,
+    template: hostname,
+    hostname,
+    fallbackPolicy: 'active upstream set',
+  }));
+}
+
 function renderSetupChoices() {
   const scopeBox = document.getElementById('scopeChoices');
   scopeBox.innerHTML = SETUP_SCOPES.map(scope => `
@@ -3223,7 +3849,34 @@ function renderSetupChoices() {
     variantBox.innerHTML = '';
   }
 
-  const ready = !!(device && (!device.variants || selectedSetupVariant));
+  const variant = currentSetupVariant();
+  const modeStage = document.getElementById('modeStage');
+  const modeBox = document.getElementById('modeChoices');
+  const hasModes = !!(variant && variant.modes);
+  modeStage.hidden = !hasModes;
+  if (hasModes) {
+    const profiles = buildAsusModeProfiles(latestSetupContext.routingTiers
+      || buildStandardRoutingTiers(latestSetupContext.configId));
+    if (!profiles.some(profile => profile.id === selectedSetupMode && profile.available)) {
+      selectedSetupMode = 'reliable';
+    }
+    modeBox.innerHTML = profiles.map(profile => {
+      const estimate = profile.requiresPin && !profile.available
+        ? (profile.blockedReason || 'Run a benchmark to unlock')
+        : profile.estimatedMedianMs == null
+          ? 'RTT estimate after benchmark'
+          : `≈${profile.estimatedMedianMs}ms transport RTT`;
+      return `<button type="button" class="setup-choice setup-mode-choice" aria-pressed="${profile.id === selectedSetupMode}"`
+        + ` onclick="chooseSetupMode('${profile.id}')" ${profile.available ? '' : 'disabled'}>`
+        + `<strong>${escHtml(profile.label)}</strong><small>${escHtml(profile.description)}</small>`
+        + `<span class="mode-estimate${profile.estimatedMedianMs == null ? ' unavailable' : ''}">${escHtml(estimate)}</span></button>`;
+    }).join('');
+  } else {
+    selectedSetupMode = null;
+    modeBox.innerHTML = '';
+  }
+
+  const ready = !!(device && (!device.variants || selectedSetupVariant) && (!hasModes || selectedSetupMode));
   document.getElementById('showSetupBtn').disabled = !ready;
   document.getElementById('setupActionHint').textContent = ready
     ? 'Ready — the next view will contain every step and value.'
@@ -3235,6 +3888,7 @@ function chooseSetupScope(scopeId) {
   selectedSetupScope = scopeId;
   selectedSetupDevice = null;
   selectedSetupVariant = null;
+  selectedSetupMode = null;
   setupRunbookVisible = false;
   document.getElementById('setupRunbook').hidden = true;
   renderSetupChoices();
@@ -3246,6 +3900,7 @@ function chooseSetupDevice(deviceId) {
   selectedSetupScope = device.scope;
   selectedSetupDevice = device.id;
   selectedSetupVariant = device.variants ? null : '';
+  selectedSetupMode = null;
   setupRunbookVisible = false;
   document.getElementById('setupRunbook').hidden = true;
   renderSetupChoices();
@@ -3254,8 +3909,22 @@ function chooseSetupDevice(deviceId) {
 
 function chooseSetupVariant(variantId) {
   selectedSetupVariant = variantId;
+  const variant = currentSetupVariant();
+  selectedSetupMode = variant && variant.modes ? 'reliable' : null;
   setupRunbookVisible = false;
   document.getElementById('setupRunbook').hidden = true;
+  renderSetupChoices();
+  renderAiPrompt(latestSetupContext.config, latestSetupContext.hasBenchmark);
+}
+
+function chooseSetupMode(modeId) {
+  const variant = currentSetupVariant();
+  if (!variant || !variant.modes || !variant.modes.some(mode => mode.id === modeId)) return;
+  const profile = buildAsusModeProfiles(latestSetupContext.routingTiers
+    || buildStandardRoutingTiers(latestSetupContext.configId)).find(mode => mode.id === modeId);
+  if (!profile || !profile.available) return;
+  selectedSetupMode = modeId;
+  if (setupRunbookVisible) renderSetupRunbook();
   renderSetupChoices();
   renderAiPrompt(latestSetupContext.config, latestSetupContext.hasBenchmark);
 }
@@ -3301,8 +3970,10 @@ function buildGuideValues(setup, pairs, context) {
   } else if (protocol === 'DoT') {
     values.push(['TLS hostname', `${id}.dns.nextdns.io`]);
     values.push(['Port', '853']);
-    pairs.forEach((pair, index) =>
-      values.push([`${pair.family} ${pair.role} · ${pair.route}`, pair.address]));
+    pairs.forEach(pair =>
+      values.push([setup.asusMode
+        ? `${pair.label} · active`
+        : `${pair.family} ${pair.role} · ${pair.route}`, pair.address]));
   } else {
     values.push(['DoH URL', tier.url]);
     if (setupUsesEndpointPairs(setup)) {
@@ -3384,8 +4055,8 @@ function buildDeviceSteps(setup, pairs, context) {
       }
       return [
         '<strong>Open WAN → Internet Connection.</strong> Set <em>DNS Privacy Protocol</em> to DNS-over-TLS (DoT); the server list appears after this change.',
-        `<strong>Add the IPv4 entries.</strong> Put each IP in <em>IP Address</em>, use ${escHtml(dot)} as <em>TLS Hostname</em>, leave TLS Port blank (853), and leave SPKI Fingerprint blank.`,
-        '<strong>Add IPv6 entries on the IPv6 page</strong> if IPv6 is enabled. Asus keeps IPv4 and IPv6 DNS on separate screens.',
+        `<strong>Add exactly the ${pairs.length} ${escHtml(setup.asusMode.familyLabel)} ${pairs.length === 1 ? 'entry' : 'entries'} shown here.</strong> Put each IP in <em>IP Address</em>, use ${escHtml(dot)} as <em>TLS Hostname</em>, leave TLS Port blank (853), and leave SPKI Fingerprint blank.`,
+        `<strong>Treat every row as active.</strong> Verified Merlin builds distribute queries across the list; they do not reserve later rows as ordered fallbacks. This ${escHtml(setup.asusMode.label)} mode intentionally emits ${pairs.length === 1 ? 'one upstream' : 'two upstreams'}.`,
         '<strong>Apply the change and renew a client lease.</strong> Confirm the LAN/DHCP settings distribute the router as DNS; WAN DNS fields may affect only the router.',
       ];
     case 'pfsense': {
@@ -3508,8 +4179,10 @@ function renderSetupRunbook() {
   if (!device) return;
   const variant = currentSetupVariant();
   const setup = selectCompatibleSetup(device, variant);
-  const allPairs = buildEndpointPairs(setup.tier, latestSetupContext.configId,
-    setup.device.protocol === 'DoH' ? 'DoH' : 'DoT');
+  const allPairs = setup.asusMode
+    ? buildAsusEndpointPairs(setup.asusMode, latestSetupContext.configId)
+    : buildEndpointPairs(setup.tier, latestSetupContext.configId,
+      setup.device.protocol === 'DoH' ? 'DoH' : 'DoT');
   // Windows exposes one preferred and one alternate slot per address family.
   // Do not render extra endpoints it has nowhere to store.
   const pairs = limitEndpointPairsForDevice(device, allPairs);
@@ -3523,12 +4196,18 @@ function renderSetupRunbook() {
   const measuredAt = latestSetupContext.hasBenchmark && latestSetupContext.benchmarkAt
     ? `Measured ${latestSetupContext.benchmarkAt.toLocaleString()}`
     : 'Not benchmarked — standard compatible route';
-  const limitation = device.id === 'android'
+  const limitation = setup.asusMode
+    ? setup.asusMode.id === 'reliable'
+      ? 'Verified Merlin behavior is active-set round robin. Stock AsusWRT is believed to inherit similar behavior, but it varies by model and firmware.'
+      : setup.asusMode.id === 'balanced'
+        ? 'Pinned and anycast entries both receive live queries. The RTT estimate does not include cache fragmentation or resolver processing.'
+        : 'On verified Merlin settings, affected queries can wait about 6 seconds (two 3-second retries); Stubby then backs the dead server off for 15 minutes before trying again. Stock behavior can vary by model and firmware.'
+    : device.id === 'android'
     ? 'Android Private DNS accepts a hostname, not a bootstrap IP, so it cannot stay pinned to one measured edge.'
     : (device.scope === 'browser'
       ? 'This protects browser lookups only. It does not change DNS for other apps or prove system-wide coverage.'
       : (setup.tier && setup.tier.id === 'pinned'
-        ? 'Pinned endpoints can reduce latency, but the pinned endpoint itself has no automatic failover. Keep the paired anycast fallback where the client supports it.'
+        ? 'Pinned endpoints can reduce latency, but the pinned endpoint itself has no automatic steering. Add anycast only when the client documents how it selects or fails over between multiple entries.'
         : 'The selected encrypted route keeps NextDNS routing or failover behavior.'));
   const platformCheck = device.scope === 'network' || device.scope === 'server'
     ? 'Also test from a second client and confirm its DNS server is the router or resolver you configured.'
@@ -3550,7 +4229,9 @@ function renderSetupRunbook() {
   } else {
     recoveryItems.push('Re-copy the profile URL or hostname and confirm the app did not silently switch back to its automatic resolver.');
   }
-  if (setup.tier.id === 'pinned') {
+  if (setup.asusMode && setup.asusMode.id !== 'reliable') {
+    recoveryItems.push('If lookups begin pausing or the saved edge address changes, switch to Reliable mode and update the router before diagnosing unrelated network settings.');
+  } else if (setup.tier.id === 'pinned') {
     recoveryItems.push('Rerun the benchmark if the pinned edge no longer responds; edge addresses can rotate.');
   } else if (setup.device.routes.includes('anycast') && setup.tier.id !== 'anycast') {
     recoveryItems.push('Try Standard / Anycast if this device supports it and the steered route is unavailable on this network.');
@@ -3565,7 +4246,7 @@ function renderSetupRunbook() {
       <div class="runbook-title-row">
         <div>
           <h2 id="setupRunbookTitle">${escHtml(device.label)}${variant ? ` · ${escHtml(variant.label)}` : ''}</h2>
-          <p>${escHtml(setup.device.scopeLabel)} · ${escHtml(setup.device.protocol)} · ${escHtml(setup.tier.label)}</p>
+          <p>${escHtml(setup.device.scopeLabel)} · ${escHtml(setup.device.protocol)} · ${escHtml(setup.asusMode ? setup.asusMode.label : setup.tier.label)}</p>
         </div>
         <button type="button" class="share-guide-btn" onclick="copyGuideLink(this)">Share guide</button>
       </div>
@@ -3576,9 +4257,14 @@ function renderSetupRunbook() {
         <h3>Setup summary</h3>
         <div class="setup-recommendation">
           <span class="route-mark" aria-hidden="true">↳</span>
-          <div><strong>${escHtml(setup.tier.label)}</strong>
+          <div><strong>${escHtml(setup.asusMode ? setup.asusMode.label : setup.tier.label)}</strong>
             <p>${escHtml(setup.reason)}</p></div>
         </div>
+        ${setup.asusMode ? `<div class="asus-effective">
+          <span>Active set</span>
+          <strong>${setup.asusMode.entries.map(entry => escHtml(entry.label)).join(' + ')}</strong>
+          <span>${setup.asusMode.estimatedMedianMs == null ? 'RTT estimate unavailable' : `≈${setup.asusMode.estimatedMedianMs}ms transport RTT estimate`}</span>
+        </div>` : ''}
         <div class="setup-caution"><strong>Compatibility note:</strong> ${escHtml(limitation)}</div>
       </section>
       <section class="runbook-section">
@@ -3589,7 +4275,9 @@ function renderSetupRunbook() {
         <h3>Values you’ll use</h3>
         <div class="value-list">
           ${values.map(([label, value]) => setupValue(label, value)).join('')}
-          ${setupUsesEndpointPairs(setup) && pairs.length ? '<p class="endpoint-pair-note">Values with the same family, role, and route label form one endpoint pair. Keep them together when entering preferred and alternate servers.</p>' : ''}
+          ${setup.asusMode && pairs.length
+            ? '<p class="endpoint-pair-note">Every listed address is active. Do not add extra “backup” rows unless you intentionally want them to share live queries.</p>'
+            : setupUsesEndpointPairs(setup) && pairs.length ? '<p class="endpoint-pair-note">Values with the same family, role, and route label form one endpoint pair. Keep them together when entering preferred and alternate servers.</p>' : ''}
         </div>
       </section>
       <section class="runbook-section">
@@ -3629,6 +4317,8 @@ function showSelectedSetup() {
   params.set('device', selectedSetupDevice);
   if (selectedSetupVariant) params.set('variant', selectedSetupVariant);
   else params.delete('variant');
+  if (selectedSetupMode) params.set('mode', selectedSetupMode);
+  else params.delete('mode');
   history.replaceState(null, '', `${window.location.pathname}${params.toString() ? '?' + params : ''}${window.location.hash}`);
   const heading = document.getElementById('setupRunbookTitle');
   if (heading) {
@@ -3649,6 +4339,8 @@ function buildGuideShareUrl() {
   url.searchParams.set('device', selectedSetupDevice);
   if (selectedSetupVariant) url.searchParams.set('variant', selectedSetupVariant);
   else url.searchParams.delete('variant');
+  if (selectedSetupMode) url.searchParams.set('mode', selectedSetupMode);
+  else url.searchParams.delete('mode');
   url.hash = 'setupGuide';
   return url.toString();
 }
@@ -3688,6 +4380,7 @@ function resetSetupContextForInput() {
   banner.innerHTML = `<span class="setup-state-icon" aria-hidden="true">1</span>`
     + `<div><strong>Standard encrypted setup is ready.</strong> Run the benchmark first if you want this guide personalized to your measured route.</div>`
     + `<button type="button" class="text-action" onclick="focusBenchmark()">Run benchmark</button>`;
+  renderSetupChoices();
   if (setupRunbookVisible) renderSetupRunbook();
   renderAiPrompt(null, false);
 }
@@ -3705,6 +4398,7 @@ function updateSetupContext(configId, config) {
   banner.innerHTML = `<span class="setup-state-icon" aria-hidden="true">✓</span>`
     + `<div><strong>Personalized setup ready.</strong> Routes measured ${escHtml(latestSetupContext.benchmarkAt.toLocaleString())}.</div>`
     + `<button type="button" class="text-action" onclick="focusBenchmark()">Rerun benchmark</button>`;
+  renderSetupChoices();
   if (setupRunbookVisible) renderSetupRunbook();
   renderAiPrompt(config, true);
 }
@@ -3718,13 +4412,18 @@ function initSetupGuide() {
     const requestedVariant = params.get('variant');
     selectedSetupVariant = requestedDevice.variants && requestedDevice.variants.some(v => v.id === requestedVariant)
       ? requestedVariant : (requestedDevice.variants ? null : '');
+    const variant = currentSetupVariant();
+    const requestedMode = params.get('mode');
+    selectedSetupMode = variant && variant.modes && variant.modes.some(mode => mode.id === requestedMode)
+      ? requestedMode : (variant && variant.modes ? 'reliable' : null);
   }
   const enteredId = document.getElementById('configId').value.trim();
   latestSetupContext.configId = CONFIG_ID_PATTERN.test(enteredId) ? enteredId : '{config-id}';
   latestSetupContext.routingTiers = buildStandardRoutingTiers(latestSetupContext.configId);
   renderSetupChoices();
   renderAiPrompt(null, false);
-  if (requestedDevice && (!requestedDevice.variants || selectedSetupVariant)) {
+  if (requestedDevice && (!requestedDevice.variants || selectedSetupVariant)
+    && (!currentSetupVariant()?.modes || selectedSetupMode)) {
     setupRunbookVisible = true;
     renderSetupRunbook();
   }
@@ -3760,9 +4459,21 @@ function buildAiPrompt(config, hasRun) {
     const compatible = selectedDevice
       ? selectCompatibleSetup(selectedDevice, selectedVariant, latestSetupContext)
       : null;
-    L.push('Benchmark recommendation: ' + (compatible ? compatible.tier.label : config.recommendedTier.label));
+    L.push('Benchmark recommendation: ' + (compatible
+      ? (compatible.asusMode ? compatible.asusMode.label + ' native DoT mode' : compatible.tier.label)
+      : config.recommendedTier.label));
     if (compatible && compatible.adapted) {
       L.push('Compatibility adjustment: the overall benchmark winner is not supported by this device, so use the compatible route named above.');
+    }
+    if (compatible && compatible.asusMode) {
+      L.push('Asus native DoT active upstreams:');
+      for (const entry of compatible.asusMode.entries) {
+        L.push('  ' + entry.label + ': ' + entry.address);
+      }
+      L.push('  These are active round-robin upstreams on verified Merlin builds, not an ordered primary/fallback list.');
+      if (compatible.asusMode.estimatedMedianMs != null) {
+        L.push('  Transport RTT estimate across the active set: ~' + compatible.asusMode.estimatedMedianMs + 'ms.');
+      }
     }
     L.push('');
     for (const tier of config.routingTiers.filter(t => t.available
@@ -3789,8 +4500,12 @@ function buildAiPrompt(config, hasRun) {
   L.push('- DoT cannot be pinned to one server by hostname. To pin over DoT, use that server\'s IP together with the hostname ' + AI_ID + '.dns.nextdns.io.');
   L.push('- Plain unencrypted IPv4 cannot carry a config ID. NextDNS identifies you by Linked IP, registered at my.nextdns.io under Setup, using the profile-specific IPv4 addresses shown there — NOT the anycast addresses ending in .0. Without linking, DNS resolves normally but no filtering applies.');
   L.push('- Plain IPv6 needs no linking; the config ID is encoded in the address.');
-  L.push('- A pinned server has no automatic failover. Only the NextDNS CLI supports a fallback list.');
-  L.push('- Configure at least one IPv4 and one IPv6 entry.');
+  L.push('- A pinned server has no automatic steering. The NextDNS CLI can express an ordered fallback list; native Asus DoT treats listed entries as an active set on verified Merlin builds.');
+  if (selectedDevice && selectedDevice.id === 'asus' && selectedVariant && selectedVariant.modes) {
+    L.push('- Add only the active upstreams named for the selected Asus mode. Do not silently add extra addresses as “backups,” because they can receive live queries.');
+  } else {
+    L.push('- Configure only the endpoint count and address families the device actually supports; extra entries may share traffic rather than wait as backups.');
+  }
   L.push('');
   L.push('Tell me which settings screen to open on my device, which value above goes in which field, and anything my device cannot do. If you are not confident about a menu path or option name on my firmware, say so rather than guessing — I would rather look for it than be sent to a screen that does not exist.');
   return L.join('\n');
@@ -3855,19 +4570,27 @@ async function runBenchmark() {
     setProgress(`Discovered ${servers.length} servers. Benchmarking...`, 10);
 
     // Phase 2: Benchmark
-    const results = await runFullBenchmark(servers, rounds, (cur, tot) => {
-      const pct = Math.round(10 + (cur / tot) * 80);
+    let results = await runFullBenchmark(servers, rounds, (cur, tot) => {
+      const pct = Math.round(10 + (cur / tot) * 65);
       setProgress(`Benchmarking: ${cur}/${tot} servers...`, pct);
     });
 
-    // Phase 3: Resolve IPs
-    setProgress(`Resolving DNS via ${DOH_RESOLVERS[resolver].label}...`, 90);
+    // Phase 3: refine the leading IPv4 routes without concurrent probes. Each
+    // round randomizes finalist order to reduce fixed-position and time drift.
+    setProgress(`Refining the leading routes (${REFINEMENT_ROUNDS} rounds)...`, 76);
+    results = await refineFinalists(results, REFINEMENT_ROUNDS, (cur, tot) => {
+      const pct = Math.round(76 + (cur / tot) * 12);
+      setProgress(`Refining finalists: ${cur}/${tot} checks...`, pct);
+    });
+
+    // Phase 4: Resolve IPs
+    setProgress(`Resolving DNS via ${DOH_RESOLVERS[resolver].label}...`, 89);
     await resolveAllIPs(results, (cur, tot) => {
-      const pct = Math.round(90 + (cur / tot) * 5);
+      const pct = Math.round(89 + (cur / tot) * 6);
       setProgress(`Resolving IPs: ${cur}/${tot} hostnames...`, pct);
     }, resolver);
 
-    // Phase 4: Rank
+    // Phase 5: Rank
     setProgress('Ranking results...', 96);
     const ranked = rankResults(results, preference);
 
@@ -3889,7 +4612,7 @@ async function runBenchmark() {
     const ipv4Xref = crossReferenceServers(ipv4);
     const ipv6Xref = crossReferenceServers(ipv6);
 
-    // Phase 5: one configuration model for every rendered surface.
+    // Phase 6: one configuration model for every rendered surface.
     setProgress('Generating config...', 98);
     const pin = selectPinTarget(ok);
     const routingTiers = buildRoutingTiers(ok, configId, pin, preference);
@@ -3958,6 +4681,7 @@ async function runBenchmark() {
     renderConfig(config);
     renderPinSection(routingTiers);
     updateSetupContext(configId, config);
+    saveRunHistory(ok, routingTiers);
 
     setProgress('Done!', 100);
 
@@ -3987,16 +4711,42 @@ document.getElementById('configId').addEventListener('input', () => {
 });
 
 
-// ─── URL Parameter Pre-fill ───────────────────────────────────────────────────
+// ─── URL Profile Pre-fill ─────────────────────────────────────────────────────
+// Canonical profile prefills use a fragment (`#id=abc123`) so the profile value
+// is never sent to the host or included in an HTTP referrer. Legacy query forms
+// remain accepted, then both forms are removed from the visible URL immediately.
 (function () {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('id') || params.get('ID') || params.get('configId') || params.get('config');
+  const url = new URL(window.location.href);
+  const params = url.searchParams;
+  const hashText = (url.hash || '').replace(/^#/, '');
+  const hashParams = /^(id|ID|configId|config)=/.test(hashText)
+    ? new URLSearchParams(hashText) : new URLSearchParams();
+  const id = hashParams.get('id') || hashParams.get('ID')
+    || hashParams.get('configId') || hashParams.get('config')
+    || params.get('id') || params.get('ID') || params.get('configId') || params.get('config');
   if (id && CONFIG_ID_PATTERN.test(id.trim())) {
     const input = document.getElementById('configId');
     input.value = id.trim();
   }
+  let sanitized = false;
+  for (const key of ['id', 'ID', 'configId', 'config']) {
+    if (url.searchParams.has(key)) {
+      url.searchParams.delete(key);
+      sanitized = true;
+    }
+  }
+  if (hashParams.size) {
+    url.hash = '';
+    sanitized = true;
+  }
+  if (sanitized && window.history && window.history.replaceState) {
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  }
 })();
 initSetupGuide();
+renderRunHistory();
+renderPinHealth();
+checkSavedPinRotation();
 
 /* Auto-detect NextDNS connection via test.nextdns.io */
 let detectedServer = null; // Global: server pop from test.nextdns.io (e.g. "zepto-xrs")

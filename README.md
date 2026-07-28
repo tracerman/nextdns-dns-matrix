@@ -22,13 +22,13 @@ That's it. No server, no build step, no dependencies.
 
 ### Pre-fill your Config ID via URL
 
-Pass your config ID as a URL parameter to skip the input step:
+Use a URL fragment to skip the input step:
 
 ```
-https://tracerman.github.io/nextdns-dns-matrix/?id=abc123
+https://tracerman.github.io/nextdns-dns-matrix/#id=abc123
 ```
 
-Useful for bookmarking or sharing a direct link. The field is pre-filled on load — just hit **Run Benchmark**.
+Fragments are not sent to GitHub Pages or included in HTTP referrers. The tool reads the value and immediately removes it from the address bar and browser-history entry. Legacy `?id=` links still work, but query values reach the web server before JavaScript can remove them and should not be shared.
 
 ## Why?
 
@@ -37,7 +37,7 @@ NextDNS gives you a default DNS config, but it's not always optimal. Their infra
 | Type | What It Is | Pros | Cons |
 |------|-----------|------|------|
 | **Anycast** | Global IPs (`45.90.28.0` / `45.90.30.0`) routed via BGP | Stable, auto-failover, never changes | BGP routing ≠ lowest latency |
-| **Ultralow** | DNS-steered unicast IPs via `*.dns.nextdns.io` | Dynamically picks "closest" PoP | Requires encrypted DNS (DoT/DoH) |
+| **Ultralow** | DNS-steered unicast via `*.dns.nextdns.io` | Dynamically picks a nearby healthy PoP | Needs a client that follows the hostname; its short-lived resolved IP must not be pasted as a bootstrap address |
 | **PoP Servers** | Individual servers (e.g., `tier-clt`, `hetzner-iad`) | Can be lowest-latency for your location | IPs rotate, servers go down |
 
 **The problem:** These IPs rotate, servers go down, and the "best" option changes based on your ISP routing. This tool benchmarks them all and tells you which to use *right now*.
@@ -59,15 +59,15 @@ Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns
 
 ## What It Shows
 
-**Results table** — Rank, Node ID, Location (country code badge + city), Type, Hostname, IP, Avg latency (with inline sparkbar), Min, Jitter, Success rate. Click any hostname or IP to copy it.
+**Results table** — Rank, Node ID, Location, Type, Hostname, IP, median RTT, Min, MAD (median absolute deviation), and Success rate. Click any hostname or IP to copy it. Rows that lack server-reported RTT remain visible as **client measured**, but receive no comparable rank because a full browser HTTPS duration is not the same metric. A `via anycast1` or `via ultralow1` badge means that route currently reaches the shown edge; the row remains labeled **edge** and its RTT remains the direct-edge measurement.
 
 **Detected server** — highlighted with a golden row background and green dot. If it's not rank #1, a latency delta badge shows how much slower it is than the best option.
 
 **Insight box** — stat pills showing server / IPv4 / IPv6 / unreachable counts, detected-route context, and the same routing recommendation used everywhere else on the page
 
-**Routing choices** — three side-by-side choices for Stable / Anycast, Steered / Ultralow, and Direct / Pinned. Every card keeps its DoH URL, measured IPv4 and IPv6 latency, and matching addresses together so values from different routes cannot be accidentally mixed.
+**Routing choices** — three side-by-side choices for Stable / Anycast, Steered / Ultralow, and Direct / Pinned. Every card keeps its DoH URL, measured IPv4 and IPv6 median/MAD, and matching addresses together. Ultralow resolved addresses are diagnostic only and are never offered as bootstrap values.
 
-**Pin to Lowest-Latency Server** — always shows the measured pinned option, both address families, the DoH URL, and a CLI forwarder string with failover. It only recommends pinning when the edge server beats the routed choices by more than 3ms; otherwise it explains why automatic steering is the safer default. See [Pinning to a Specific Server](#pinning-to-a-specific-server).
+**Pin to Lowest-Latency Server** — always shows the measured pinned option, both address families, the DoH URL, and a CLI forwarder string with failover. Pinning is recommended only when its median gain clears all three decision terms: 3ms, 5% of the routed baseline, and the combined MAD. The UI calls this a **clear measured advantage**, not statistical significance.
 
 **Config panel** — ready-to-paste config formats:
 - A single **Recommended** badge driven by the benchmark's unified routing model
@@ -75,8 +75,9 @@ Detection uses `test.nextdns.io` (DNS leak test endpoint) and `test-ipv6.nextdns
   - `anycast` — `https://anycast.dns1.nextdns.io/{id}` · stable IPs, auto-failover
   - `ultralow` — `https://dns.nextdns.io/{id}` · steered to nearest PoP
   - `pinned` — `https://{server}.edge.nextdns.io/{id}` · one measured edge, no automatic failover
-- Recommended primary / backup bootstrap addresses for IPv4 and IPv6
-- DNS-over-TLS hostname paired with those bootstrap addresses
+- Bootstrap address references for IPv4 and IPv6, without claiming the second value is an ordered fallback
+- DNS-over-TLS hostname paired with addresses from the same route
+- Device-specific entry counts and upstream-selection behavior in Guided Setup
 - A prominent warning beside raw addresses explaining when plain IPv4 loses profile filtering
 
 Color-coded latency: green (<20ms), yellow (<40ms), red (≥40ms)
@@ -102,7 +103,7 @@ Both support browser CORS (`Access-Control-Allow-Origin: *`) and return the same
 | **Ultralow** | ISPs with good NextDNS peering |
 | **Anycast** | Maximum reliability, stable IPs |
 
-**How preference works:** Within a tolerance window (default 10ms), a preferred routed tier wins. So if you prefer ultralow and ultralow is 25ms vs anycast at 20ms, ultralow wins. But if anycast is 5ms and ultralow is 25ms, latency still wins. A direct edge is recommended separately, only when its measured gain clears the 3ms pinning threshold.
+**How preference works:** Preference breaks a close measured result; it never overrides a clear advantage. The close-result window is derived from `max(3ms, 5% of the baseline median, combined MAD)`. In Auto mode, stable anycast breaks a close result against ultralow. A direct edge is considered separately under the same rule.
 
 ## Pinning to a Specific Server
 
@@ -126,15 +127,15 @@ forwarder https://{server}.edge.nextdns.io/{id}#{serverIP},https://anycast.dns1.
 
 The CLI accepts a comma-separated forwarder list and falls back in order, so you get the pinned server's latency *and* an anycast safety net. `#{serverIP}` is a bootstrap IP — parsed by the CLI to skip resolving the hostname, never sent over the wire.
 
-**DoT cannot pin by hostname.** `{configId}.{server}.edge.nextdns.io` does not resolve. DoT pins by bootstrap IP instead — the edge IP paired with `{configId}.dns.nextdns.io`, which is exactly what the Asus fields in this tool already produce. Edge IPs serve certificates valid for the NextDNS hostname, so TLS validation holds.
+**DoT cannot pin by server hostname alone.** `{configId}.{server}.edge.nextdns.io` does not resolve. DoT pins by pairing the edge IP with `{configId}.dns.nextdns.io`; the guided setup decides whether that address should stand alone or share traffic with anycast. Edge IPs serve certificates valid for the NextDNS hostname, so TLS validation holds.
 
 ### The trade-off
 
-NextDNS does not officially recommend pinning, and the reason is sound: steering exists to route around outages. **If a pinned server goes offline, your DNS stops until you change it.** In practice pinning is the only way to lock the lowest-latency PoP, and for users far from their steered PoP it measurably helps.
+NextDNS does not officially recommend pinning, and the reason is sound: steering exists to route around outages. A dead pinned endpoint can cause hard failure or recurring multi-second stalls while the client retries and backs it off; exact behavior depends on the client. In practice pinning is the only way to lock one PoP, and it is offered when the measured gain is clear.
 
-If you pin: prefer the failover form, and re-run this benchmark periodically — edge server IPs rotate.
+If you pin: prefer a client with documented ordered failover. Use **Monitor this pin locally** to store the profile-free edge hostname, address, timing, and timestamp. On reload the tool checks rotation; a separate button remeasures degradation. A changed DNS answer is urgent evidence that the bootstrap value is stale, not proof that the old address has already stopped serving.
 
-**Set at least one IPv4 and one IPv6 address.** With failover gone, a second address family is the only redundancy you have left — if one stack breaks, the other still resolves. It also guards against a common misconfiguration: most routers keep IPv4 and IPv6 DNS on separate pages (Asuswrt puts IPv6 DNS on the IPv6 page, not WAN), so it's easy to configure one family and leave the other pointing at your ISP, quietly bypassing NextDNS for every lookup that takes that path. The tool shows both addresses for the pinned server, and tells you if no IPv6 one resolved.
+Do not assume that adding IPv4, IPv6, pinned, and anycast rows creates passive backups. Some clients actively distribute queries across every configured entry. Follow the device-specific entry set in Guided Setup.
 
 ## How It Works
 
@@ -148,10 +149,11 @@ Since browsers can't resolve DNS directly, IPs are resolved via a **public DoH A
 ### Benchmark Phases
 
 1. **Discovery** — fetch server list from `router.nextdns.io`, add anycast + ultralow endpoints
-2. **Benchmark** — hit `/info` on each hostname (3 rounds, 6 concurrent, 3s timeout)
-3. **IP Resolution** — bulk-resolve all hostnames via the selected DoH resolver
-4. **Routing model** — compare anycast, ultralow, and the best direct edge once, applying preference tolerance and the pinning threshold
-5. **Config** — generate every recommendation, setup-guide value, and AI prompt from that same routing decision
+2. **Discovery benchmark** — hit `/info` on each hostname using the selected round count, batches of 6, and a 3s timeout
+3. **Finalist refinement** — remeasure both anycast members, both ultralow members, and the leading edge candidates with seven randomized, interleaved, non-concurrent checks
+4. **IP Resolution** — bulk-resolve all hostnames via the selected DoH resolver
+5. **Routing model** — rank comparable server RTT medians, calculate MAD, and apply the clear-advantage rule
+6. **Config** — generate every recommendation, setup-guide value, and AI prompt from that same routing decision
 
 ## Config Output Formats
 
@@ -168,7 +170,21 @@ The DoT server list only appears once DNS Privacy Protocol is switched off `None
 | **TLS Port** | leave blank (defaults to 853) |
 | **SPKI Fingerprint** | leave blank |
 
-Includes the recommended route's primary and backup bootstrap addresses for both families. The hostname and addresses shown in that section belong to the same route.
+Verified Asuswrt-Merlin builds generate Stubby configuration with `round_robin_upstreams: 1`. Entries are active upstreams, not guaranteed ordered primary/fallback rows. Stock AsusWRT likely inherits related behavior from ASUS GPL sources, but exact behavior varies by model and firmware.
+
+The guided setup therefore offers three quantitative native-DoT modes:
+
+| Mode | Emitted entries | Behavior |
+|---|---|---|
+| **Reliable** (default) | Anycast DNS1 + DNS2 | Stable routing; both may receive live queries |
+| **Balanced** | One measured PoP + the faster measured anycast member | Approximate active-set RTT is the mean of the two measured medians |
+| **Maximum performance** | One measured PoP | Preserves the pin's RTT; a dead address can cause recurring lookup stalls |
+
+Balanced and Maximum performance unlock only when a resolved pinned target has a **clear measured advantage over the Reliable active-set estimate**. The gate requires a gain greater than the largest of 3ms, 5% of the Reliable estimate, or the combined observed variation. Each mode emits at most two entries in one reachable family by default.
+
+The displayed `≈Xms` is a transport-RTT estimate, not a DNS lookup prediction: cache fragmentation, resolver processing, address-family reachability, and Stubby scheduling can change real behavior. Adding active upstreams can also fragment NextDNS's per-PoP caches because queries are distributed between locations.
+
+On the verified Merlin settings, a permanently dead pinned address can make affected queries wait about 6 seconds (two 3-second retries). Stubby then removes it from rotation for 15 minutes before trying it again, so the stall can recur. Stock AsusWRT likely behaves similarly but still needs model-and-firmware-specific confirmation.
 
 Two things that catch people out: the DNS servers *above* the DoT section are only used by the router itself and have no effect on your devices once DoT is on — and IPv6 DNS servers go on the **IPv6** page, not the WAN page.
 
@@ -202,13 +218,16 @@ The setup section is a short flow rather than a catalog of generic snippets:
 
 1. Choose the scope: router/firewall, computer/mobile, browser/ChromeOS, or server/DNS
 2. Choose the device and, when needed, its firmware or capability
-3. Click **Show setup** to generate one best compatible route and a complete runbook
+3. For native Asus DoT, choose Reliable, Balanced, or Maximum performance
+4. Click **Show setup** to generate one compatible route and a complete runbook
 
 Before benchmarking, the guide uses a neutral **Standard encrypted setup** and makes no latency claim. After a run, it adapts the measured recommendation to the device's real capabilities — for example, Android receives steered DoT even if a pinned edge won overall. The runbook includes prerequisites, paste-ready values, numbered steps, platform-specific recovery, official sources, and a fresh connection check.
 
 Primary paths cover AsusWRT/Merlin, pfSense, OPNsense, OpenWrt, UniFi OS, generic routers by capability, Windows 11, Apple profiles, Android, Linux/NextDNS CLI, Firefox, Chrome, ChromeOS, AdGuard Home, Pi-hole, and Synology DSM. Less common platforms and protocol notes remain in **Advanced reference**.
 
-**Share guide** creates a device/variant deep link and removes every accepted config-ID parameter before copying it. A recipient gets the instructions without receiving your profile ID.
+**Share guide** creates a device/variant/mode deep link and removes every accepted config-ID parameter before copying it. A recipient gets the instructions without receiving your profile ID.
+
+**Local history is profile-free.** The newest ten runs store endpoint identity, family, resolved IP, median, MAD, timestamp, and recommendation in this browser. The config ID and generated profile URLs are never stored. History and the saved pin have separate clear actions.
 
 **Verification is deliberately scoped.** The in-page re-check can confirm that this browser reached NextDNS and compare the reported profile. It cannot prove router-wide coverage or the DNS transport used, because a browser, VPN, cache, or another client path may behave differently. Each runbook therefore adds a platform-specific check.
 

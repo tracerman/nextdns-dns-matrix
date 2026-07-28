@@ -2,17 +2,25 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
-## [Unreleased]
+## [2.0.0] — 2026-07-27
 
 ### Added
+- **Asus native-DoT operating modes** — Reliable emits two anycast upstreams, Balanced emits one measured PoP plus anycast, and Maximum performance emits one pinned PoP. Each mode shows its active entry set and an arithmetic-mean transport RTT estimate instead of pretending every configured row waits as a fallback.
+- **Finalist refinement and robust variation** — both anycast members, both ultralow members, and the leading edge candidates receive seven randomized, interleaved, non-concurrent checks. Rankings now use median server RTT and MAD instead of mean and range.
+- **Clear measured advantage gate** — route preferences and pinning use `max(3ms, 5% of the baseline median, combined MAD)`. The UI presents this as a conservative decision rule rather than statistical significance.
+- **Profile-free pin monitor and run history** — saved pins are checked for DNS rotation on load and can be remeasured for degradation. The newest ten benchmark summaries remain local and store endpoint identity, IP, median, MAD, timestamp, and recommendation, never the NextDNS config ID.
 - **Unified routing cards** — Stable / Anycast, Steered / Ultralow, and Direct / Pinned now appear as comparable choices with their own DoH URL, IPv4 and IPv6 latency, matching addresses, trade-off, and one shared recommendation badge.
 - **Copy feedback and keyboard semantics** — generated values are real buttons with visible copy confirmation; scrollable result tables and the AI prompt are named, focusable regions.
 - **Guided setup flow** — the former accordion catalog is now Scope → Device / variant → Show setup → Best compatible setup → visible runbook → scoped verification. It covers routers and firewalls, computers and mobile, browsers and ChromeOS, and server/DNS deployments without showing every platform at once.
 - **Capability-aware runbooks** — every primary path includes prerequisites, paste-ready values, numbered steps, platform-specific recovery, official sources, and a last-checked date. Android automatically avoids pinned routes; Pi-hole requires a local encrypted proxy; browser paths are labeled browser-only.
-- **Safe guide sharing** — generated device/variant deep links remove `id`, `ID`, `configId`, and `config` before copying.
+- **Safe guide sharing** — generated device/variant/mode deep links remove `id`, `ID`, `configId`, and `config` before copying.
 - **Active connection re-check** — a randomized `test.nextdns.io` lookup distinguishes expected profile, different profile, unknown profile, and not detected while explicitly limiting the claim to this browser.
 
 ### Fixed
+- **Ultralow IPs could be frozen into bootstrap configurations.** Ultralow resolved addresses are now diagnostic only. Devices that require bootstrap IPs exclude ultralow, while dynamic hostname and URL clients retain it.
+- **Asus “fallback” rows were actually active upstreams.** Verified Merlin configuration uses Stubby round robin, so native Asus guides no longer label later rows primary/backup or emit four entries. Balanced mode quantifies the dilution created by sharing traffic with anycast.
+- **Fallback browser timing could receive a normal rank.** Full HTTPS duration rows remain visible with a `client measured` badge but sort after every server-RTT row and receive no numeric rank or recommendation.
+- **Route-to-PoP badges could relabel an edge measurement.** Mapped anycast/ultralow routes now appear as explicit `via` badges while the row stays labeled edge, so a direct-edge RTT is not presented as the routed hostname's RTT.
 - **Windows could receive an address and DoH template from different routes.** Setup-guide values now come from the recommended routing tier as one matched pair, with an explicit warning not to mix cards.
 - **Windows alternate servers could be under-specified.** Every preferred and alternate address is now registered independently with its matching DoH template, limited to the two slots Windows exposes per address family.
 - **Recommendations could contradict each other.** The insight box, routing cards, pin section, device guide, and AI prompt now consume one routing model. Direct pinning is recommended only when it clears the measured threshold.
@@ -21,6 +29,8 @@ All notable changes to NextDNS DNS Matrix are documented here.
 - Copyable table values now inherit the surrounding text color instead of falling back to the browser's button color.
 
 ### Changed
+- URL prefills now use `#id=` fragments, are removed immediately after reading, and are protected by a `no-referrer` policy. Legacy query prefills remain accepted and are sanitized for compatibility.
+- Bootstrap output is labeled as an address reference rather than an ordered primary/fallback prescription; Guided Setup owns device-specific entry counts.
 - Pinned details remain available as an informed alternative even when automatic steering is recommended.
 - JavaScript animation respects `prefers-reduced-motion`; semantic landmarks, live status, progress metadata, focus treatment, and contrast were tightened across the page.
 - Config-ID validation and URL prefill now accept only the supported identifier format.
