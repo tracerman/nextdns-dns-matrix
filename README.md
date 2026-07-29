@@ -176,17 +176,24 @@ The guided setup therefore offers three quantitative native-DoT modes:
 
 | Mode | Emitted entries | Behavior |
 |---|---|---|
-| **Reliable** (default) | Anycast DNS1 + DNS2 | Stable routing; both may receive live queries |
-| **Balanced** | One measured PoP + the faster measured anycast member | Approximate active-set RTT is the mean of the two measured medians |
-| **Maximum performance** | One measured PoP | Preserves the pin's RTT; a dead address can cause recurring lookup stalls |
+| **Reliable** (default) | Anycast DNS1 + DNS2 over IPv4 and IPv6 | Four stable active upstreams when dual-stack is available |
+| **Balanced** | Each family’s lowest-latency measured edge + its faster measured anycast member | Four active upstreams; IPv4 and IPv6 may use different PoPs |
+| **Maximum performance** | The independently selected lowest-latency edge for IPv4 and IPv6 | Two active transports that may target different PoPs; each fixed edge can fail independently |
 
-Balanced and Maximum performance unlock only when a resolved pinned target has a **clear measured advantage over the Reliable active-set estimate**. The gate requires a gain greater than the largest of 3ms, 5% of the Reliable estimate, or the combined observed variation. Each mode emits at most two entries in one reachable family by default.
+**IPv4 + IPv6 is the default** when both anycast members were successfully measured over IPv6. The family selector can reduce the guide to IPv4-only, producing the previous two/two/one entry layouts. If the benchmark cannot fully measure IPv6, the guide falls back to IPv4-only and says why.
+
+Balanced and Maximum performance unlock only when the complete emitted active set has a **clear measured advantage over the Reliable active-set estimate**. The gate requires a gain greater than the largest of 3ms, 5% of the Reliable estimate, or the combined observed variation. Dual-stack pinning chooses the lowest-latency resolved IPv4 and IPv6 edges independently; the two families are never forced onto the same PoP, though they can naturally select it when it wins both measurements.
 
 The displayed `≈Xms` is a transport-RTT estimate, not a DNS lookup prediction: cache fragmentation, resolver processing, address-family reachability, and Stubby scheduling can change real behavior. Adding active upstreams can also fragment NextDNS's per-PoP caches because queries are distributed between locations.
 
 On the verified Merlin settings, a permanently dead pinned address can make affected queries wait about 6 seconds (two 3-second retries). Stubby then removes it from rotation for 15 minutes before trying it again, so the stall can recur. Stock AsusWRT likely behaves similarly but still needs model-and-firmware-specific confirmation.
 
-Two things that catch people out: the DNS servers *above* the DoT section are only used by the router itself and have no effect on your devices once DoT is on — and IPv6 DNS servers go on the **IPv6** page, not the WAN page.
+Two different IPv6 settings are easy to conflate:
+
+- NextDNS IPv4 and IPv6 **upstream** addresses both go in **WAN → Internet Connection → DNS-over-TLS Server list**.
+- When LAN clients should reach the router for DNS over IPv6, the router’s **IPv6** page should advertise its own LAN IPv6 link-local address—not one of the NextDNS upstream addresses.
+
+The DNS servers above the WAN DoT section are used by the router itself and do not replace the LAN DHCP or IPv6 router-advertisement settings that tell clients to use the router.
 
 ### DNS-over-HTTPS (DoH)
 
@@ -219,13 +226,14 @@ The setup section is a short flow rather than a catalog of generic snippets:
 1. Choose the scope: router/firewall, computer/mobile, browser/ChromeOS, or server/DNS
 2. Choose the device and, when needed, its firmware or capability
 3. For native Asus DoT, choose Reliable, Balanced, or Maximum performance
-4. Click **Show setup** to generate one compatible route and a complete runbook
+4. For native Asus DoT, keep the dual-stack default or choose IPv4-only
+5. Click **Show setup** to generate one compatible route and a complete runbook
 
 Before benchmarking, the guide uses a neutral **Standard encrypted setup** and makes no latency claim. After a run, it adapts the measured recommendation to the device's real capabilities — for example, Android receives steered DoT even if a pinned edge won overall. The runbook includes prerequisites, paste-ready values, numbered steps, platform-specific recovery, official sources, and a fresh connection check.
 
 Primary paths cover AsusWRT/Merlin, pfSense, OPNsense, OpenWrt, UniFi OS, generic routers by capability, Windows 11, Apple profiles, Android, Linux/NextDNS CLI, Firefox, Chrome, ChromeOS, AdGuard Home, Pi-hole, and Synology DSM. Less common platforms and protocol notes remain in **Advanced reference**.
 
-**Share guide** creates a device/variant/mode deep link and removes every accepted config-ID parameter before copying it. A recipient gets the instructions without receiving your profile ID.
+**Share guide** creates a device/variant/mode/address-family deep link and removes every accepted config-ID parameter before copying it. A recipient gets the instructions without receiving your profile ID.
 
 **Local history is profile-free.** The newest ten runs store endpoint identity, family, resolved IP, median, MAD, timestamp, and recommendation in this browser. The config ID and generated profile URLs are never stored. History and the saved pin have separate clear actions.
 

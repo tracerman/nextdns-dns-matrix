@@ -1,1878 +1,1696 @@
 <!DOCTYPE html>
+<!--
+THESIS: A live route board makes changing DNS paths legible without turning the tool into a dashboard or a fake railway interface.
+OWN-WORLD: Matte black flap fields, cool steel frames, condensed white lettering, amber dispatch states, red failures, and fixed columns.
+STORY: Read the current connection, launch one benchmark, watch the board resolve, inspect every route, then configure the measured recommendation.
+FIRST VIEWPORT: A narrow provenance rail tops a monumental two-row promise, a dedicated live-connection board, compact optional ID, and the sole large amber action.
+FORM: Concourse Route Board, grounded direction challenger selected by the user; Monumental Launch composition approved from three comps; seed a60e2661.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="no-referrer">
-<title>NextDNS DNS Matrix v2 — Benchmark &amp; Recommend</title>
+<title>NextDNS DNS Matrix — Route Benchmark</title>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Concourse Route Board — approved replacement visual world */
+*, *::before, *::after { box-sizing: border-box; }
 
 :root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text-dim: #8b949e;
-  --cyan: #58a6ff;
-  --green: #3fb950;
-  --yellow: #d29922;
-  --red: #f85149;
-  --magenta: #bc8cff;
-  --mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --bg: #202428;
+  --surface: #0d0d0f;
+  --surface-recess: #151619;
+  --surface-raised: #1b1c1f;
+  --border: #60666c;
+  --border-dark: #30353a;
+  --text: #f2f2f0;
+  --text-dim: #b8bdc1;
+  --cyan: #ffb400;
+  --green: #70c54a;
+  --yellow: #ffb400;
+  --red: #e03a35;
+  --magenta: #d5d8da;
+  --amber-deep: #d99000;
+  --steel: #8a9096;
+  --steel-dark: #3c4247;
+  --display: "Bahnschrift Condensed", "Aptos Narrow", "Arial Narrow", sans-serif;
+  --body: "Aptos", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  --motion-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 140ms;
+  --motion-state: 220ms;
+  --motion-board: 360ms;
 }
 
-body {
+html {
+  color-scheme: dark;
   background: var(--bg);
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 14px;
-  line-height: 1.6;
+  scroll-behavior: smooth;
+}
+
+body.route-test-sheet {
+  min-width: 320px;
   min-height: 100vh;
-  padding: 2rem 1rem;
-}
-
-.container {
-  max-width: fit-content;
-  min-width: min(960px, 100%);
-  margin: 0 auto;
-}
-
-/* Banner */
-.banner {
-  position: relative;
-  border-radius: 6px;
-  padding: 2rem 1.5rem;
-  text-align: center;
-  margin-bottom: 2rem;
-  background: radial-gradient(ellipse 90% 70% at 50% 110%, rgba(88,166,255,0.07), transparent) var(--bg);
-  overflow: hidden;
-}
-/* Animated gradient border via mask */
-.banner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-  padding: 1px;
-  background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--green), var(--cyan));
-  background-size: 300% 100%;
-  animation: bannerFlow 5s linear infinite;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
-}
-.banner h1, .banner p { position: relative; z-index: 1; }
-.banner h1 {
-  font-size: 1.4rem;
-  margin-bottom: 0.35rem;
-  letter-spacing: 0.03em;
-  animation: titleGlow 4s ease-in-out infinite;
-}
-@keyframes titleGlow {
-  0%, 100% { filter: brightness(1) drop-shadow(0 0 0px transparent); }
-  50%      { filter: brightness(1.15) drop-shadow(0 0 6px rgba(88,166,255,0.3)); }
-}
-/* Per-character title spans */
-.banner h1 .t-char {
-  display: inline-block;
-  background: linear-gradient(90deg, var(--cyan) 0%, #e6edf3 45%, var(--magenta) 100%);
-  background-size: 800% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: charGradient 8s linear infinite;
-  transition: transform 0.15s ease;
-}
-.banner h1 .t-space { display: inline; width: 0.3em; }
-/* Staggered wave — applied via JS inline animation-delay */
-@keyframes charWave {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-2px); }
-}
-@keyframes charGradient {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 800% 50%; }
-}
-/* Glitch flash class toggled by JS */
-.banner h1 .t-char.glitch-flash {
-  -webkit-text-fill-color: var(--cyan);
-  text-shadow: -1px 0 var(--magenta), 1px 0 var(--cyan);
-  filter: brightness(1.8);
-}
-/* RGB split glitch on the whole h1, toggled briefly */
-.banner h1.rgb-split {
-  text-shadow: -2px 0 rgba(255,0,80,0.5), 2px 0 rgba(0,200,255,0.5);
-}
-/* CRT scanlines overlay */
-.banner::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-  background: repeating-linear-gradient(
-    to bottom,
-    transparent 0px,
-    transparent 2px,
-    rgba(0,0,0,0.08) 2px,
-    rgba(0,0,0,0.08) 4px
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-/* Horizontal light sweep */
-.banner-sweep {
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 1;
-}
-.banner-sweep::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(88,166,255,0.06), rgba(255,255,255,0.04), transparent);
-  animation: sweepBeam 10s ease-in-out infinite;
-}
-@keyframes sweepBeam {
-  0%, 100% { left: -60%; }
-  50%      { left: 100%; }
-}
-/* Blinking terminal cursor */
-.title-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 1.1em;
-  background: var(--cyan);
-  margin-left: 3px;
-  vertical-align: text-bottom;
-  animation: cursorBlink 1s step-end infinite;
-  opacity: 0.8;
-}
-@keyframes cursorBlink {
-  0%, 100% { opacity: 0.8; }
-  50%      { opacity: 0; }
-}
-.banner p {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-}
-.pulse-dot {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  background: var(--green);
-  border-radius: 50%;
-  margin-right: 0.45rem;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
-  animation: pulseDot 2.5s ease-in-out infinite;
-}
-@keyframes pulseDot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(63,185,80,0.5); }
-  50%       { box-shadow: 0 0 0 5px rgba(63,185,80,0); }
-}
-
-/* Form */
-.form-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-.form-row {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  align-items: end;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-.form-group label {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-}
-.form-group input, .form-group select {
-  background: var(--bg);
-  border: 1px solid var(--border);
+  margin: 0;
   color: var(--text);
-  font-family: var(--mono);
-  font-size: 0.9rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  outline: none;
-}
-.form-group input:focus, .form-group select:focus {
-  border-color: var(--cyan);
-}
-.form-group input::placeholder {
-  color: var(--text-dim);
+  background: var(--bg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
-.btn {
-  background: var(--cyan);
-  color: var(--bg);
-  border: none;
-  font-family: var(--mono);
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.55rem 1.5rem;
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
-  position: relative;
-  overflow: hidden;
-}
-.btn::after {
-  content: '';
-  position: absolute;
-  top: -50%; left: -75%;
-  width: 50%; height: 200%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
-  transform: skewX(-20deg);
-  animation: btnShimmer 3s ease-in-out infinite;
-}
-@keyframes btnShimmer {
-  0%       { left: -75%; }
-  45%, 100% { left: 125%; }
-}
-.btn:hover { opacity: 0.9; }
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+button, input, select { font: inherit; }
+button, summary, a { -webkit-tap-highlight-color: transparent; }
+a { color: var(--yellow); text-underline-offset: 3px; }
+a:hover { color: #ffd36a; }
+[hidden] { display: none !important; }
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
-/* Progress */
-.progress-section {
-  margin-bottom: 1.5rem;
-  display: none;
-}
-.progress-status {
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-}
-.progress-bar-track {
+.route-test-sheet .container {
+  width: min(100% - 28px, 1500px);
+  min-height: calc(100vh - 28px);
+  margin: 14px auto;
+  padding: 0;
+  overflow: clip;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  height: 24px;
-  overflow: hidden;
+  border: 5px solid var(--steel-dark);
+  outline: 1px solid #9ca1a5;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.32);
 }
-.progress-bar-fill {
-  background: var(--cyan);
-  height: 100%;
-  width: 0%;
-  transition: width 0.2s;
+
+.route-test-sheet .banner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "product"
+    "headline"
+    "dek";
+  gap: 10px;
+  padding: 12px;
+  border-bottom: 5px solid var(--steel-dark);
+}
+
+.route-test-sheet .product-line {
+  grid-area: product;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 46px;
+  min-width: 0;
+  padding: 9px 14px;
+  background: var(--surface-recess);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px #25272a, inset 0 -1px #050506;
+}
+
+.route-test-sheet .product-line strong {
+  flex: 0 0 auto;
+  color: var(--text);
+  font: 650 1.08rem/1 var(--display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.route-test-sheet .banner h1 {
+  position: relative;
+  grid-area: headline;
+  display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  color: var(--bg);
-  font-weight: 600;
-  min-width: 3rem;
-}
-
-/* Results */
-.results-section {
-  display: none;
-}
-.section-header {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-top: 0;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
-  position: relative;
-  padding-left: 0.75rem;
-}
-.section-header::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.15em;
-  bottom: 0.3em;
-  width: 3px;
-  background: var(--cyan);
-  border-radius: 2px;
-}
-.sub-header {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin: 1.25rem 0 0.5rem;
-  color: var(--yellow);
-}
-.insight-box {
-  background: var(--surface);
+  gap: 0.28em;
+  min-height: 196px;
+  margin: 0;
+  padding: 24px clamp(20px, 4vw, 54px);
+  overflow: hidden;
+  color: var(--text);
+  background: var(--surface-recess);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
+  font: 650 clamp(2.9rem, 4.1vw, 4rem)/0.98 var(--display);
+  letter-spacing: 0.055em;
+  text-wrap: balance;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px #26282a, inset 0 -1px #050506;
 }
-.insight-box .stat {
-  color: var(--green);
-  font-weight: 700;
-  font-size: 1rem;
-}
-.insight-stats {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-.insight-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.12rem 0.55rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: rgba(139,148,158,0.1);
-  border: 1px solid rgba(139,148,158,0.2);
-  color: var(--text-dim);
-}
-.insight-pill.ok  { background: rgba(63,185,80,0.1);  border-color: rgba(63,185,80,0.25);  color: var(--green); }
-.insight-pill.err { background: rgba(248,81,73,0.1);  border-color: rgba(248,81,73,0.25);  color: var(--red);   }
-.insight-main { font-size: 0.92rem; margin-bottom: 0.2rem; }
-.insight-note { font-size: 0.8rem; color: var(--text-dim); }
-.server-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.2rem;
-  padding: 0.1rem 0.45rem;
-  border-radius: 3px;
-  font-size: 0.75rem;
-  background: rgba(248,81,73,0.08);
-  border: 1px solid rgba(248,81,73,0.18);
-  color: var(--red);
-  margin: 0.1rem 0.1rem;
-}
-.spark-bar {
+.route-test-sheet .banner h1 span {
   display: block;
-  height: 2px;
-  border-radius: 1px;
-  margin-top: 3px;
-  background: currentColor;
-  opacity: 0.4;
-}
-.cc-badge {
-  display: inline-block;
-  background: rgba(88,166,255,0.14);
-  border: 1px solid rgba(88,166,255,0.35);
-  border-radius: 3px;
-  padding: 1px 5px;
-  font-size: 0.72rem;
-  color: var(--cyan);
-  letter-spacing: 0.06em;
-  font-weight: 700;
-  vertical-align: 1px;
-  line-height: 1.3;
+  white-space: nowrap;
 }
 
-/* Table */
-.results-table-wrap {
-  margin-bottom: 1.5rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+.route-test-sheet .banner h1::before,
+.route-test-sheet td::after,
+.route-test-sheet .setup-choice::after,
+.route-test-sheet .tier-card::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  pointer-events: none;
 }
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
-  min-width: 800px;
-}
-th {
-  text-align: left;
+
+.route-test-sheet .banner > p {
+  grid-area: dek;
+  margin: 0;
+  padding: 12px 16px;
   color: var(--text-dim);
-  font-weight: 400;
-  padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border-dark);
+  font-size: 0.9rem;
+}
+
+.route-test-sheet .connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px 8px;
+  min-width: 0;
+  margin-left: auto;
+  padding: 0;
+  color: var(--text-dim);
+  font: 600 0.68rem/1.25 var(--display);
+  letter-spacing: 0.09em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.route-test-sheet .connection-status strong,
+.route-test-sheet .connection-status .status-server,
+.route-test-sheet .connection-status .status-rtt {
+  color: var(--yellow);
+  font: inherit;
+  font-weight: 650;
+}
+
+.route-test-sheet .connection-status .status-label {
+  color: var(--text);
+}
+
+.route-test-sheet .connection-status .status-primary {
+  display: inline-flex;
+  gap: 5px;
   white-space: nowrap;
 }
-td {
-  padding: 0.4rem 0.6rem;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+
+.route-test-sheet .connection-status .status-location {
+  max-width: 28ch;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-tr:hover td { background: rgba(88,166,255,0.04); }
-.rank-star { color: var(--green); font-weight: 700; }
-.type-edge { color: var(--text); }
-.type-anycast { color: var(--cyan); }
-.type-ultralow { color: var(--magenta); }
-
-/* Type legend */
-.type-legend {
-  display: flex;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 1rem;
-  font-size: 0.78rem;
-  color: var(--text-dim);
-}
-.type-legend-item { display: flex; align-items: baseline; gap: 0.35rem; }
-.type-legend-dot {
-  display: inline-block;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  position: relative; top: 0.5px;
-}
-.lat-green { color: var(--green); }
-.lat-yellow { color: var(--yellow); }
-.lat-red { color: var(--red); }
-.text-dim { color: var(--text-dim); }
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  border: 0;
 }
 
-/* Summary row: insight + config side by side */
-.summary-row {
+.route-test-sheet .connection-status .status-separator {
+  color: var(--border);
+}
+
+.route-test-sheet .status-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  margin-right: 1px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.route-test-sheet .status-dot.active { background: var(--green); }
+.route-test-sheet .status-dot.inactive { background: var(--red); }
+.route-test-sheet .status-ipv6 {
+  display: inline-block;
+  padding: 1px 5px;
+  color: var(--surface);
+  background: var(--green);
+  font-size: 0.64rem;
+}
+
+.route-test-sheet .form-section {
+  margin: 0;
+  padding: 12px;
+  background: var(--steel-dark);
+  border-bottom: 1px solid var(--steel);
+}
+
+.route-test-sheet .form-row {
   display: grid;
-  grid-template-columns: minmax(18rem, 0.72fr) minmax(32rem, 1.28fr);
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.summary-row > .insight-box {
-  flex: 1;
-  margin-bottom: 0;
-}
-.summary-row > .config-inline {
+  grid-template-columns: minmax(260px, 390px) minmax(360px, 1fr);
+  gap: 10px;
+  padding: 14px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.85rem;
-  display: none;
-}
-.config-inline .config-table {
-  grid-template-columns: 1fr;
-  gap: 0;
-}
-.config-inline .config-cell.span2 {
-  grid-column: span 1;
-}
-.config-inline-header {
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.6rem;
 }
 
-.config-entry {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  line-height: 1.4;
-}
-.config-entry-label {
+.route-test-sheet .form-group { min-width: 0; }
+.route-test-sheet .form-group label,
+.route-test-sheet .results-profile-field > span {
+  display: block;
+  margin-bottom: 7px;
   color: var(--text-dim);
-  font-size: 0.75rem;
-  white-space: nowrap;
-  flex-shrink: 0;
+  font: 600 0.72rem/1.2 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
-.config-value, .copyable {
-  cursor: pointer;
-  background: none;
-  border: 0;
-  color: inherit;
-  padding: 0;
-  font: inherit;
-  text-align: left;
-}
-.config-value {
-  color: var(--cyan);
-  font-weight: 600;
-  word-break: break-all;
-  font-size: 0.85rem;
-}
-.copyable:hover { text-decoration: underline; text-underline-offset: 2px; }
-.copyable.copied { color: var(--green) !important; }
-.config-value:hover { text-decoration: underline; text-underline-offset: 2px; }
-.config-value.dim { color: var(--text-dim); font-weight: 400; }
-.config-value.copied { color: var(--green) !important; }
-.config-sep { color: var(--text-dim); font-size: 0.75rem; }
 
-/* Unified routing-mode cards */
-.routing-tier-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.55rem;
-  margin-bottom: 0.8rem;
-}
-.tier-card {
-  position: relative;
-  min-width: 0;
-  padding: 0.7rem;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  background: rgba(13,17,23,0.72);
-  overflow: hidden;
-}
-.tier-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 2px;
-  background: var(--border);
-}
-.tier-card.recommended {
-  border-color: rgba(88,166,255,0.65);
-  background: rgba(88,166,255,0.055);
-  box-shadow: inset 0 0 18px rgba(88,166,255,0.035);
-}
-.tier-card.recommended::before { background: var(--cyan); }
-.tier-card.pinned::before { background: var(--yellow); }
-.tier-card.unavailable { opacity: 0.58; }
-.tier-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.35rem;
-}
-.tier-name {
-  font-size: 0.76rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.055em;
-}
-.tier-badge {
-  padding: 0.1rem 0.35rem;
-  border: 1px solid rgba(88,166,255,0.45);
-  border-radius: 999px;
-  color: var(--cyan);
-  font-size: 0.58rem;
-  font-weight: 700;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
-}
-.tier-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  min-height: 1.35rem;
-  margin-bottom: 0.3rem;
-}
-.tier-metric {
-  padding: 0.08rem 0.3rem;
-  border-radius: 3px;
-  background: rgba(139,148,158,0.07);
-  font-size: 0.66rem;
-  white-space: nowrap;
-}
-.tier-variation {
+.route-test-sheet .form-group label span,
+.route-test-sheet .results-profile-field em {
   color: var(--text-dim);
-  font-size: 0.58rem;
+  font-style: normal;
   font-weight: 400;
 }
-.tier-tradeoff {
-  min-height: 2.4em;
-  margin-bottom: 0.45rem;
-  color: var(--text-dim);
-  font-size: 0.67rem;
-  line-height: 1.35;
-}
-.tier-card .config-value {
-  display: block;
+
+.route-test-sheet input,
+.route-test-sheet select {
   width: 100%;
-  color: var(--cyan);
-  font-size: 0.7rem;
-  line-height: 1.35;
-}
-.tier-addresses {
-  display: grid;
-  gap: 0.15rem;
-  margin-top: 0.4rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid rgba(139,148,158,0.12);
-}
-.tier-address-row {
-  display: grid;
-  grid-template-columns: 1.6rem minmax(0, 1fr);
-  align-items: baseline;
-  gap: 0.25rem;
-  color: var(--text-dim);
-  font-size: 0.62rem;
-}
-.tier-address-row .config-value { font-size: 0.65rem; }
-.config-section-label {
-  margin: 0.15rem 0 0.35rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid var(--border);
-  color: var(--text-dim);
-  font-size: 0.67rem;
-  font-weight: 700;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-.bootstrap-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.25rem 0.75rem;
-}
-.plain-dns-warning {
-  margin-top: 0.65rem;
-  padding: 0.55rem 0.65rem;
-  border-left: 3px solid var(--yellow);
-  border-radius: 0 4px 4px 0;
-  background: rgba(210,153,34,0.065);
-  color: var(--text-dim);
-  font-size: 0.68rem;
-  line-height: 1.45;
-}
-.plain-dns-warning strong { color: var(--yellow); }
-.cfg-note {
-  font-size: 0.7rem;
-  line-height: 1.45;
-  color: var(--text-dim);
-  border-left: 2px solid var(--border);
-  padding-left: 0.5rem;
-  margin: 0.3rem 0 0.4rem 0.1rem;
-}
-.cfg-note strong { color: var(--text); font-weight: 600; }
-
-.routing-verdict {
-  margin: 0.55rem 0;
-  padding: 0.65rem 0.75rem;
-  border-left: 3px solid var(--cyan);
-  border-radius: 0 4px 4px 0;
-  background: rgba(88,166,255,0.045);
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-.routing-verdict .verdict-tier { color: var(--cyan); font-weight: 700; }
-.routing-verdict .verdict-reason { color: var(--text-dim); }
-
-.copy-toast {
-  position: fixed;
-  z-index: 50;
-  right: 1rem;
-  bottom: 1rem;
-  max-width: min(24rem, calc(100vw - 2rem));
-  padding: 0.55rem 0.75rem;
-  border: 1px solid rgba(63,185,80,0.5);
-  border-radius: 4px;
-  background: rgba(13,17,23,0.96);
-  color: var(--green);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
-  font-size: 0.72rem;
-  opacity: 0;
-  transform: translateY(0.5rem);
-  pointer-events: none;
-  transition: opacity 0.16s ease, transform 0.16s ease;
-}
-.copy-toast.visible { opacity: 1; transform: translateY(0); }
-.copy-toast.error { color: var(--red); border-color: rgba(248,81,73,0.5); }
-
-/* Pin-to-server section */
-.pin-box {
-  background: var(--surface);
+  min-height: 48px;
+  padding: 10px 13px;
+  color: var(--text);
+  background: #111214;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1rem 1.25rem;
-  margin-bottom: 1.5rem;
+  border-radius: 2px;
+  outline: 0;
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  box-shadow: inset 0 2px 7px rgba(0, 0, 0, 0.45);
 }
-.pin-headline {
-  font-size: 0.92rem;
-  margin-bottom: 0.15rem;
-}
-.pin-gain { color: var(--green); font-weight: 700; }
-.pin-sub {
-  font-size: 0.8rem;
-  color: var(--text-dim);
-  margin-bottom: 0.85rem;
-}
-.pin-formats { display: grid; gap: 0.55rem; }
-.pin-format-label {
-  font-size: 0.72rem;
-  color: var(--text-dim);
+
+.route-test-sheet input::placeholder { color: #aeb2b5; opacity: 1; }
+.route-test-sheet input:focus,
+.route-test-sheet select:focus { border-color: var(--yellow); }
+
+.route-test-sheet .btn,
+.route-test-sheet .results-rerun-btn {
+  width: 100%;
+  min-height: 72px;
+  padding: 14px 24px;
+  color: #17120a;
+  background: var(--yellow);
+  border: 1px solid #ffc94b;
+  border-radius: 2px;
+  font: 700 1.2rem/1 var(--display);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.15rem;
-}
-.pin-format-note {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  margin-top: 0.1rem;
-}
-.pin-disclaimer {
-  margin-top: 1rem;
-  padding: 0.7rem 0.9rem;
-  border-left: 3px solid var(--yellow);
-  background: rgba(210,153,34,0.06);
-  border-radius: 0 4px 4px 0;
-  font-size: 0.8rem;
-  line-height: 1.55;
-  color: var(--text-dim);
-}
-.pin-disclaimer strong { color: var(--yellow); }
-.pin-ok {
-  font-size: 0.92rem;
-  color: var(--cyan);
-}
-.pin-anyway {
-  margin-top: 1rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.8rem;
-  color: var(--text-dim);
+  cursor: pointer;
+  box-shadow: 0 4px 0 #865f00;
+  transition:
+    background-color var(--motion-fast) ease,
+    transform var(--motion-fast) var(--motion-out),
+    box-shadow var(--motion-fast) var(--motion-out);
 }
 
-/* Error display */
-.error-box {
-  background: rgba(248,81,73,0.1);
-  border: 1px solid var(--red);
-  border-radius: 6px;
-  padding: 1rem;
-  color: var(--red);
-  margin-bottom: 1rem;
+.route-test-sheet .btn:hover,
+.route-test-sheet .results-rerun-btn:hover { background: #ffc235; }
+.route-test-sheet .btn:active,
+.route-test-sheet .results-rerun-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #865f00;
+}
+.route-test-sheet .btn:disabled {
+  color: #777a7d;
+  background: #2a2c2f;
+  border-color: #45494d;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.route-test-sheet .test-settings {
+  grid-column: 1 / -1;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border-dark);
+}
+
+.route-test-sheet .test-settings > summary {
+  width: fit-content;
+  padding: 11px 2px 4px;
+  color: var(--text);
+  font: 600 0.74rem/1.3 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.route-test-sheet .test-settings > summary span {
+  margin-left: 8px;
+  color: var(--text-dim);
+  font-family: var(--body);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.route-test-sheet .test-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.route-test-sheet .probe-fanout {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 10px 26px;
+  color: var(--text-dim);
+  background: var(--surface-recess);
+  border-bottom: 5px solid var(--steel-dark);
+  font: 600 0.7rem/1.3 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.route-test-sheet .probe-fanout span + span::before {
+  content: "·";
+  margin: 0 12px;
+  color: var(--steel);
+}
+.route-test-sheet .probe-fanout .scope-label { color: var(--yellow); }
+.route-test-sheet .probe-fanout small { display: none; }
+
+.route-test-sheet .error-box,
+.route-test-sheet .progress-section {
   display: none;
+  margin: 12px;
+  padding: 14px;
+  background: var(--surface-recess);
+  border: 1px solid var(--border);
 }
 
-
-/* ── Animations ─────────────────────────────────────────────────────── */
-
-/* Banner animated border gradient */
-@keyframes bannerFlow {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
+.route-test-sheet .error-box {
+  color: #ffaaa6;
+  border-color: var(--red);
 }
 
-/* Progress bar moving stripes while benchmark runs */
-@keyframes progressStripe {
-  to { background-position: -1rem 0; }
-}
-.progress-bar-fill.running {
-  background-image: repeating-linear-gradient(
-    -45deg, transparent 0, transparent 6px,
-    rgba(0,0,0,0.15) 6px, rgba(0,0,0,0.15) 12px
-  );
-  background-size: 1rem 1rem;
-  animation: progressStripe 0.4s linear infinite;
+.route-test-sheet .progress-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
 }
 
-/* Table rows slide in with stagger (delay set per-row via JS) */
-@keyframes rowIn {
-  from { opacity: 0; transform: translateX(-8px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-tbody tr {
-  opacity: 0;
-  animation: rowIn 0.2s ease-out forwards;
+.route-test-sheet .progress-status {
+  color: var(--text);
+  font: 600 0.82rem/1.3 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* Rank ★ slow glow pulse */
-@keyframes starGlow {
-  0%, 100% { text-shadow: 0 0 6px rgba(63,185,80,0.5); }
-  50%       { text-shadow: 0 0 18px rgba(63,185,80,0.95), 0 0 36px rgba(63,185,80,0.3); }
+.route-test-sheet .cancel-benchmark {
+  min-height: 38px;
+  padding: 8px 12px;
+  color: #ffaaa6;
+  background: transparent;
+  border: 1px solid var(--red);
+  border-radius: 2px;
+  cursor: pointer;
 }
-.rank-star { animation: starGlow 2.5s ease-in-out infinite; }
 
-/* Insight box pops in each run */
-@keyframes insightPop {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+.route-test-sheet .cancel-benchmark:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-.insight-box.pop { animation: insightPop 0.3s ease-out; }
 
-
-/* Animated border beam on recommendation cards */
-@property --beam-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
+.route-test-sheet .benchmark-phases {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  margin-bottom: 8px;
 }
-@keyframes beamRotate { to { --beam-angle: 360deg; } }
 
-.config-ipv4::before, .config-ipv6::before {
-  content: '';
+.route-test-sheet .benchmark-phase {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 7px 9px;
+  overflow: hidden;
+  color: #74787d;
+  background: #09090a;
+  border: 1px solid #34373b;
+  font: 650 0.58rem/1 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition:
+    color var(--motion-state) var(--motion-out),
+    border-color var(--motion-state) var(--motion-out),
+    filter var(--motion-state) var(--motion-out);
+}
+
+.route-test-sheet .benchmark-phase::before {
+  content: "";
   position: absolute;
   inset: 0;
-  border-radius: 6px;
-  padding: 1px;
-  background: conic-gradient(
-    from var(--beam-angle),
-    transparent 0%,
-    rgba(88,166,255,0.9) 6%,
-    rgba(188,140,255,0.6) 11%,
-    transparent 15%
-  );
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  animation: beamRotate 4s linear infinite;
-  pointer-events: none;
+  background: color-mix(in srgb, var(--yellow) 12%, var(--surface-recess));
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--motion-state) var(--motion-out);
 }
 
-/* Insight stat: bright glow that settles into normal green */
-@keyframes statPulse {
-  0%   { color: #fff; text-shadow: 0 0 20px rgba(63,185,80,0.9); }
-  60%  { color: #7ee787; text-shadow: 0 0 8px rgba(63,185,80,0.35); }
-  100% { color: var(--green); text-shadow: none; }
-}
-.insight-box.pop .stat { animation: statPulse 0.9s ease-out forwards; }
-
-/* Routing via-badges on absorbed edge rows */
-.via-badge {
-  display: inline-block;
-  font-size: 0.65rem;
-  padding: 1px 5px;
-  border-radius: 3px;
-  margin-left: 0.3rem;
-  vertical-align: middle;
-}
-.via-badge--anycast  { background: rgba(88,166,255,0.1);  border: 1px solid rgba(88,166,255,0.25);  color: var(--cyan); }
-.via-badge--ultralow { background: rgba(188,140,255,0.1); border: 1px solid rgba(188,140,255,0.25); color: var(--magenta); }
-
-/* Best row subtle highlight */
-.best-row { background: rgba(63,185,80,0.03); }
-.fallback-metric-row { opacity: 0.72; }
-.metric-badge {
-  display: inline-block;
-  margin-left: 0.35rem;
-  padding: 0.08rem 0.28rem;
-  border: 1px solid rgba(210,153,34,0.35);
-  border-radius: 3px;
-  color: var(--yellow);
-  font-size: 0.56rem;
-  line-height: 1.2;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  vertical-align: middle;
-}
-
-/* Current anycast routing line */
-.insight-routing {
-  margin-top: 0.3rem;
-  font-size: 0.82rem;
-  color: var(--text-dim);
-}
-.insight-routing strong { color: var(--cyan); font-weight: 600; }
-
-/* Connection status indicator */
-.connection-status {
-  text-align: center;
-  font-size: 0.78rem;
-  color: var(--text-dim);
-  padding: 0.5rem 0.8rem;
-  margin-top: -0.3rem;
-  margin-bottom: 0.6rem;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.connection-status.visible { opacity: 1; }
-.connection-status .status-dot {
-  display: inline-block;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  margin-right: 5px;
-  vertical-align: middle;
-}
-.connection-status .status-dot.active { background: var(--green); box-shadow: 0 0 4px var(--green); }
-.connection-status .status-dot.inactive { background: var(--text-dim); }
-.connection-status strong { color: var(--text); font-weight: 600; }
-.connection-status .status-protocol {
-  display: inline-block;
-  font-size: 0.65rem;
-  padding: 1px 5px;
-  border-radius: 3px;
-  background: rgba(88,166,255,0.12);
-  color: var(--cyan);
-  margin-left: 4px;
-  vertical-align: middle;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-.connection-status .status-server {
-  color: var(--cyan);
-  font-weight: 600;
-}
-.connection-status .status-rtt {
-  color: var(--green);
-  font-weight: 600;
-}
-.connection-status .status-ipv6 {
-  display: inline-block;
-  font-size: 0.65rem;
-  padding: 1px 5px;
-  border-radius: 3px;
-  background: rgba(63,185,80,0.15);
-  color: var(--green);
-  margin-left: 4px;
-  vertical-align: middle;
-  font-weight: 600;
-}
-
-/* Detected-server row highlight in result table */
-.detected-server-row { background: rgba(210,170,50,0.08); border-left: 2px solid rgba(210,170,50,0.5); }
-.detected-server-row td:first-child::after {
-  content: '';
-  display: inline-block;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: #d4a830;
-  box-shadow: 0 0 6px rgba(212,168,48,0.6);
-  margin-left: 4px;
-  vertical-align: middle;
-}
-/* Latency delta badge on detected row */
-.delta-badge {
-  display: inline-block;
-  font-size: 0.65rem;
-  padding: 1px 4px;
-  border-radius: 3px;
-  margin-left: 4px;
-  font-weight: 600;
-  vertical-align: middle;
-}
-.delta-badge.slower { background: rgba(210,153,34,0.15); color: var(--yellow); }
-.delta-badge.optimal { background: rgba(63,185,80,0.15); color: var(--green); }
-
-/* Optimization insight after benchmark */
-.optimization-insight {
-  margin-top: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
-  font-size: 0.78rem;
-  border-left: 3px solid var(--cyan);
-  background: rgba(88,166,255,0.04);
-  color: var(--text-dim);
-}
-.optimization-insight strong { color: var(--text); }
-.optimization-insight .opt-gain { color: var(--green); font-weight: 600; }
-.optimization-insight .opt-current { color: var(--yellow); }
-.optimization-insight .opt-suggestion { color: var(--cyan); }
-
-/* Current-PoP row in result table */
-.current-pop-row { background: rgba(88,166,255,0.05); }
-.current-marker {
-  display: inline-block;
-  color: var(--cyan);
-  font-size: 0.65rem;
-  margin-left: 0.3rem;
-  vertical-align: middle;
-  opacity: 0.85;
-}
-
-/* ── Config table ────────────────────────────────────────────────────── */
-.config-table {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0 1.5rem;
-}
-.config-cell.span2 {
-  grid-column: span 2;
-}
-
-@media (max-width: 860px) {
-  .summary-row { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .config-table { grid-template-columns: 1fr; gap: 0.15rem 0; }
-  .config-cell.span2 { grid-column: span 1; }
-  .routing-tier-grid { grid-template-columns: 1fr; }
-  .bootstrap-grid { grid-template-columns: 1fr; }
-}
-
-/* Setup guide foundations */
-.guide { margin-top: 2.5rem; }
-.guide-intro {
-  color: var(--text-dim);
-  font-size: 0.82rem;
-  margin: 0.5rem 0 0.9rem;
-}
-.guide-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 0.4rem;
-}
-/* Block, not flex: a flex summary turns each inline child (<em>, text nodes) into
-   its own flex item, which breaks multi-part headings onto separate lines. */
-.guide-item summary {
-  cursor: pointer;
-  padding: 0.6rem 0.9rem 0.6rem 1.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  list-style: none;
+.route-test-sheet .benchmark-phase > span {
   position: relative;
+  z-index: 1;
 }
-.guide-item summary::-webkit-details-marker { display: none; }
-.guide-item summary::before {
-  content: '';
-  position: absolute;
-  left: 0.9rem;
-  top: 0.95em;
-  width: 0; height: 0;
-  border-left: 5px solid var(--cyan);
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
-  transition: transform 0.15s ease;
-}
-.guide-item[open] summary::before { transform: rotate(90deg); }
-.guide-item summary:hover { color: var(--cyan); }
-.guide-body {
-  padding: 0 0.9rem 0.9rem 1.9rem;
-  font-size: 0.82rem;
-  line-height: 1.6;
-  color: var(--text);
-}
-.guide-body p { margin-bottom: 0.5rem; }
-.guide-body ol { margin: 0 0 0.5rem 1.1rem; }
-.guide-body li { margin-bottom: 0.25rem; }
-.guide-body a { color: var(--cyan); }
-.guide-body code {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 3px;
-  padding: 0 4px;
-  font-size: 0.78rem;
-}
-.guide-note {
-  color: var(--text-dim);
-  font-size: 0.78rem;
-  border-left: 2px solid var(--border);
-  padding-left: 0.6rem;
-  margin-top: 0.6rem;
-}
-.guide-route {
-  padding: 0.45rem 0.6rem;
-  border: 1px solid rgba(88,166,255,0.22);
-  border-radius: 4px;
-  background: rgba(88,166,255,0.04);
-}
-.guide-pre {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.55rem 0.7rem;
-  margin: 0.4rem 0 0.6rem;
-  font-size: 0.76rem;
-  line-height: 1.5;
-  overflow-x: auto;
-  white-space: pre;
-}
-/* table-layout:fixed is load-bearing. .container is max-width:fit-content, so it
-   grows to its widest child — an auto-layout table sizes to max-content, expands
-   the container, and width:100% then resolves against that expanded width. Fixed
-   layout takes cell content out of sizing entirely, so long text wraps. min-width
-   also overrides the 800px floor the results tables set globally. */
-.guide-table {
-  table-layout: fixed;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  margin: 0.3rem 0 0.5rem;
-  font-size: 0.8rem;
-}
-.guide-table td { padding: 0.15rem 0.9rem 0.15rem 0; vertical-align: top; word-break: break-word; }
-.guide-table td:first-child { color: var(--text-dim); width: 8.5rem; }
-.gv { color: var(--cyan); font-weight: 600; }
-.gv.unset { color: var(--text-dim); font-weight: 400; font-style: italic; }
 
-/* Guided setup */
-.setup-guide { scroll-margin-top: 1rem; }
-.setup-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.setup-kicker {
-  flex: 0 0 auto;
-  color: var(--cyan);
-  border: 1px solid rgba(88,166,255,0.3);
-  background: rgba(88,166,255,0.06);
-  border-radius: 999px;
-  padding: 0.22rem 0.55rem;
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
-}
-.setup-state-banner {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 0.7rem;
-  background: rgba(88,166,255,0.05);
-  border: 1px solid rgba(88,166,255,0.22);
-  border-radius: 7px;
-  padding: 0.7rem 0.8rem;
-  margin: 1rem 0 0.7rem;
-  font-size: 0.78rem;
+.route-test-sheet .benchmark-phase-index {
   color: var(--text-dim);
-}
-.setup-state-banner strong { color: var(--text); }
-.setup-state-banner.measured {
-  background: rgba(63,185,80,0.04);
-  border-color: rgba(63,185,80,0.24);
-}
-.setup-state-icon {
-  display: grid;
-  place-items: center;
-  width: 1.55rem;
-  height: 1.55rem;
-  border: 1px solid var(--cyan);
-  border-radius: 50%;
-  color: var(--cyan);
-  font-weight: 700;
-}
-.setup-state-banner.measured .setup-state-icon {
-  color: var(--green);
-  border-color: var(--green);
-}
-.pin-health-panel {
-  margin-bottom: 0.8rem;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid rgba(88,166,255,0.28);
-  border-left: 3px solid var(--cyan);
-  border-radius: 6px;
-  background: rgba(88,166,255,0.05);
-  font-size: 0.72rem;
-  line-height: 1.5;
-}
-.pin-health-panel.urgent {
-  border-color: rgba(248,81,73,0.42);
-  border-left-color: var(--red);
-  background: rgba(248,81,73,0.06);
-}
-.pin-health-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  align-items: start;
-}
-.pin-health-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.55rem;
-}
-.pin-health-actions button,
-.pin-monitor-btn,
-.history-clear-btn {
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg);
-  color: var(--cyan);
-  padding: 0.3rem 0.5rem;
-  font: inherit;
-  cursor: pointer;
-}
-.run-history {
-  margin-top: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--surface);
-}
-.run-history summary {
-  padding: 0.75rem 0.9rem;
-  cursor: pointer;
-  color: var(--text);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-.run-history-body { padding: 0 0.9rem 0.9rem; }
-.history-row {
-  display: grid;
-  grid-template-columns: minmax(9rem, auto) 1fr auto;
-  gap: 0.65rem;
-  padding: 0.5rem 0;
-  border-top: 1px solid var(--border);
-  font-size: 0.7rem;
-}
-.history-row span { color: var(--text-dim); }
-.text-action {
-  border: 0;
-  background: transparent;
-  color: var(--cyan);
-  cursor: pointer;
-  font: inherit;
-  padding: 0.25rem;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.setup-chooser {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 1rem;
-}
-.setup-stage {
-  border: 0;
-  padding: 0;
-  margin: 0 0 1rem;
-  min-width: 0;
-}
-.setup-stage:last-of-type { margin-bottom: 0.5rem; }
-.setup-stage[disabled] { opacity: 0.5; }
-.setup-stage legend {
-  color: var(--text);
-  font-weight: 700;
-  font-size: 0.82rem;
-  padding: 0;
-  margin-bottom: 0.55rem;
-}
-.setup-stage legend span {
-  display: inline-grid;
-  place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  color: var(--cyan);
-  margin-right: 0.4rem;
-  font-size: 0.7rem;
-}
-.stage-hint {
-  color: var(--text-dim);
-  font-size: 0.73rem;
-  margin: -0.25rem 0 0.55rem 1.8rem;
-}
-.choice-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-.choice-grid--scope { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.choice-grid--mode { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.setup-choice {
-  appearance: none;
-  text-align: left;
-  background: var(--bg);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.7rem;
-  min-height: 4.15rem;
-  cursor: pointer;
   font-family: var(--mono);
 }
-.setup-choice:hover { border-color: rgba(88,166,255,0.55); }
-.setup-choice:disabled {
-  cursor: not-allowed;
-  opacity: 0.46;
-}
-.setup-choice[aria-pressed="true"] {
-  border-color: var(--cyan);
-  box-shadow: inset 3px 0 var(--cyan);
-  background: rgba(88,166,255,0.08);
-}
-.setup-choice strong {
-  display: block;
-  color: inherit;
-  font-size: 0.78rem;
-  margin-bottom: 0.22rem;
-}
-.setup-choice small {
-  display: block;
+
+.route-test-sheet .benchmark-phase.is-complete {
   color: var(--text-dim);
-  font-size: 0.67rem;
-  line-height: 1.4;
+  border-color: var(--steel);
 }
-.mode-estimate {
-  display: block;
-  margin-top: 0.5rem;
-  color: var(--green);
-  font-size: 0.7rem;
+
+.route-test-sheet .benchmark-phase.is-complete::before {
+  transform: scaleX(1);
 }
-.mode-estimate.unavailable { color: var(--text-dim); }
-.setup-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  border-top: 1px solid var(--border);
-  padding-top: 0.85rem;
-}
-.setup-show-btn { width: auto; min-width: 9rem; }
-.setup-actions p {
-  color: var(--text-dim);
-  font-size: 0.72rem;
-  margin: 0;
-}
-.setup-runbook {
-  margin-top: 1rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-  overflow: hidden;
-  scroll-margin-top: 1rem;
-}
-.runbook-hero {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(120deg, rgba(88,166,255,0.08), transparent 65%);
-}
-.runbook-eyebrow {
-  color: var(--cyan);
-  font-size: 0.67rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.runbook-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.2rem;
-}
-.runbook-title-row h2 {
-  font-size: 1.2rem;
-  margin: 0;
-}
-.runbook-title-row p {
-  color: var(--text-dim);
-  margin: 0.25rem 0 0;
-  font-size: 0.78rem;
-}
-.share-guide-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--cyan);
-  border-radius: 4px;
-  padding: 0.35rem 0.55rem;
-  cursor: pointer;
-  font: 0.7rem var(--mono);
-  white-space: nowrap;
-}
-.badge-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.7rem;
-}
-.setup-badge {
-  border: 1px solid rgba(88,166,255,0.25);
-  border-radius: 999px;
-  color: var(--cyan);
-  background: rgba(88,166,255,0.05);
-  padding: 0.18rem 0.45rem;
-  font-size: 0.65rem;
-}
-.setup-badge.warning {
-  color: var(--yellow);
-  border-color: rgba(210,153,34,0.35);
-  background: rgba(210,153,34,0.06);
-}
-.runbook-body { padding: 0 1rem 1rem; }
-.runbook-section {
-  padding-top: 1rem;
-  margin-top: 1rem;
-  border-top: 1px solid var(--border);
-}
-.runbook-section:first-child { border-top: 0; margin-top: 0; }
-.runbook-section h3 {
-  font-size: 0.86rem;
-  margin: 0 0 0.55rem;
-}
-.runbook-section p,
-.runbook-section li {
-  font-size: 0.78rem;
-  line-height: 1.55;
-}
-.runbook-section a { color: var(--cyan); }
-.setup-recommendation {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.65rem;
-  padding: 0.7rem;
-  background: rgba(88,166,255,0.05);
-  border: 1px solid rgba(88,166,255,0.2);
-  border-radius: 6px;
-}
-.setup-recommendation .route-mark {
-  color: var(--cyan);
-  font-size: 1.15rem;
-}
-.setup-recommendation p { margin: 0.2rem 0 0; color: var(--text-dim); }
-.asus-effective {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 0.65rem;
-  align-items: center;
-  margin-top: 0.65rem;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid rgba(88,166,255,0.28);
-  border-radius: 6px;
-  background: rgba(88,166,255,0.06);
-  font-size: 0.7rem;
-}
-.asus-effective > span:first-child {
-  color: var(--cyan);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.asus-effective > span:last-child { color: var(--green); }
-.setup-caution,
-.setup-blocker {
-  border-left: 3px solid var(--yellow);
-  background: rgba(210,153,34,0.06);
-  padding: 0.6rem 0.7rem;
-  color: var(--text-dim);
-  margin-top: 0.65rem;
-}
-.setup-blocker { border-left-color: var(--red); background: rgba(248,81,73,0.05); }
-.prereq-list,
-.recovery-list {
-  margin: 0;
-  padding-left: 1.15rem;
-}
-.value-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
-}
-.setup-value {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.7rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 0.55rem 0.65rem;
-}
-.setup-value-label {
-  display: block;
-  color: var(--text-dim);
-  font-size: 0.62rem;
-  margin-bottom: 0.15rem;
-}
-.setup-value code {
-  display: block;
+
+.route-test-sheet .benchmark-phase.is-active {
   color: var(--text);
-  font-size: 0.72rem;
-  overflow-wrap: anywhere;
+  border-color: var(--yellow);
+  animation: benchmarkPhaseEngage 280ms var(--motion-out) both;
 }
-.setup-value button {
-  flex: 0 0 auto;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--cyan);
-  border-radius: 3px;
-  cursor: pointer;
-  padding: 0.22rem 0.4rem;
-  font: 0.65rem var(--mono);
+
+.route-test-sheet .benchmark-phase.is-active .benchmark-phase-index {
+  color: var(--surface);
+  background: var(--yellow);
 }
-.setup-value button.copied { color: var(--green); border-color: var(--green); }
-.endpoint-pair-note {
-  grid-column: 1 / -1;
-  color: var(--text-dim);
-  font-size: 0.68rem;
-  margin: 0.1rem 0 0;
-}
-.runbook-steps {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  counter-reset: setup-steps;
-}
-.runbook-steps > li {
-  counter-increment: setup-steps;
-  position: relative;
-  padding: 0 0 0.85rem 2.35rem;
-}
-.runbook-steps > li:last-child { padding-bottom: 0; }
-.runbook-steps > li::before {
-  content: counter(setup-steps);
-  position: absolute;
-  left: 0;
-  top: -0.05rem;
-  display: grid;
-  place-items: center;
-  width: 1.55rem;
-  height: 1.55rem;
-  border: 1px solid var(--cyan);
-  border-radius: 50%;
-  color: var(--cyan);
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-.runbook-steps > li::after {
-  content: '';
-  position: absolute;
-  left: 0.75rem;
-  top: 1.55rem;
-  bottom: 0;
-  width: 1px;
-  background: var(--border);
-}
-.runbook-steps > li:last-child::after { display: none; }
-.runbook-steps strong { color: var(--text); }
-.inline-command {
-  display: block;
-  margin-top: 0.4rem;
-  padding: 0.5rem 0.6rem;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+
+.route-test-sheet .benchmark-phases.is-locked .benchmark-phase {
   color: var(--text);
-  font-size: 0.7rem;
-}
-.verification-panel {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 0.8rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.7rem;
-}
-.verification-copy p { color: var(--text-dim); margin: 0.2rem 0 0; }
-.verification-btn {
-  border: 1px solid var(--cyan);
-  background: rgba(88,166,255,0.08);
-  color: var(--cyan);
-  border-radius: 4px;
-  padding: 0.45rem 0.65rem;
-  cursor: pointer;
-  font: 0.7rem var(--mono);
-}
-.verification-result {
-  grid-column: 1 / -1;
-  border-top: 1px solid var(--border);
-  padding-top: 0.6rem;
-  font-size: 0.75rem;
-}
-.verification-result.success { color: var(--green); }
-.verification-result.warning { color: var(--yellow); }
-.verification-result.error { color: var(--red); }
-.scope-caveat {
-  color: var(--text-dim);
-  font-size: 0.69rem !important;
-  margin-top: 0.55rem;
-}
-.source-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  color: var(--text-dim);
-  font-size: 0.67rem;
-}
-.source-links { display: flex; flex-wrap: wrap; gap: 0.65rem; }
-.advanced-reference {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-top: 0.8rem;
-}
-.advanced-reference > summary,
-.ai-prompt > summary {
-  cursor: pointer;
-  list-style-position: inside;
-  padding: 0.75rem 0.85rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-.advanced-reference-body {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
-  padding: 0 0.85rem 0.85rem;
-}
-.advanced-reference-body h3 { font-size: 0.76rem; margin: 0 0 0.35rem; }
-.advanced-reference-body p { color: var(--text-dim); font-size: 0.7rem; line-height: 1.5; margin: 0; }
-.advanced-reference-body a { color: var(--cyan); }
-
-/* Copy-paste AI prompt */
-.ai-prompt {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0;
-  margin-top: 0.9rem;
-}
-.ai-prompt-content { padding: 0 0.85rem 0.85rem; }
-.ai-prompt-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-.ai-prompt-title { font-size: 0.85rem; font-weight: 600; }
-.ai-copy-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--cyan);
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 3px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.ai-copy-btn:hover { border-color: var(--cyan); }
-.ai-copy-btn.copied { color: var(--green); border-color: var(--green); }
-.ai-prompt-box {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.6rem 0.7rem;
-  font-size: 0.73rem;
-  line-height: 1.55;
-  color: var(--text-dim);
-  max-height: 16rem;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
+  border-color: var(--yellow);
+  animation: benchmarkPhaseLock 420ms var(--motion-out) both;
+  animation-delay: calc(var(--phase-order, 0) * 34ms);
 }
 
-/* Footer */
-.footer {
-  margin-top: 2rem;
-  padding: 1.75rem 0 0.75rem;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
-.footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.85rem;
-}
-.footer-link {
-  display: inline-block;
-  padding: 0.25rem 0.8rem;
-  background: rgba(88,166,255,0.06);
-  border: 1px solid rgba(88,166,255,0.2);
-  border-radius: 20px;
-  color: var(--cyan);
-  font-size: 0.78rem;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s;
-  font-family: var(--mono);
-}
-.footer-link:hover {
-  background: rgba(88,166,255,0.14);
-  border-color: rgba(88,166,255,0.5);
-}
-.footer-note {
-  color: var(--text-dim);
-  font-size: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-.footer-credit {
-  color: var(--text-dim);
-  font-size: 0.7rem;
-}
-
-.results-table-wrap:focus-visible,
-.ai-prompt-box:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
-}
-
-/* Focus states (keyboard a11y) */
-:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
-}
-.form-group input:focus-visible,
-.form-group select:focus-visible {
-  border-color: var(--cyan);
-  outline: 2px solid var(--cyan);
-  outline-offset: -1px;
-}
-.btn:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
-}
-.copy-btn:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 1px;
-  border-color: var(--cyan);
-  color: var(--cyan);
-}
-.footer-link:focus-visible {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
+@keyframes benchmarkPhaseEngage {
+  from {
+    clip-path: inset(46% 0 46% 0);
+    filter: brightness(0.58);
+  }
+  to {
+    clip-path: inset(0);
+    filter: brightness(1);
   }
 }
 
-/* Responsive */
-@media (max-width: 960px) {
-  /* Prevent fit-content container from overflowing viewport */
-  .container { max-width: 100%; }
-  .choice-grid--scope { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .advanced-reference-body { grid-template-columns: 1fr; }
+@keyframes benchmarkPhaseLock {
+  from {
+    clip-path: inset(48% 0 48% 0);
+    filter: brightness(1.75);
+  }
+  to {
+    clip-path: inset(0);
+    filter: brightness(1);
+  }
 }
 
-@media (max-width: 600px) {
-  body { padding: 1rem 0.5rem; font-size: 13px; }
-  .form-row { flex-direction: column; }
-  .form-group { width: 100%; }
-  /* Prevent iOS Safari auto-zoom on focus (triggers at <16px) */
-  .form-group input, .form-group select { font-size: 16px; }
-  .btn { width: 100%; }
-  .setup-heading { display: block; }
-  .setup-kicker { display: inline-block; margin-top: 0.3rem; }
-  .setup-state-banner { grid-template-columns: auto 1fr; }
-  .setup-state-banner .text-action { grid-column: 2; justify-self: start; padding-left: 0; }
-  .setup-chooser { padding: 0.75rem; }
-  .choice-grid,
-  .choice-grid--scope { grid-template-columns: 1fr; }
-  .setup-choice { min-height: 0; }
-  .asus-effective,
-  .history-row { grid-template-columns: 1fr; }
-  .setup-actions { align-items: stretch; flex-direction: column; }
-  .setup-show-btn { width: 100%; }
-  .runbook-title-row { display: block; }
-  .share-guide-btn { margin-top: 0.7rem; }
-  .value-list { grid-template-columns: 1fr; }
-  .verification-panel { grid-template-columns: 1fr; }
-  .verification-btn { justify-self: start; }
-  table { font-size: 0.75rem; }
-  td, th { padding: 0.3rem 0.4rem; }
-  /* Hide Hostname (col 5) and Jitter (col 9) — table scrolls horizontally */
-  table th:nth-child(5), table td:nth-child(5) { display: none; }
-  table th:nth-child(9), table td:nth-child(9) { display: none; }
-  /* Config entries stack label above value on mobile */
-  .config-entry { flex-wrap: wrap; }
-  .config-entry-label { width: 100%; }
-  /* Config grid collapses to single column */
-  .config-grid { grid-template-columns: 1fr; }
-  .config-ipv4, .config-ipv4.solo, .config-ipv6,
-  .config-encrypted, .config-fallback { grid-column: span 1; }
-  /* Banner scales down */
-  .banner { padding: 1.25rem 1rem; }
-  .banner h1 { font-size: 1.1rem; }
-  .banner p { font-size: 0.78rem; }
-  /* Insight box */
-  .insight-main { font-size: 0.82rem; }
-  .insight-routing { font-size: 0.75rem; }
-  /* Type legend stacks */
-  .type-legend { flex-direction: column; gap: 0.4rem; align-items: flex-start; }
-  /* Footer pills wrap tighter */
-  .footer-links { gap: 0.35rem; }
-  .footer-link { font-size: 0.72rem; padding: 0.2rem 0.6rem; }
+.route-test-sheet .progress-bar-track {
+  position: relative;
+  height: 24px;
+  padding: 3px;
+  overflow: hidden;
+  background: #070708;
+  border: 1px solid var(--border);
 }
 
-@media (max-width: 400px) {
-  /* Smaller banner for very narrow screens */
-  .banner h1 { font-size: 1rem; letter-spacing: 0; }
-  /* Form section tighter padding */
-  .form-section { padding: 1rem; }
+.route-test-sheet .progress-bar-fill {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: var(--yellow);
+  transform: scaleX(var(--progress-scale, 0));
+  transform-origin: left center;
+  transition: transform var(--motion-state) var(--motion-out);
+}
+
+.route-test-sheet .progress-bar-label {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  z-index: 1;
+  min-width: 42px;
+  padding: 2px 5px;
+  color: var(--text);
+  background: #070708;
+  border: 1px solid var(--border-dark);
+  font: 700 0.62rem/1 var(--mono);
+  text-align: center;
+  transform: translateY(-50%);
+}
+
+.route-test-sheet .progress-section {
+  animation: progressBoardOpen var(--motion-state) var(--motion-out) both;
+}
+
+@keyframes progressBoardOpen {
+  from {
+    clip-path: inset(0 48% 0 48%);
+    filter: brightness(0.72);
+  }
+  to {
+    clip-path: inset(0);
+    filter: brightness(1);
+  }
+}
+
+.route-test-sheet .exchange-workbench {
+  display: flex;
+  flex-direction: column;
+  gap: 54px;
+  padding: 0 12px 48px;
+}
+
+.route-test-sheet .results-section {
+  display: none;
+  padding-top: 12px;
+}
+
+.route-test-sheet .results-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(190px, 250px) 250px;
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px;
+  background: var(--steel-dark);
+  border: 1px solid var(--steel);
+  animation: dispatchStripDock 340ms var(--motion-out) both;
+}
+
+@keyframes dispatchStripDock {
+  from {
+    clip-path: inset(0 0 58% 0);
+    filter: brightness(0.68);
+    transform: translateY(-6px);
+  }
+  to {
+    clip-path: inset(0);
+    filter: brightness(1);
+    transform: translateY(0);
+  }
+}
+
+.route-test-sheet .results-toolbar-status {
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--surface-recess);
+  border: 1px solid var(--border);
+}
+
+.route-test-sheet .results-toolbar-status span,
+.route-test-sheet .results-toolbar-status strong { display: block; }
+.route-test-sheet .results-toolbar-label {
+  color: var(--text-dim);
+  font: 600 0.65rem/1.2 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.route-test-sheet .results-toolbar.is-locking .results-toolbar-label {
+  color: var(--yellow);
+  animation: measurementLock 420ms var(--motion-out) both;
+}
+@keyframes measurementLock {
+  from {
+    clip-path: inset(48% 0 48% 0);
+    filter: brightness(1.8);
+  }
+  to {
+    clip-path: inset(0);
+    filter: brightness(1);
+  }
+}
+.route-test-sheet .results-toolbar-status strong {
+  margin-top: 3px;
+  color: var(--yellow);
+  font: 650 1rem/1.25 var(--display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.route-test-sheet .results-toolbar-status span:not(.results-toolbar-label) {
+  margin-top: 3px;
+  color: var(--text-dim);
+  font-size: 0.74rem;
+}
+.route-test-sheet .results-toolbar-status .results-toolbar-evidence { color: var(--text); }
+.route-test-sheet .results-profile-field input { min-height: 44px; }
+.route-test-sheet .results-rerun-btn {
+  min-height: 44px;
+  font-size: 0.88rem;
+  box-shadow: 0 3px 0 #865f00;
+}
+
+.route-test-sheet .section-header {
+  margin: 32px 0 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  background: var(--surface-recess);
+  border: 1px solid var(--border);
+  font: 650 1.4rem/1.1 var(--display);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.route-test-sheet .sub-header {
+  margin: 30px 0 8px;
+  padding: 8px 10px;
+  color: var(--yellow);
+  background: #111214;
+  border: 1px solid var(--border-dark);
+  font: 650 0.88rem/1.2 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.route-test-sheet .results-table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.route-test-sheet table {
+  width: 100%;
+  min-width: 940px;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+}
+
+.route-test-sheet th,
+.route-test-sheet td {
+  position: relative;
+  height: 40px;
+  padding: 7px 9px;
+  overflow: hidden;
+  border-right: 1px solid #25282b;
+  border-bottom: 1px solid #09090a;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-test-sheet th {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  height: 34px;
+  color: var(--text-dim);
+  background: #111214;
+  border-bottom-color: var(--steel);
+  font: 600 0.68rem/1 var(--display);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.route-test-sheet tbody tr { background: var(--surface-recess); }
+.route-test-sheet tbody tr:nth-child(even) { background: #111214; }
+.route-test-sheet tbody tr:hover { background: #202124; }
+.route-test-sheet tbody tr.best-row td { color: var(--text); }
+.route-test-sheet tbody tr.current-pop-row td { color: #ffd36a; }
+.route-test-sheet tbody tr.detected-server-row td:first-child { box-shadow: inset 3px 0 var(--yellow); }
+.route-test-sheet tbody tr.fallback-metric-row { opacity: 0.72; }
+
+.route-test-sheet tbody tr {
+  animation: flapResolve var(--motion-board) var(--motion-out) backwards;
+  animation-delay: calc(var(--resolve-order, 0) * 32ms);
+}
+
+@keyframes flapResolve {
+  from {
+    clip-path: inset(48% 0 48% 0);
+    filter: brightness(0.46);
+    opacity: 0.35;
+    transform: translateY(-3px);
+  }
+  to {
+    clip-path: inset(0);
+    filter: brightness(1);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.route-test-sheet .rank-star { color: var(--yellow); }
+.route-test-sheet .current-marker {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: 5px;
+  background: var(--yellow);
+  border-radius: 50%;
+}
+.route-test-sheet .spark-bar { display: none; }
+.route-test-sheet .cc-badge { color: var(--text-dim); font-family: var(--body); }
+.route-test-sheet .copyable,
+.route-test-sheet .config-value {
+  max-width: 100%;
+  padding: 2px 0;
+  overflow: hidden;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font-family: var(--mono);
+  font-size: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: copy;
+}
+.route-test-sheet .copyable:hover,
+.route-test-sheet .config-value:hover { color: var(--yellow); }
+.route-test-sheet .copyable.copied,
+.route-test-sheet .config-value.copied {
+  color: var(--green);
+  animation: copyConfirm var(--motion-state) var(--motion-out);
+}
+
+@keyframes copyConfirm {
+  from {
+    filter: brightness(1.75);
+    transform: translateY(-2px);
+  }
+  to {
+    filter: brightness(1);
+    transform: translateY(0);
+  }
+}
+
+.route-test-sheet .via-badge,
+.route-test-sheet .metric-badge,
+.route-test-sheet .delta-badge,
+.route-test-sheet .server-badge,
+.route-test-sheet .tier-badge {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 2px 5px;
+  color: var(--surface);
+  background: var(--text-dim);
+  border-radius: 2px;
+  font: 650 0.58rem/1.2 var(--body);
+  vertical-align: middle;
+}
+.route-test-sheet .via-badge--anycast { background: var(--yellow); }
+.route-test-sheet .via-badge--ultralow { color: var(--surface); background: #d5d8da; }
+.route-test-sheet .delta-badge.slower { color: #1b1203; background: var(--yellow); }
+.route-test-sheet .delta-badge.optimal { color: #081005; background: var(--green); }
+
+.route-test-sheet .type-edge { color: var(--text); }
+.route-test-sheet .type-anycast { color: var(--yellow); }
+.route-test-sheet .type-ultralow { color: #d5d8da; }
+.route-test-sheet .lat-green { color: #8bd96c; }
+.route-test-sheet .lat-yellow { color: #ffd36a; }
+.route-test-sheet .lat-red,
+.route-test-sheet .err { color: #ff7b75; }
+.route-test-sheet .text-dim { color: var(--text-dim); }
+
+.route-test-sheet .type-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 8px;
+  padding: 9px 10px;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border-dark);
+  font-size: 0.7rem;
+}
+.route-test-sheet .type-legend-item { display: inline-flex; align-items: center; gap: 7px; }
+.route-test-sheet .type-legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+.route-test-sheet .summary-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: start;
+  margin-top: 34px;
+}
+
+.route-test-sheet .insight-box,
+.route-test-sheet .config-inline,
+.route-test-sheet .pin-box,
+.route-test-sheet .setup-chooser,
+.route-test-sheet .setup-state-banner,
+.route-test-sheet .run-history,
+.route-test-sheet .advanced-reference,
+.route-test-sheet .ai-prompt,
+.route-test-sheet .setup-runbook {
+  color: var(--text);
+  background: var(--surface-recess);
+  border: 1px solid var(--border);
+  border-radius: 0;
+}
+
+.route-test-sheet .insight-box,
+.route-test-sheet .config-inline,
+.route-test-sheet .pin-box { padding: 14px; }
+
+.route-test-sheet .config-inline-header,
+.route-test-sheet .config-section-label,
+.route-test-sheet .pin-format-label {
+  margin-bottom: 9px;
+  color: var(--text-dim);
+  font: 600 0.68rem/1.2 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.route-test-sheet .insight-routing,
+.route-test-sheet .routing-verdict,
+.route-test-sheet .optimization-insight,
+.route-test-sheet .plain-dns-warning,
+.route-test-sheet .profile-template-note,
+.route-test-sheet .cfg-note,
+.route-test-sheet .pin-disclaimer {
+  margin-top: 10px;
+  padding: 11px 12px;
+  color: var(--text-dim);
+  background: #111214;
+  border: 1px solid var(--border-dark);
+  font-size: 0.8rem;
+}
+
+.route-test-sheet .insight-routing:first-child,
+.route-test-sheet .routing-verdict:first-child { margin-top: 0; }
+.route-test-sheet .verdict-tier,
+.route-test-sheet .pin-headline,
+.route-test-sheet .pin-ok {
+  color: var(--text);
+  font: 650 1rem/1.3 var(--display);
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+.route-test-sheet .verdict-reason,
+.route-test-sheet .pin-sub,
+.route-test-sheet .insight-note {
+  margin-top: 6px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.route-test-sheet .insight-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+.route-test-sheet .insight-pill {
+  padding: 5px 7px;
+  color: var(--text);
+  background: #111214;
+  border: 1px solid var(--border-dark);
+  font: 600 0.68rem/1 var(--mono);
+}
+
+.route-test-sheet .routing-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+}
+.route-test-sheet .tier-card {
+  position: relative;
+  min-width: 0;
+  padding: 11px;
+  overflow: hidden;
+  background: #111214;
+  border: 1px solid var(--border-dark);
+}
+.route-test-sheet .tier-card.recommended { border-color: var(--yellow); }
+.route-test-sheet .tier-card.unavailable { opacity: 0.56; }
+.route-test-sheet .tier-card-head,
+.route-test-sheet .tier-address-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.route-test-sheet .tier-name {
+  font: 650 0.82rem/1.2 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.route-test-sheet .tier-metrics {
+  display: flex;
+  gap: 9px;
+  margin: 8px 0;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+.route-test-sheet .tier-variation { color: var(--text-dim); font-size: 0.62rem; }
+.route-test-sheet .tier-tradeoff {
+  min-height: 3.2em;
+  margin-bottom: 8px;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+}
+.route-test-sheet .tier-addresses { margin-top: 8px; }
+.route-test-sheet .tier-address-row {
+  padding-top: 5px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border-dark);
+  font-size: 0.66rem;
+}
+
+.route-test-sheet .config-table { display: grid; gap: 10px; }
+.route-test-sheet .bootstrap-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.route-test-sheet .config-cell,
+.route-test-sheet .config-entry {
+  min-width: 0;
+  padding: 8px 9px;
+  background: #111214;
+  border: 1px solid var(--border-dark);
+}
+.route-test-sheet .config-entry-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-dim);
+  font-size: 0.66rem;
+}
+.route-test-sheet .config-value { width: 100%; color: var(--text); }
+
+.route-test-sheet .pin-details {
+  margin-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.route-test-sheet .pin-details > summary,
+.route-test-sheet .run-history > summary,
+.route-test-sheet .advanced-reference > summary,
+.route-test-sheet .ai-prompt > summary,
+.route-test-sheet .more-devices > summary {
+  padding: 12px;
+  color: var(--yellow);
+  font: 650 0.8rem/1.2 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.route-test-sheet .pin-formats {
+  display: grid;
+  gap: 8px;
+  padding-top: 4px;
+}
+.route-test-sheet .pin-formats > div {
+  padding: 10px;
+  background: #111214;
+  border: 1px solid var(--border-dark);
+}
+.route-test-sheet .pin-format-note {
+  margin-top: 6px;
+  color: var(--text-dim);
+  font-size: 0.74rem;
+}
+.route-test-sheet .pin-monitor-btn,
+.route-test-sheet .history-clear-btn,
+.route-test-sheet .text-action,
+.route-test-sheet .verification-btn,
+.route-test-sheet .share-guide-btn,
+.route-test-sheet .ai-copy-btn {
+  min-height: 38px;
+  padding: 8px 11px;
+  color: var(--yellow);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font: 650 0.72rem/1 var(--display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.route-test-sheet .pin-monitor-btn:hover,
+.route-test-sheet .history-clear-btn:hover,
+.route-test-sheet .text-action:hover,
+.route-test-sheet .verification-btn:hover,
+.route-test-sheet .share-guide-btn:hover,
+.route-test-sheet .ai-copy-btn:hover { border-color: var(--yellow); }
+
+.route-test-sheet .server-badge {
+  margin: 0 5px 5px 0;
+  color: #ffd3d0;
+  background: #4a1715;
+}
+
+.route-test-sheet .setup-guide {
+  padding-top: 14px;
+  border-top: 5px solid var(--steel-dark);
+}
+.route-test-sheet .setup-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 10px;
+}
+.route-test-sheet .setup-heading .section-header {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+.route-test-sheet .guide-intro,
+.route-test-sheet .guide-note {
+  max-width: 72ch;
+  color: var(--text-dim);
+  font-size: 0.84rem;
+}
+.route-test-sheet .setup-kicker,
+.route-test-sheet .runbook-eyebrow {
+  padding: 7px 9px;
+  color: #17120a;
+  background: var(--yellow);
+  font: 700 0.64rem/1 var(--display);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.route-test-sheet .setup-state-banner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+.route-test-sheet .setup-state-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: #17120a;
+  background: var(--yellow);
+  font-weight: 750;
+}
+.route-test-sheet .setup-state-banner strong { color: var(--text); }
+
+.route-test-sheet .pin-health-panel {
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--surface-recess);
+  border: 1px solid var(--border);
+}
+.route-test-sheet .pin-health-head,
+.route-test-sheet .pin-health-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.route-test-sheet .setup-chooser {
+  margin-top: 10px;
+  padding: 14px;
+}
+.route-test-sheet .setup-stage {
+  margin: 0;
+  padding: 14px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-dark);
+}
+.route-test-sheet .setup-stage:last-of-type { border-bottom: 0; }
+.route-test-sheet .setup-stage:disabled { opacity: 0.48; }
+.route-test-sheet .setup-stage legend {
+  padding: 0;
+  color: var(--text);
+  font: 650 0.82rem/1.2 var(--display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.route-test-sheet .setup-stage legend span {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  margin-right: 7px;
+  place-items: center;
+  color: #17120a;
+  background: var(--yellow);
+}
+.route-test-sheet .stage-hint {
+  margin: 7px 0 10px;
+  color: var(--text-dim);
+  font-size: 0.76rem;
+}
+.route-test-sheet .choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.route-test-sheet .choice-grid--scope { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.route-test-sheet .setup-choice {
+  position: relative;
+  min-height: 72px;
+  padding: 11px;
+  overflow: hidden;
+  color: var(--text);
+  background: #111214;
+  border: 1px solid var(--border-dark);
+  border-radius: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.route-test-sheet .setup-choice:hover { border-color: var(--steel); }
+.route-test-sheet .setup-choice[aria-pressed="true"] {
+  color: #ffd36a;
+  border-color: var(--yellow);
+}
+.route-test-sheet .setup-choice:disabled { opacity: 0.45; cursor: not-allowed; }
+.route-test-sheet .setup-choice strong,
+.route-test-sheet .setup-choice small,
+.route-test-sheet .mode-estimate { display: block; position: relative; z-index: 1; }
+.route-test-sheet .setup-choice strong {
+  font: 650 0.82rem/1.2 var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.route-test-sheet .setup-choice small,
+.route-test-sheet .mode-estimate {
+  margin-top: 4px;
+  color: var(--text-dim);
+  font-size: 0.7rem;
+}
+.route-test-sheet .more-devices {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border-dark);
+}
+.route-test-sheet .more-devices .choice-grid { margin: 0 10px 10px; }
+.route-test-sheet .setup-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+.route-test-sheet .setup-show-btn {
+  width: auto;
+  min-height: 44px;
+  padding: 10px 22px;
+  font-size: 0.82rem;
+  box-shadow: 0 3px 0 #865f00;
+}
+.route-test-sheet .setup-actions p { color: var(--text-dim); font-size: 0.76rem; }
+
+.route-test-sheet .setup-runbook { margin-top: 14px; overflow: hidden; }
+.route-test-sheet .runbook-hero {
+  padding: 18px;
+  background: #111214;
+  border-bottom: 5px solid var(--steel-dark);
+}
+.route-test-sheet .runbook-title-row {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.route-test-sheet .runbook-title-row h2 {
+  margin: 8px 0 4px;
+  font: 650 1.5rem/1.1 var(--display);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.route-test-sheet .runbook-title-row p { color: var(--text-dim); font-size: 0.8rem; }
+.route-test-sheet .badge-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+.route-test-sheet .badge-row span {
+  padding: 3px 6px;
+  color: var(--surface);
+  background: var(--text-dim);
+  font-size: 0.62rem;
+}
+.route-test-sheet .runbook-body { padding: 0 18px 18px; }
+.route-test-sheet .runbook-section {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-dark);
+}
+.route-test-sheet .runbook-section:last-child { border-bottom: 0; }
+.route-test-sheet .runbook-section h3 {
+  margin-bottom: 10px;
+  font: 650 0.9rem/1.2 var(--display);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.route-test-sheet .setup-recommendation,
+.route-test-sheet .setup-caution,
+.route-test-sheet .asus-effective,
+.route-test-sheet .verification-panel {
+  padding: 12px;
+  background: #111214;
+  border: 1px solid var(--border-dark);
+}
+.route-test-sheet .setup-recommendation {
+  display: flex;
+  gap: 10px;
+}
+.route-test-sheet .route-mark { color: var(--yellow); }
+.route-test-sheet .setup-recommendation p,
+.route-test-sheet .setup-caution,
+.route-test-sheet .scope-caveat,
+.route-test-sheet .endpoint-pair-note {
+  margin-top: 5px;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+.route-test-sheet .prereq-list,
+.route-test-sheet .recovery-list,
+.route-test-sheet .runbook-steps {
+  padding-left: 1.3rem;
+  color: var(--text-dim);
+  font-size: 0.84rem;
+}
+.route-test-sheet .prereq-list li,
+.route-test-sheet .recovery-list li,
+.route-test-sheet .runbook-steps li { margin: 7px 0; }
+.route-test-sheet .value-list { display: grid; gap: 7px; }
+.route-test-sheet .setup-value {
+  padding: 9px 10px;
+  background: #111214;
+  border: 1px solid var(--border-dark);
+}
+.route-test-sheet .setup-value-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text-dim);
+  font-size: 0.68rem;
+}
+.route-test-sheet .inline-command { font-family: var(--mono); }
+.route-test-sheet .verification-panel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+.route-test-sheet .verification-copy p { color: var(--text-dim); font-size: 0.76rem; }
+.route-test-sheet .verification-result { grid-column: 1 / -1; }
+.route-test-sheet .source-row,
+.route-test-sheet .source-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  color: var(--text-dim);
+  font-size: 0.74rem;
+}
+
+.route-test-sheet .run-history,
+.route-test-sheet .advanced-reference,
+.route-test-sheet .ai-prompt { margin-top: 10px; }
+.route-test-sheet .run-history-body,
+.route-test-sheet .advanced-reference-body,
+.route-test-sheet .ai-prompt-content { padding: 0 12px 12px; }
+.route-test-sheet .history-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  padding: 8px 0;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border-dark);
+  font-size: 0.72rem;
+}
+.route-test-sheet .history-row strong { color: var(--yellow); }
+.route-test-sheet .advanced-reference-body {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.route-test-sheet .advanced-reference-body > div {
+  padding: 10px;
+  background: #111214;
+  border: 1px solid var(--border-dark);
+}
+.route-test-sheet .advanced-reference-body h3 {
+  margin-bottom: 6px;
+  font: 650 0.82rem/1.2 var(--display);
+  text-transform: uppercase;
+}
+.route-test-sheet .advanced-reference-body p { color: var(--text-dim); font-size: 0.76rem; }
+.route-test-sheet .ai-prompt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.route-test-sheet .ai-prompt-box {
+  max-height: 420px;
+  padding: 12px;
+  overflow: auto;
+  color: var(--text);
+  background: #080809;
+  border: 1px solid var(--border-dark);
+  font: 0.72rem/1.55 var(--mono);
+  white-space: pre-wrap;
+}
+
+.route-test-sheet .footer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 22px;
+  margin-top: 0;
+  padding: 14px 18px;
+  color: var(--text-dim);
+  background: var(--surface-recess);
+  border-top: 5px solid var(--steel-dark);
+  font-size: 0.72rem;
+}
+.route-test-sheet .footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
+.route-test-sheet .footer-credit { grid-column: 1 / -1; }
+.route-test-sheet .copy-toast {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 100;
+  display: none;
+  padding: 10px 12px;
+  color: #17120a;
+  background: var(--yellow);
+  border: 1px solid #ffc94b;
+  font-weight: 700;
+}
+.route-test-sheet .copy-toast.visible { display: block; }
+.route-test-sheet .copy-toast.error {
+  color: var(--text);
+  background: var(--red);
+  border-color: #f06b66;
+}
+
+.route-test-sheet button:focus-visible,
+.route-test-sheet a:focus-visible,
+.route-test-sheet summary:focus-visible,
+.route-test-sheet input:focus-visible,
+.route-test-sheet select:focus-visible,
+.route-test-sheet .results-table-wrap:focus-visible,
+.route-test-sheet .ai-prompt-box:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 3px;
+}
+
+@media (max-width: 980px) {
+  .route-test-sheet .banner h1 {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    min-height: 220px;
+    font-size: clamp(2.65rem, 5.2vw, 3.55rem);
+  }
+  .route-test-sheet .results-toolbar {
+    grid-template-columns: minmax(0, 1fr) minmax(170px, 220px) 210px;
+  }
+  .route-test-sheet .summary-row { grid-template-columns: 1fr; }
+  .route-test-sheet .routing-tier-grid { grid-template-columns: 1fr; }
+  .route-test-sheet .tier-tradeoff { min-height: 0; }
+  .route-test-sheet .choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  .route-test-sheet .container {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    border-width: 0;
+    outline: 0;
+    box-shadow: none;
+  }
+  .route-test-sheet .banner {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "product"
+      "headline"
+      "dek";
+    padding: 8px;
+  }
+  .route-test-sheet .product-line {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+    min-height: 0;
+  }
+  .route-test-sheet .product-line strong { font-size: 0.96rem; }
+  .route-test-sheet .banner h1 {
+    min-height: 184px;
+    padding: 22px 18px;
+    font-size: clamp(1.95rem, 10vw, 2.35rem);
+  }
+  .route-test-sheet .banner h1 span { white-space: normal; }
+  .route-test-sheet .benchmark-phase {
+    justify-content: center;
+    min-width: 0;
+    padding-inline: 4px;
+    font-size: 0.5rem;
+    letter-spacing: 0.06em;
+  }
+  .route-test-sheet .benchmark-phase-index { display: none; }
+  .route-test-sheet .connection-status {
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    font-size: 0.62rem;
+    text-align: left;
+  }
+  .route-test-sheet .connection-status .status-location {
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
+  }
+  .route-test-sheet .form-section { padding: 8px; }
+  .route-test-sheet .form-row { grid-template-columns: 1fr; padding: 10px; }
+  .route-test-sheet .btn { min-height: 58px; }
+  .route-test-sheet .test-settings > summary span { display: none; }
+  .route-test-sheet .test-settings-grid { grid-template-columns: 1fr; }
+  .route-test-sheet .probe-fanout { flex-wrap: wrap; padding-inline: 18px; }
+  .route-test-sheet .probe-fanout span + span::before { margin-inline: 7px; }
+  .route-test-sheet .exchange-workbench { gap: 42px; padding-inline: 8px; }
+  .route-test-sheet .results-toolbar {
+    top: 0;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-inline: -8px;
+    padding: 8px;
+  }
+  .route-test-sheet .results-toolbar-status { grid-column: 1 / -1; }
+  .route-test-sheet .results-profile-field input,
+  .route-test-sheet .results-rerun-btn { min-height: 46px; }
+  .route-test-sheet .results-rerun-btn { width: auto; padding-inline: 14px; }
+  .route-test-sheet .section-header { margin-top: 24px; font-size: 1.15rem; }
+  .route-test-sheet .results-table-wrap { margin-inline: -8px; }
+  .route-test-sheet table { min-width: 820px; font-size: 0.73rem; }
+  .route-test-sheet th:nth-child(1),
+  .route-test-sheet td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    z-index: 6;
+    width: 44px;
+    min-width: 44px;
+    max-width: 44px;
+    background: inherit;
+  }
+  .route-test-sheet th:nth-child(2),
+  .route-test-sheet td:nth-child(2) {
+    position: sticky;
+    left: 44px;
+    z-index: 5;
+    width: 132px;
+    min-width: 132px;
+    max-width: 132px;
+    background: inherit;
+    border-right: 1px solid var(--steel);
+  }
+  .route-test-sheet th:nth-child(-n+2) { z-index: 8; background: #111214; }
+  .route-test-sheet tbody tr:nth-child(odd) td:nth-child(-n+2) { background: var(--surface-recess); }
+  .route-test-sheet tbody tr:nth-child(even) td:nth-child(-n+2) { background: #111214; }
+  .route-test-sheet .summary-row,
+  .route-test-sheet .bootstrap-grid,
+  .route-test-sheet .choice-grid,
+  .route-test-sheet .choice-grid--scope,
+  .route-test-sheet .advanced-reference-body { grid-template-columns: 1fr; }
+  .route-test-sheet .setup-heading,
+  .route-test-sheet .setup-state-banner,
+  .route-test-sheet .setup-actions,
+  .route-test-sheet .runbook-title-row,
+  .route-test-sheet .verification-panel,
+  .route-test-sheet .ai-prompt-head {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+  .route-test-sheet .setup-state-icon { display: none; }
+  .route-test-sheet .setup-kicker { align-self: flex-start; }
+  .route-test-sheet .setup-show-btn { width: 100%; }
+  .route-test-sheet .verification-result { grid-column: auto; }
+  .route-test-sheet .history-row { grid-template-columns: 1fr; gap: 2px; }
+  .route-test-sheet .footer { grid-template-columns: 1fr; }
+  .route-test-sheet .footer-note,
+  .route-test-sheet .footer-credit { grid-column: 1; }
+}
+
+@media (pointer: coarse) {
+  .route-test-sheet .copyable,
+  .route-test-sheet .config-value,
+  .route-test-sheet .text-action,
+  .route-test-sheet .pin-monitor-btn,
+  .route-test-sheet .history-clear-btn,
+  .route-test-sheet .setup-choice { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .route-test-sheet tbody tr,
+  .route-test-sheet .progress-section,
+  .route-test-sheet .benchmark-phase,
+  .route-test-sheet .results-toolbar,
+  .route-test-sheet .results-toolbar.is-locking .results-toolbar-label,
+  .route-test-sheet .copyable.copied,
+  .route-test-sheet .config-value.copied { animation: none; }
+  .route-test-sheet .progress-bar-fill,
+  .route-test-sheet .benchmark-phase,
+  .route-test-sheet .benchmark-phase::before { transition: none; }
+  .route-test-sheet .btn,
+  .route-test-sheet .results-rerun-btn { transition: none; }
+  .route-test-sheet .btn:active,
+  .route-test-sheet .results-rerun-btn:active { transform: none; }
 }
 </style>
 </head>
-<body>
+<body class="route-test-sheet">
 
 <main class="container" id="mainContent">
   <header class="banner">
-    <canvas id="matrixRain" aria-hidden="true" style="position:absolute;inset:0;z-index:0;opacity:0.2;pointer-events:none;"></canvas>
-    <div class="banner-sweep"></div>
-    <h1><span class="pulse-dot"></span><span id="bannerTitle" data-text="NextDNS DNS Matrix"></span><span class="title-cursor"></span></h1>
-    <p>Benchmark NextDNS servers and find the lowest-latency DNS server for your network</p>
+    <div class="product-line">
+      <strong>NextDNS DNS Matrix</strong>
+      <div class="connection-status" id="connectionStatus" role="status" aria-live="polite"></div>
+    </div>
+    <h1><span>Find your lowest&#8209;latency</span><span>NextDNS route.</span></h1>
+    <p>Benchmark every reachable Anycast, Ultralow, and Edge path from this network.</p>
   </header>
 
   <div class="form-section">
     <div class="form-row">
-      <div class="form-group" style="flex:1;min-width:140px">
-        <label for="configId">NextDNS Config ID &mdash; <a href="https://my.nextdns.io" target="_blank" rel="noopener" style="color:var(--text-dim);font-size:0.75rem">my.nextdns.io</a></label>
-        <input type="text" id="configId" placeholder="e.g. abc123" spellcheck="false" autocomplete="off"
+      <div class="form-group config-id-group">
+        <label for="configId">Configuration ID <span>(optional)</span> &mdash; <a href="https://my.nextdns.io" target="_blank" rel="noopener">find yours</a></label>
+        <input type="text" id="configId" placeholder="e.g. abc123 (optional)" spellcheck="false" autocomplete="off"
           autocapitalize="none" maxlength="64" aria-describedby="configIdHelp">
-        <span class="sr-only" id="configIdHelp">Use the profile identifier shown on the NextDNS Setup page.</span>
+        <span class="sr-only" id="configIdHelp">Optional. Used only to generate profile-specific setup values after the benchmark.</span>
       </div>
-      <div class="form-group">
-        <label for="rounds">Rounds</label>
-        <select id="rounds">
-          <option value="1">1</option>
-          <option value="3" selected>3</option>
-          <option value="5">5</option>
-          <option value="10">10</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="dohResolver">DNS Resolver</label>
-        <select id="dohResolver">
-          <option value="google">Google</option>
-          <option value="cloudflare">Cloudflare</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="preference">Preference</label>
-        <select id="preference">
-          <option value="auto">auto (lowest latency)</option>
-          <option value="ultralow">ultralow</option>
-          <option value="anycast">anycast</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>&nbsp;</label>
+      <div class="form-group run-group">
         <button class="btn" id="runBtn" onclick="runBenchmark()">Run Benchmark</button>
       </div>
+      <details class="test-settings">
+        <summary>Test settings <span>Rounds, resolver, and route preference</span></summary>
+        <div class="test-settings-grid">
+          <div class="form-group">
+            <label for="rounds">Rounds</label>
+            <select id="rounds">
+              <option value="1">1</option>
+              <option value="3" selected>3</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dohResolver">DNS Resolver</label>
+            <select id="dohResolver">
+              <option value="google">Google</option>
+              <option value="cloudflare">Cloudflare</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="preference">Preference</label>
+            <select id="preference">
+              <option value="auto">auto (lowest latency)</option>
+              <option value="ultralow">ultralow</option>
+              <option value="anycast">anycast</option>
+            </select>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 
-  <div class="connection-status" id="connectionStatus" role="status" aria-live="polite"></div>
+  <div class="probe-fanout" aria-label="The benchmark measures three NextDNS route families">
+    <span class="scope-label">Benchmark scope</span>
+    <span>Anycast<small>stable global routes</small></span>
+    <span>Ultralow<small>DNS-steered routes</small></span>
+    <span>Edge<small>direct PoP routes</small></span>
+  </div>
 
   <div class="error-box" id="errorBox" role="alert"></div>
 
   <div class="progress-section" id="progressSection">
-    <div class="progress-status" id="progressStatus" role="status" aria-live="polite">Discovering servers...</div>
+    <div class="progress-heading">
+      <div class="progress-status" id="progressStatus" role="status" aria-live="polite">Discovering servers...</div>
+      <button type="button" class="cancel-benchmark" id="cancelBenchmarkBtn" onclick="cancelBenchmark()">Cancel benchmark</button>
+    </div>
+    <div class="benchmark-phases" id="benchmarkPhases" aria-hidden="true">
+      <span class="benchmark-phase" data-benchmark-phase="discover" style="--phase-order:0">
+        <span class="benchmark-phase-index">01</span><span>Discover</span>
+      </span>
+      <span class="benchmark-phase" data-benchmark-phase="probe" style="--phase-order:1">
+        <span class="benchmark-phase-index">02</span><span>Probe</span>
+      </span>
+      <span class="benchmark-phase" data-benchmark-phase="refine" style="--phase-order:2">
+        <span class="benchmark-phase-index">03</span><span>Refine</span>
+      </span>
+      <span class="benchmark-phase" data-benchmark-phase="resolve" style="--phase-order:3">
+        <span class="benchmark-phase-index">04</span><span>Resolve</span>
+      </span>
+      <span class="benchmark-phase" data-benchmark-phase="rank" style="--phase-order:4">
+        <span class="benchmark-phase-index">05</span><span>Rank</span>
+      </span>
+    </div>
     <div class="progress-bar-track">
       <div class="progress-bar-fill" id="progressFill" role="progressbar"
-        aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">0%</div>
+        aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+      <span class="progress-bar-label" id="progressLabel" aria-hidden="true">0%</span>
     </div>
   </div>
 
+  <section class="exchange-workbench" aria-label="Benchmark data and route setup">
   <div class="results-section" id="resultsSection">
-    <div class="section-header">Benchmark Results</div>
+    <div class="results-toolbar" id="resultsToolbar" hidden>
+      <div class="results-toolbar-status">
+        <span class="results-toolbar-label">Last measurement</span>
+        <strong id="resultsToolbarRoute">Last benchmark</strong>
+        <span class="results-toolbar-evidence" id="resultsToolbarEvidence"></span>
+        <span id="resultsToolbarMeta">No completed run yet</span>
+      </div>
+      <label class="results-profile-field" for="resultsConfigId">
+        <span>Configuration ID <em>optional</em></span>
+        <input type="text" id="resultsConfigId" placeholder="e.g. abc123" spellcheck="false" autocomplete="off">
+      </label>
+      <button type="button" class="btn results-rerun-btn" id="rerunBtn" onclick="runBenchmark()">Rerun benchmark</button>
+    </div>
+    <h2 class="section-header">Benchmark route register</h2>
 
-    <div class="summary-row">
-      <div class="insight-box" id="insightBox"></div>
-      <div class="config-inline" id="configInline">
-        <div class="config-inline-header">Routing Configuration</div>
-        <div class="config-table" id="configTable"></div>
+    <div id="ipv4Section">
+      <h3 class="sub-header" id="ipv4Header">IPv4 Servers</h3>
+      <div class="results-table-wrap" role="region" tabindex="0" aria-label="Scrollable IPv4 benchmark results">
+        <table id="ipv4Table"><caption class="sr-only">IPv4 NextDNS latency benchmark results</caption><thead></thead><tbody></tbody></table>
       </div>
     </div>
 
-    <div id="pinSection" style="display:none">
-      <div class="sub-header" id="pinHeader">Pin to Lowest-Latency Server</div>
-      <div class="pin-box" id="pinBox"></div>
+    <div id="ipv6Section" style="display:none">
+      <h3 class="sub-header" id="ipv6Header">IPv6 Servers</h3>
+      <div class="results-table-wrap" role="region" tabindex="0" aria-label="Scrollable IPv6 benchmark results">
+        <table id="ipv6Table"><caption class="sr-only">IPv6 NextDNS latency benchmark results</caption><thead></thead><tbody></tbody></table>
+      </div>
     </div>
 
     <div class="type-legend">
@@ -1890,28 +1708,27 @@ tbody tr {
       </span>
     </div>
 
-    <div id="ipv4Section">
-      <div class="sub-header" id="ipv4Header">IPv4 Servers</div>
-      <div class="results-table-wrap" role="region" tabindex="0" aria-label="Scrollable IPv4 benchmark results">
-        <table id="ipv4Table"><thead></thead><tbody></tbody></table>
+    <div class="summary-row">
+      <div class="insight-box" id="insightBox"></div>
+      <div class="config-inline" id="configInline">
+        <div class="config-inline-header">Routing Configuration</div>
+        <div class="config-table" id="configTable"></div>
       </div>
     </div>
 
-    <div id="ipv6Section" style="display:none">
-      <div class="sub-header" id="ipv6Header">IPv6 Servers</div>
-      <div class="results-table-wrap" role="region" tabindex="0" aria-label="Scrollable IPv6 benchmark results">
-        <table id="ipv6Table"><thead></thead><tbody></tbody></table>
-      </div>
+    <div id="pinSection" style="display:none">
+      <h3 class="sub-header" id="pinHeader">Pin to Lowest-Latency Server</h3>
+      <div class="pin-box" id="pinBox"></div>
     </div>
 
     <div id="errorServersSection" style="display:none">
-      <div class="sub-header" style="color:var(--red)">Unreachable Servers</div>
+      <h3 class="sub-header" style="color:var(--red)">Unreachable Servers</h3>
       <div class="text-dim" id="errorServersList" style="font-size:0.82rem"></div>
     </div>
   </div>
 
 
-  <section class="guide setup-guide" id="setupGuide" aria-labelledby="setupGuideTitle">
+  <section class="guide setup-guide" id="setupGuide" aria-labelledby="setupGuideTitle" hidden>
     <div class="setup-heading">
       <div>
         <h2 class="section-header" id="setupGuideTitle">Set up your recommended route</h2>
@@ -1951,6 +1768,12 @@ tbody tr {
         <legend><span>4</span> Choose the availability trade-off</legend>
         <p class="stage-hint" id="modeHint">Native Asus DoT treats every listed server as an active upstream.</p>
         <div class="choice-grid choice-grid--mode" id="modeChoices"></div>
+      </fieldset>
+
+      <fieldset class="setup-stage setup-stage--family" id="familyStage" hidden>
+        <legend><span>5</span> Choose address families</legend>
+        <p class="stage-hint" id="familyHint">Dual-stack is the default when both paths were measured.</p>
+        <div class="choice-grid choice-grid--family" id="familyChoices"></div>
       </fieldset>
 
       <div class="setup-actions">
@@ -2007,6 +1830,7 @@ tbody tr {
       </div>
     </details>
   </section>
+  </section>
 
   <footer class="footer">
     <div class="footer-links">
@@ -2015,7 +1839,7 @@ tbody tr {
       <a href="https://github.com/tracerman/nextdns-dns-matrix" target="_blank" rel="noopener" class="footer-link">NextDNS DNS Matrix</a>
     </div>
     <div class="footer-note">Pinned node IPs can rotate &mdash; benchmark fresh or use the local pin monitor.</div>
-    <div class="footer-credit">Made with Love, Blood, and Coffee</div>
+    <div class="footer-credit">Independent community tool · Not affiliated with or endorsed by NextDNS.</div>
   </footer>
   <div class="copy-toast" id="copyToast" role="status" aria-live="polite" aria-atomic="true"></div>
 </main>
@@ -2055,8 +1879,28 @@ const ANYCAST_FALLBACK = {
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+function cancelledError() {
+  return new DOMException('Benchmark cancelled', 'AbortError');
+}
+
+function throwIfCancelled(signal) {
+  if (signal && signal.aborted) throw cancelledError();
+}
+
+function sleep(ms, signal) {
+  if (!signal) return new Promise(resolve => setTimeout(resolve, ms));
+  throwIfCancelled(signal);
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(cancelledError());
+    };
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
 }
 
 function roundMs(value) {
@@ -2113,9 +1957,23 @@ function hideError() {
 function setProgress(status, pct) {
   document.getElementById('progressStatus').textContent = status;
   const fill = document.getElementById('progressFill');
-  fill.style.width = pct + '%';
-  fill.textContent = pct + '%';
+  fill.style.setProperty('--progress-scale', String(pct / 100));
+  document.getElementById('progressLabel').textContent = pct + '%';
   fill.setAttribute('aria-valuenow', String(pct));
+}
+
+const BENCHMARK_PHASE_ORDER = ['discover', 'probe', 'refine', 'resolve', 'rank'];
+
+function setBenchmarkPhase(phase) {
+  const rail = document.getElementById('benchmarkPhases');
+  if (!rail) return;
+  const activeIndex = BENCHMARK_PHASE_ORDER.indexOf(phase);
+  const locked = phase === 'locked';
+  rail.classList.toggle('is-locked', locked);
+  rail.querySelectorAll('[data-benchmark-phase]').forEach((cell, index) => {
+    cell.classList.toggle('is-complete', locked || (activeIndex >= 0 && index < activeIndex));
+    cell.classList.toggle('is-active', activeIndex === index);
+  });
 }
 
 function latencyClass(ms) {
@@ -2352,6 +2210,28 @@ function saveRunHistory(ok, routingTiers) {
   renderRunHistory();
 }
 
+function describePreviousRun(ok) {
+  const currentBest = ok
+    .filter(result => result.metric === 'server')
+    .sort((a, b) => a.medianMs - b.medianMs)[0];
+  const record = readLocalRecord(RUN_HISTORY_KEY, { version: 1, runs: [] });
+  const previous = record && record.version === 1 && Array.isArray(record.runs)
+    ? record.runs[0] : null;
+  const previousBest = previous && Array.isArray(previous.endpoints)
+    ? [...previous.endpoints].sort((a, b) => a.medianMs - b.medianMs)[0]
+    : null;
+  if (!currentBest || !previousBest) return 'First saved run on this browser';
+
+  const currentName = currentBest.nodeId || currentBest.hostname;
+  const previousName = previousBest.nodeId || previousBest.hostname;
+  if (currentBest.hostname !== previousBest.hostname && currentName !== previousName) {
+    return `Previous best: ${previousName} at ${previousBest.medianMs}ms`;
+  }
+  const delta = roundMs(currentBest.medianMs - previousBest.medianMs);
+  if (Math.abs(delta) < 0.01) return `Same node · unchanged at ${currentBest.medianMs}ms`;
+  return `Same node · ${Math.abs(delta)}ms ${delta < 0 ? 'lower' : 'higher'} than previous`;
+}
+
 function renderRunHistory() {
   const section = document.getElementById('runHistorySection');
   const body = document.getElementById('runHistoryBody');
@@ -2380,14 +2260,14 @@ function clearRunHistory() {
 
 // ─── Server Discovery ─────────────────────────────────────────────────────────
 
-async function discoverServers(onStatus) {
+async function discoverServers(onStatus, signal) {
   const servers = [];
 
   // 1. Fetch geo-tailored PoP servers from router API
   // Response: [{ pop: "hetzner-iad", server: "hetzner-iad-1", ipv4: true, ipv6: true }, ...]
   onStatus('Fetching server list from router.nextdns.io...');
   try {
-    const resp = await fetch('https://router.nextdns.io/?source=ping');
+    const resp = await fetch('https://router.nextdns.io/?source=ping', { signal });
     if (resp.ok) {
       const data = await resp.json();
       if (Array.isArray(data)) {
@@ -2423,6 +2303,7 @@ async function discoverServers(onStatus) {
       }
     }
   } catch (e) {
+    if (e.name === 'AbortError') throw e;
     console.warn('router.nextdns.io fetch failed:', e);
   }
 
@@ -2452,9 +2333,12 @@ async function discoverServers(onStatus) {
 
 // ─── Benchmark Single Server ──────────────────────────────────────────────────
 
-async function probeServer(server) {
+async function probeServer(server, signal) {
+  throwIfCancelled(signal);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), PING_TIMEOUT);
+  const cancelProbe = () => controller.abort();
+  if (signal) signal.addEventListener('abort', cancelProbe, { once: true });
   try {
     const t0 = performance.now();
     const resp = await fetch(`https://${server.hostname}/info`, {
@@ -2470,10 +2354,12 @@ async function probeServer(server) {
       pop: data.pop || null,
       location: data.locationName || null,
     };
-  } catch {
+  } catch (error) {
+    if (signal && signal.aborted) throw cancelledError();
     return null;
   } finally {
     clearTimeout(timer);
+    if (signal) signal.removeEventListener('abort', cancelProbe);
   }
 }
 
@@ -2521,25 +2407,27 @@ function summarizeBenchmark(server, samples, rounds) {
   };
 }
 
-async function benchmarkServer(server, rounds) {
+async function benchmarkServer(server, rounds, signal) {
   const samples = [];
   for (let i = 0; i < rounds; i++) {
-    const sample = await probeServer(server);
+    throwIfCancelled(signal);
+    const sample = await probeServer(server, signal);
     if (sample) samples.push(sample);
-    if (i < rounds - 1) await sleep(STAGGER_MS);
+    if (i < rounds - 1) await sleep(STAGGER_MS, signal);
   }
   return summarizeBenchmark(server, samples, rounds);
 }
 
 // ─── Full Benchmark ───────────────────────────────────────────────────────────
 
-async function runFullBenchmark(servers, rounds, onProgress) {
+async function runFullBenchmark(servers, rounds, onProgress, signal) {
   const results = [];
   let completed = 0;
 
   for (let i = 0; i < servers.length; i += MAX_CONCURRENT) {
+    throwIfCancelled(signal);
     const batch = servers.slice(i, i + MAX_CONCURRENT);
-    const batchResults = await Promise.all(batch.map(s => benchmarkServer(s, rounds)));
+    const batchResults = await Promise.all(batch.map(s => benchmarkServer(s, rounds, signal)));
     results.push(...batchResults);
     completed += batch.length;
     onProgress(completed, servers.length);
@@ -2572,7 +2460,7 @@ function selectRefinementFinalists(results) {
     result && all.findIndex(other => other.hostname === result.hostname) === index);
 }
 
-async function refineFinalists(results, rounds = REFINEMENT_ROUNDS, onProgress = () => {}) {
+async function refineFinalists(results, rounds = REFINEMENT_ROUNDS, onProgress = () => {}, signal) {
   const finalists = selectRefinementFinalists(results);
   if (finalists.length < 2) return results;
   const samples = new Map(finalists.map(finalist => [finalist.hostname, []]));
@@ -2581,11 +2469,12 @@ async function refineFinalists(results, rounds = REFINEMENT_ROUNDS, onProgress =
 
   for (let round = 0; round < rounds; round++) {
     for (const finalist of shuffle(finalists)) {
-      const sample = await probeServer(finalist);
+      throwIfCancelled(signal);
+      const sample = await probeServer(finalist, signal);
       if (sample) samples.get(finalist.hostname).push(sample);
       completed++;
       onProgress(completed, total);
-      await sleep(STAGGER_MS);
+      await sleep(STAGGER_MS, signal);
     }
   }
 
@@ -2629,16 +2518,18 @@ const DOH_RESOLVERS = {
   cloudflare: { label: 'Cloudflare', url: 'https://cloudflare-dns.com/dns-query',   batch: 4, delayMs: 150, headers: { 'Accept': 'application/dns-json' } },
 };
 
-async function resolveHostname(hostname, type = 'A', resolver = 'google') {
+async function resolveHostname(hostname, type = 'A', resolver = 'google', signal) {
   const cfg = DOH_RESOLVERS[resolver] || DOH_RESOLVERS.google;
   const maxRetries = 2;
   for (let attempt = 0; attempt < maxRetries; attempt++) {
+    throwIfCancelled(signal);
     try {
       const resp = await fetch(`${cfg.url}?name=${encodeURIComponent(hostname)}&type=${type}`, {
         headers: cfg.headers || {},
+        signal,
       });
       if (resp.status === 429) {
-        await sleep(500 * (attempt + 1));
+        await sleep(500 * (attempt + 1), signal);
         continue;
       }
       if (!resp.ok) return null;
@@ -2648,8 +2539,9 @@ async function resolveHostname(hostname, type = 'A', resolver = 'google') {
         return record ? record.data : null;
       }
       return null;
-    } catch {
-      if (attempt < maxRetries - 1) await sleep(300 * (attempt + 1));
+    } catch (error) {
+      if (signal && signal.aborted) throw cancelledError();
+      if (attempt < maxRetries - 1) await sleep(300 * (attempt + 1), signal);
     }
   }
   return null;
@@ -2657,7 +2549,7 @@ async function resolveHostname(hostname, type = 'A', resolver = 'google') {
 
 // ─── Bulk IP Resolution ───────────────────────────────────────────────────────
 
-async function resolveAllIPs(results, onProgress, resolver = 'google') {
+async function resolveAllIPs(results, onProgress, resolver = 'google', signal) {
   const ok = results.filter(r => r.status === 'ok');
   const hostnames = new Map(); // hostname -> { qtype, indices[] }
 
@@ -2678,10 +2570,11 @@ async function resolveAllIPs(results, onProgress, resolver = 'google') {
   const delayMs = cfg.delayMs || 0;
 
   for (let i = 0; i < jobs.length; i += batchSize) {
-    if (i > 0 && delayMs > 0) await sleep(delayMs);
+    throwIfCancelled(signal);
+    if (i > 0 && delayMs > 0) await sleep(delayMs, signal);
     const batch = jobs.slice(i, i + batchSize);
     const batchResults = await Promise.all(
-      batch.map(j => resolveHostname(j.hostname, j.qtype, resolver))
+      batch.map(j => resolveHostname(j.hostname, j.qtype, resolver, signal))
     );
     batch.forEach((j, bi) => {
       const ip = batchResults[bi];
@@ -2772,7 +2665,7 @@ function renderTable(tableId, servers, currentPop = null) {
   let colgroup = table.querySelector('colgroup');
   if (!colgroup) {
     colgroup = document.createElement('colgroup');
-    table.prepend(colgroup);
+    table.insertBefore(colgroup, thead);
   }
   //          #    NodeID  Location Type  Hostname     IP       Median Min   MAD   OK%
   colgroup.innerHTML = `
@@ -2841,6 +2734,7 @@ function renderTable(tableId, servers, currentPop = null) {
     const typeLabel = effectiveType === 'server' ? 'edge' : effectiveType;
     const barWidth = maxMs > 0 ? Math.max(4, Math.round((r.medianMs / maxMs) * 60)) : 4;
     const tr = document.createElement('tr');
+    tr.style.setProperty('--resolve-order', String(Math.min(i, 7)));
     if (isCurrent) tr.classList.add('current-pop-row');
     if (isDetected) tr.classList.add('detected-server-row');
     if (comparableRank === 1) tr.classList.add('best-row');
@@ -2863,14 +2757,14 @@ function renderTable(tableId, servers, currentPop = null) {
       <td class="text-dim">${r.madMs}ms</td>
       <td>${r.successRate === 100 ? '<span class="lat-green">100%</span>' : '<span class="lat-yellow">' + r.successRate + '%</span>'}</td>
     `;
-    tr.style.animationDelay = (i * 25) + 'ms';
     tbody.appendChild(tr);
   });
 }
 
-function renderConfig(config) {
+function renderConfig(config, hasProfileId = true) {
   const section = document.getElementById('configInline');
   section.style.display = 'block';
+  section.querySelector('.config-inline-header').textContent = 'Routing Configuration';
   const hasV6 = !!(config.bootstrapTier && config.bootstrapTier.addresses.ipv6[0]);
 
   function bootstrapEntry(entry, label) {
@@ -2882,7 +2776,11 @@ function renderConfig(config) {
     return `<div class="config-cell">${configEntry(escHtml(label) + badge, entry.ip, false, 'IP address')}</div>`;
   }
 
-  let html = `<div class="routing-tier-grid">${config.routingTiers.map(routingTierCard).join('')}</div>`;
+  let html = hasProfileId
+    ? ''
+    : `<div class="profile-template-note"><strong>Template mode</strong>`
+      + `<p>Configuration is ready with <code>{config-id}</code> placeholders. Add an ID anytime to replace them automatically, or substitute your ID manually when you use a value.</p></div>`;
+  html += `<div class="routing-tier-grid">${config.routingTiers.map(routingTierCard).join('')}</div>`;
   const bootstrapAdjusted = config.bootstrapTier && config.recommendedTier
     && config.bootstrapTier.id !== config.recommendedTier.id;
   html += `<div class="config-section-label">${bootstrapAdjusted
@@ -2949,6 +2847,22 @@ function routingTierCard(tier) {
       + `<button type="button" class="config-value" data-copy="${escAttr(value)}" data-copy-label="${label} address" `
       + `onclick="clickCopy(this)" title="Copy ${label} address">${escHtml(value)}</button></div>`;
   };
+  const urlEntries = () => {
+    const v4Url = tier.urls && tier.urls.ipv4;
+    const v6Url = tier.urls && tier.urls.ipv6;
+    if (tier.id === 'pinned' && v4Url && v6Url && v4Url !== v6Url) {
+      return `<div class="tier-addresses">`
+        + `<div class="tier-address-row"><span>v4 DoH</span><button type="button" class="config-value" `
+        + `data-copy="${escAttr(v4Url)}" data-copy-label="IPv4 pinned DoH URL" onclick="clickCopy(this)" `
+        + `title="Copy IPv4 pinned DoH URL">${escHtml(v4Url)}</button></div>`
+        + `<div class="tier-address-row"><span>v6 DoH</span><button type="button" class="config-value" `
+        + `data-copy="${escAttr(v6Url)}" data-copy-label="IPv6 pinned DoH URL" onclick="clickCopy(this)" `
+        + `title="Copy IPv6 pinned DoH URL">${escHtml(v6Url)}</button></div></div>`;
+    }
+    return `<button type="button" class="config-value" data-copy="${escAttr(tier.url)}" `
+      + `data-copy-label="${escAttr(tier.label)} DoH URL" onclick="clickCopy(this)" `
+      + `title="Copy ${escAttr(tier.label)} DoH URL">${escHtml(tier.url)}</button>`;
+  };
   const classes = ['tier-card', tier.id, tier.recommended ? 'recommended' : '', tier.available ? '' : 'unavailable']
     .filter(Boolean).join(' ');
   return `<article class="${classes}">
@@ -2958,9 +2872,7 @@ function routingTierCard(tier) {
     </div>
     <div class="tier-metrics">${metric('ipv4', 'v4')}${metric('ipv6', 'v6')}</div>
     <div class="tier-tradeoff">${escHtml(tier.tradeoff)}</div>
-    ${tier.available
-      ? `<button type="button" class="config-value" data-copy="${escAttr(tier.url)}" data-copy-label="${escAttr(tier.label)} DoH URL" `
-        + `onclick="clickCopy(this)" title="Copy ${escAttr(tier.label)} DoH URL">${escHtml(tier.url)}</button>`
+    ${tier.available ? urlEntries()
       : '<span class="text-dim" style="font-size:0.68rem">No measured endpoint available</span>'}
     <div class="tier-addresses">${address('ipv4', 'v4')}${address('ipv6', 'v6')}</div>
   </article>`;
@@ -2980,7 +2892,8 @@ function renderPinSection(routingTiers) {
   const { flag, city } = parseLocation(b.location || '');
   const loc = city ? (flag ? `[${flag}] ${city}` : city) : (b.pop || '');
 
-  const dohUrl = tier.url;
+  const dohV4Url = tier.urls && tier.urls.ipv4;
+  const dohV6Url = tier.urls && tier.urls.ipv6;
   const forwarder = tier.forwarder;
 
   // The verdict changes, the strings do not. An earlier version returned early when
@@ -3000,7 +2913,7 @@ function renderPinSection(routingTiers) {
           : '')
       + `</div>`
       + `<div class="pin-sub">Clear measured advantage: ${pin.gainMs}ms gain exceeds the ${pin.thresholdMs}ms decision window. `
-      + `The dual-stack hostname covers both IPv4 and IPv6.</div>`;
+      + `IPv4 and IPv6 pins are selected independently from their own measurements.</div>`;
   } else {
     // Common case: steering already lands on the same PoP the best edge server
     // belongs to. Saying "zepto-iad is within 3ms of zepto-iad-1" reads as nonsense,
@@ -3019,10 +2932,11 @@ function renderPinSection(routingTiers) {
         + `${escHtml(b.server)} <span class="${latencyClass(b.medianMs)}">${b.medianMs}ms</span>.</div>`
         + `<div class="pin-sub" style="margin:0.4rem 0 0">Steered routing keeps automatic failover, so there is `
         + `little to gain. The recommended configuration above is the better choice.</div>`;
-    html += `<div class="pin-anyway">If you want to pin anyway &mdash; ${escHtml(b.server)}</div>`;
   }
 
-  html += `<div class="pin-formats">`;
+  html += `<details class="pin-details"${pin.worthIt ? ' open' : ''}>`
+    + `<summary>${pin.worthIt ? 'Pinned setup details' : `Pin anyway — advanced details for ${escHtml(b.server)}`}</summary>`
+    + `<div class="pin-formats">`;
   html += `<div><div class="pin-format-label">Rotation &amp; degradation monitor</div>`
     + (b.resolvedIP
       ? `<button type="button" class="pin-monitor-btn" data-hostname="${escAttr(b.hostname)}" `
@@ -3033,27 +2947,31 @@ function renderPinSection(routingTiers) {
     + `<div class="pin-format-note">Stores only the edge hostname, address, timing, and timestamp in this browser. `
     + `Your NextDNS profile ID is never stored.</div></div>`;
 
-  // Both families for the pinned server. Pinning gives up automatic failover, so
-  // dual-stack is the nearest substitute: if one stack breaks, the other resolves.
+  // Each family owns its lowest-latency measured edge. They may resolve to
+  // different PoPs; never force IPv6 onto the IPv4 winner.
   const v4ip = tier.addresses.ipv4[0] || null;
   const v6ip = tier.addresses.ipv6[0] || null;
   if (v4ip || v6ip) {
-    html += `<div><div class="pin-format-label">Pinned server addresses &mdash; set one of each</div>`
+    html += `<div><div class="pin-format-label">Lowest-latency pinned addresses &mdash; selected per family</div>`
       + (v4ip ? configEntry('IPv4', v4ip) : '')
       + (v6ip ? configEntry('IPv6', v6ip) : '')
       + `<div class="pin-format-note">`
       + (v6ip
-          ? `Use both wherever your client allows two entries &mdash; manual DNS, DoT server lists, or a `
-            + `router's separate IPv4 and IPv6 DNS pages. If one stack fails you still resolve on the other, `
-            + `which is the closest thing to failover you get while pinned.`
-          : `No IPv6 address resolved for this server &mdash; you will be pinned on IPv4 only, with no second `
+          ? `Each address is the lowest-latency resolved edge measured for that family. They may belong to `
+            + `different PoPs. Use both only where the client accepts independent IPv4 and IPv6 upstream rows.`
+          : `No IPv6 edge address resolved in this run &mdash; you will be pinned on IPv4 only, with no second `
             + `stack to fall back on. Consider the failover form below.`)
       + `</div></div>`;
   }
 
-  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>${configEntry('', dohUrl, false, 'pinned DoH URL')}`
-    + `<div class="pin-format-note">This hostname is dual-stack, so a DoH client will use whichever family it `
-    + `has &mdash; one URL covers both.</div></div>`;
+  html += `<div><div class="pin-format-label">DNS-over-HTTPS (pinned)</div>`
+    + (dohV4Url ? configEntry('IPv4', dohV4Url, false, 'IPv4 pinned DoH URL') : '')
+    + (dohV6Url && dohV6Url !== dohV4Url
+      ? configEntry('IPv6', dohV6Url, false, 'IPv6 pinned DoH URL') : '')
+    + `<div class="pin-format-note">${dohV6Url && dohV6Url !== dohV4Url
+      ? `The URLs differ because each family selected a different lowest-latency edge. Keep each address paired `
+        + `with its matching family URL.`
+      : `Both families independently selected the same edge, so one dual-stack URL covers both.`}</div></div>`;
   html += `<div><div class="pin-format-label">NextDNS CLI &mdash; pinned, with anycast failover</div>`
     + configEntry('', forwarder, false, 'CLI forwarder')
     + `<div class="pin-format-note">NextDNS CLI only &mdash; falls back to anycast if the pinned server stops answering. `
@@ -3064,7 +2982,8 @@ function renderPinSection(routingTiers) {
   html += `<div class="pin-disclaimer"><strong>Pinning trades steering for a fixed route.</strong> `
     + `If the edge disappears, native clients can produce recurring multi-second lookup stalls while they retry or back off. `
     + `Verified Merlin settings can wait about 6 seconds on affected queries, then back the dead server off for 15 minutes before trying it again. `
-    + `Edge addresses can also rotate. Prefer a client with explicit failover, and re-check saved pins when this tool warns that the address changed.</div>`;
+    + `Edge addresses can also rotate. Prefer a client with explicit failover, and re-check saved pins when this tool warns that the address changed.</div>`
+    + `</details>`;
 
   box.innerHTML = html;
 }
@@ -3096,9 +3015,11 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
 
   const pinnedV4 = pin ? pin.best : null;
   const pinnedV6 = pin ? pin.v6 : null;
-  const pinnedUrl = pinnedV4
-    ? `https://${pinnedV4.server}.edge.nextdns.io/${configId}`
-    : null;
+  const pinnedUrls = {
+    ipv4: pinnedV4 ? `https://${pinnedV4.server}.edge.nextdns.io/${configId}` : null,
+    ipv6: pinnedV6 ? `https://${pinnedV6.server}.edge.nextdns.io/${configId}` : null,
+  };
+  const pinnedUrl = pinnedUrls.ipv4 || pinnedUrls.ipv6;
   const pinnedBootstrap = pinnedV4 && pinnedV4.resolvedIP ? `#${pinnedV4.resolvedIP}` : '';
 
   const tiers = [
@@ -3166,6 +3087,7 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
       id: 'pinned',
       label: 'Direct / Pinned',
       url: pinnedUrl,
+      urls: pinnedUrls,
       available: !!pinnedV4,
       latency: {
         ipv4: pinnedV4 ? pinnedV4.medianMs : null,
@@ -3189,8 +3111,8 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
       },
       decisionResult: { ipv4: pinnedV4, ipv6: pinnedV6 },
       tradeoff: pin && pin.worthIt
-        ? 'Lowest measured IPv4 latency, but the edge server has no automatic failover.'
-        : 'Targets one edge server and gives up automatic failover; not recommended for this run.',
+        ? 'Lowest measured edge latency per available address family, without automatic failover.'
+        : 'Targets fixed lowest-latency edges and gives up automatic failover; not recommended for this run.',
       pin,
       forwarder: pinnedUrl
         ? `${pinnedUrl}${pinnedBootstrap},https://anycast.dns1.nextdns.io/${configId}`
@@ -3254,9 +3176,8 @@ function buildRoutingTiers(ok, configId, pin, preference = 'auto') {
 //   2. ranked is skewed by the user's `preference` setting. Pinning is a separate
 //      decision from the general recommendation, so this always sorts by pure latency.
 //
-// Compares within IPv4 only: latency is measured per-family, so mixing families
-// would not be like-for-like. The pinned DoH URL itself is family-agnostic —
-// `{server}.edge.nextdns.io` is dual-stack.
+// The recommendation gate compares within IPv4 only. IPv6 selection is a separate
+// pure-latency decision: never force it onto the IPv4 winner's PoP.
 function selectPinTarget(ok) {
   const v4 = ok.filter(r => r.family === 'IPv4' && r.metric === 'server');
   const edges = v4
@@ -3275,8 +3196,10 @@ function selectPinTarget(ok) {
   // No baseline responded at all — pinning is the only option we can offer.
   const worthIt = baseline ? clearMeasuredAdvantage(best, baseline) : true;
 
-  // IPv6 row for the same physical server, for an optional v6 bootstrap IP.
-  const v6 = ok.find(r => r.family === 'IPv6' && r.server === best.server && r.resolvedIP) || null;
+  const v6 = ok
+    .filter(r => r.family === 'IPv6' && r.metric === 'server'
+      && r.type === 'server' && r.server && r.resolvedIP)
+    .sort((a, b) => a.medianMs - b.medianMs)[0] || null;
 
   return { best, baseline, gainMs, thresholdMs, worthIt, v6 };
 }
@@ -3407,18 +3330,18 @@ const ASUS_NATIVE_MODES = [
   {
     id: 'reliable',
     label: 'Reliable',
-    description: 'Two stable anycast upstreams. Best default for native Asus DoT.',
+    description: 'Stable Anycast DNS1 and DNS2 in every selected family.',
   },
   {
     id: 'balanced',
     label: 'Balanced',
-    description: 'One pinned PoP plus one anycast upstream. Requests may use either.',
+    description: 'Pinned PoP plus the lowest-latency anycast member in every selected family.',
     requiresPin: true,
   },
   {
     id: 'performance',
     label: 'Maximum performance',
-    description: 'One pinned PoP only. Lowest transport RTT, highest availability risk.',
+    description: 'Pinned PoP only in every selected family. Highest availability risk.',
     requiresPin: true,
   },
 ];
@@ -3564,7 +3487,10 @@ let selectedSetupScope = null;
 let selectedSetupDevice = null;
 let selectedSetupVariant = null;
 let selectedSetupMode = null;
+let selectedSetupFamily = null;
 let setupRunbookVisible = false;
+let latestBenchmarkProfileContext = null;
+let activeBenchmarkController = null;
 let latestSetupContext = {
   hasBenchmark: false,
   benchmarkAt: null,
@@ -3589,6 +3515,10 @@ function currentSetupMode() {
   return variant && variant.modes
     ? variant.modes.find(mode => mode.id === selectedSetupMode) || null
     : null;
+}
+
+function currentSetupFamily() {
+  return selectedSetupFamily === 'ipv4' ? 'ipv4' : 'dual';
 }
 
 function effectiveDevice(device, variant) {
@@ -3634,33 +3564,80 @@ function buildStandardRoutingTiers(configId) {
   ];
 }
 
-function buildAsusModeProfiles(tiers) {
+function buildAsusFamilyOptions(tiers, hasBenchmark = false) {
   const anycast = tiers.find(tier => tier.id === 'anycast');
   const pinned = tiers.find(tier => tier.id === 'pinned');
-  const family = pinned && pinned.addresses.ipv4[0] ? 'ipv4'
-    : pinned && pinned.addresses.ipv6[0] ? 'ipv6'
-      : anycast && anycast.addresses.ipv4[0] ? 'ipv4' : 'ipv6';
-  const familyLabel = family === 'ipv4' ? 'IPv4' : 'IPv6';
-  const anyResults = anycast ? anycast.results[family] || [] : [];
-  const pinnedResult = pinned ? (pinned.results[family] || [])[0] || null : null;
-  const entry = (address, route, label, result) => ({
-    address, route, label, role: 'active', family: familyLabel, result,
+  const v6Results = anycast ? anycast.results.ipv6 || [] : [];
+  const v6Measured = !!(anycast
+    && anycast.addresses.ipv6[0]
+    && anycast.fallbackAddresses.ipv6[0]
+    && v6Results.some(result => result && result.nodeId === 'anycast1')
+    && v6Results.some(result => result && result.nodeId === 'anycast2'));
+  const pinnedV6 = !!(pinned && pinned.addresses.ipv6[0] && (pinned.results.ipv6 || [])[0]);
+  return [
+    {
+      id: 'dual',
+      label: 'IPv4 + IPv6',
+      description: 'Use both measured transports. Every emitted row is active.',
+      available: !hasBenchmark || v6Measured,
+      status: hasBenchmark
+        ? v6Measured
+          ? (pinnedV6 ? 'Both families measured; pinned edges selected independently' : 'Both routed families measured')
+          : 'IPv6 was not fully measured in this run'
+        : 'Default · benchmark verifies IPv6',
+    },
+    {
+      id: 'ipv4',
+      label: 'IPv4 only',
+      description: 'Use fewer active upstreams and keep IPv6 out of the DoT server list.',
+      available: true,
+      status: 'Lower-entry alternative',
+    },
+  ];
+}
+
+function buildAsusModeProfiles(tiers, familyPolicy = 'dual') {
+  const anycast = tiers.find(tier => tier.id === 'anycast');
+  const pinned = tiers.find(tier => tier.id === 'pinned');
+  const families = familyPolicy === 'ipv4' ? ['ipv4'] : ['ipv4', 'ipv6'];
+  const familyLabel = families.length === 2 ? 'IPv4 + IPv6' : 'IPv4';
+  const entry = (address, route, label, result, family) => {
+    const displayFamily = family === 'ipv4' ? 'IPv4' : 'IPv6';
+    return {
+      address,
+      route,
+      label: `${label} · ${displayFamily}`,
+      role: 'active',
+      family: displayFamily,
+      result,
+    };
+  };
+  const familyData = families.map(family => {
+    const anyResults = anycast ? anycast.results[family] || [] : [];
+    const resultForDns = dnsNum =>
+      anyResults.find(result => result && result.nodeId === `anycast${dnsNum}`) || null;
+    const anycastEntries = anycast ? [
+      entry(anycast.addresses[family][0], 'anycast', 'Anycast DNS1', resultForDns(1), family),
+      entry(anycast.fallbackAddresses[family][0], 'anycast', 'Anycast DNS2', resultForDns(2), family),
+    ].filter(item => item.address) : [];
+    const fastestAnycastEntry = anycastEntries
+      .filter(item => item.result)
+      .sort((a, b) => a.result.medianMs - b.result.medianMs)[0]
+      || anycastEntries[0] || null;
+    const pinnedResult = pinned ? (pinned.results[family] || [])[0] || null : null;
+    const pinnedEntry = pinned && pinned.addresses[family][0]
+      ? entry(pinned.addresses[family][0], 'pinned', serverLabel(pinnedResult), pinnedResult, family)
+      : null;
+    return { family, anycastEntries, fastestAnycastEntry, pinnedEntry };
   });
-  const anycastEntries = anycast ? [
-    entry(anycast.addresses[family][0], 'anycast', 'Anycast DNS1', anyResults[0] || null),
-    entry(anycast.fallbackAddresses[family][0], 'anycast', 'Anycast DNS2', anyResults[1] || null),
-  ].filter(item => item.address) : [];
-  const fastestAnycastEntry = anycastEntries
-    .filter(item => item.result)
-    .sort((a, b) => a.result.medianMs - b.result.medianMs)[0]
-    || anycastEntries[0] || null;
-  const pinnedEntry = pinned && pinned.addresses[family][0]
-    ? entry(pinned.addresses[family][0], 'pinned', serverLabel(pinnedResult), pinnedResult)
-    : null;
   const estimate = entries => entries.length && entries.every(item => item.result)
     ? roundMs(entries.reduce((sum, item) => sum + item.result.medianMs, 0) / entries.length)
     : null;
-  const reliableEntries = anycastEntries.slice(0, 2);
+  const reliableEntries = familyData.flatMap(data => data.anycastEntries.slice(0, 2));
+  const balancedEntries = familyData.flatMap(data =>
+    [data.pinnedEntry, data.fastestAnycastEntry].filter(Boolean));
+  const performanceEntries = familyData.map(data => data.pinnedEntry).filter(Boolean);
+  const hasEveryPinnedFamily = performanceEntries.length === families.length;
   const reliableEstimate = estimate(reliableEntries);
   const reliableBaseline = reliableEstimate == null ? null : {
     medianMs: reliableEstimate,
@@ -3674,30 +3651,33 @@ function buildAsusModeProfiles(tiers) {
       medianMs: estimatedMedianMs,
       madMs: Math.max(0, ...entries.map(item => item.result ? item.result.madMs || 0 : 0)),
     };
-    const clearsGate = !!(pinnedEntry && candidate
+    const clearsGate = !!(hasEveryPinnedFamily && candidate
       && (!reliableBaseline || clearMeasuredAdvantage(candidate, reliableBaseline)));
     const gateThresholdMs = candidate && reliableBaseline
       ? measurementThreshold(candidate, reliableBaseline) : null;
     return {
       ...definition,
-      family,
+      families,
+      familyPolicy,
       familyLabel,
       entries,
       available: !definition.requiresPin || clearsGate,
       estimatedMedianMs,
       gateThresholdMs: definition.requiresPin ? gateThresholdMs : null,
-      blockedReason: definition.requiresPin && pinnedEntry && !clearsGate
-        ? `No clear gain over Reliable${gateThresholdMs == null ? '' : ` (needs >${gateThresholdMs}ms)`}`
-        : null,
+      blockedReason: definition.requiresPin && !hasEveryPinnedFamily
+        ? familyPolicy === 'dual' && performanceEntries.length
+          ? 'Pinned IPv6 unavailable · choose IPv4 only'
+          : null
+        : definition.requiresPin && !clearsGate
+          ? `No clear gain over Reliable${gateThresholdMs == null ? '' : ` (needs >${gateThresholdMs}ms)`}`
+          : null,
     };
   };
 
   return ASUS_NATIVE_MODES.map(definition => {
     if (definition.id === 'reliable') return decorate(definition, reliableEntries);
-    if (definition.id === 'balanced') {
-      return decorate(definition, [pinnedEntry, fastestAnycastEntry].filter(Boolean));
-    }
-    return decorate(definition, pinnedEntry ? [pinnedEntry] : []);
+    if (definition.id === 'balanced') return decorate(definition, balancedEntries);
+    return decorate(definition, performanceEntries);
   });
 }
 
@@ -3705,18 +3685,18 @@ function selectCompatibleSetup(device, variant, context = latestSetupContext) {
   const effective = effectiveDevice(device, variant);
   const tiers = context.routingTiers || buildStandardRoutingTiers(context.configId);
   if (device.id === 'asus' && variant && variant.modes) {
-    const profiles = buildAsusModeProfiles(tiers);
+    const profiles = buildAsusModeProfiles(tiers, currentSetupFamily());
     const requested = profiles.find(profile => profile.id === selectedSetupMode && profile.available);
     const asusMode = requested || profiles.find(profile => profile.id === 'reliable');
     const tier = tiers.find(item => item.id === (asusMode.id === 'reliable' ? 'anycast' : 'pinned'))
       || tiers.find(item => item.id === 'anycast');
     const reason = context.hasBenchmark
       ? asusMode.id === 'reliable'
-        ? 'Native Asus DoT uses every listed server as an active upstream, so stable anycast is the default.'
+        ? `Native Asus DoT uses every listed server as an active upstream; ${asusMode.familyLabel} stable anycast is the default.`
         : asusMode.id === 'balanced'
-          ? 'One measured PoP and one stable anycast address share live queries.'
-          : 'One measured PoP receives every query; choose this only when the latency gain justifies the availability risk.'
-      : 'Reliable anycast is the safe native-DoT default until a benchmark measures a pinnable alternative.';
+          ? `Each family's lowest-latency measured edge and anycast member in ${asusMode.familyLabel} share live queries.`
+          : `Each family's lowest-latency measured edge receives queries over ${asusMode.familyLabel}; choose this only when the latency gain justifies the availability risk.`
+      : `Reliable ${asusMode.familyLabel} anycast is the native-DoT default until a benchmark measures a pinnable alternative.`;
     return { device: effective, variant, tier, adapted: tier && tier.id !== 'anycast', reason, asusMode };
   }
   const allowed = effective.routes || ['ultralow', 'anycast'];
@@ -3746,7 +3726,7 @@ function selectCompatibleSetup(device, variant, context = latestSetupContext) {
   const adapted = !!(context.hasBenchmark && globalTier && tier && globalTier.id !== tier.id);
   const reason = context.hasBenchmark
     ? adapted
-      ? `${globalTier.label} was the overall result, but ${device.label} cannot use it safely. This is the fastest compatible route measured.`
+      ? `${globalTier.label} was the overall result, but ${device.label} cannot use it safely. This is the lowest-latency compatible route measured.`
       : `Compatible with ${device.label} and selected from your latest measurements.`
     : 'A neutral encrypted route that works without a benchmark. Run the benchmark to personalize it.';
 
@@ -3785,7 +3765,9 @@ function buildEndpointPairs(tier, configId, protocol = 'DoH') {
 
   for (const family of ['ipv4', 'ipv6']) {
     const familyLabel = family === 'ipv4' ? 'IPv4' : 'IPv6';
-    const primaryTemplate = protocol === 'DoH' ? tier.url : hostname;
+    const primaryTemplate = protocol === 'DoH'
+      ? ((tier.urls && tier.urls[family]) || tier.url)
+      : hostname;
     (tier.addresses[family] || []).forEach((address, index) =>
       add(address, familyLabel, tier.id, index ? 'alternate' : 'primary',
         primaryTemplate, tier.id === 'pinned' ? 'none on this endpoint' : 'same steered route'));
@@ -3826,13 +3808,22 @@ function renderSetupChoices() {
   const devices = SETUP_DEVICES.filter(d => d.scope === selectedSetupScope);
   deviceStage.disabled = !selectedSetupScope;
   document.getElementById('deviceHint').textContent = selectedSetupScope
-    ? `${devices.length} compatible starting points — choose the closest match.`
+    ? `Choose the closest match. Common options are shown first.`
     : 'Choose a category first.';
-  deviceBox.innerHTML = devices.map(device => `
+  const deviceButton = device => `
     <button type="button" class="setup-choice" aria-pressed="${device.id === selectedSetupDevice}"
       onclick="chooseSetupDevice('${device.id}')">
       <strong>${escHtml(device.label)}</strong><small>${escHtml(device.description)}</small>
-    </button>`).join('');
+    </button>`;
+  const commonDevices = devices.slice(0, 4);
+  const moreDevices = devices.slice(4);
+  const selectedIsMore = moreDevices.some(device => device.id === selectedSetupDevice);
+  deviceBox.innerHTML = commonDevices.map(deviceButton).join('')
+    + (moreDevices.length
+      ? `<details class="more-devices"${selectedIsMore ? ' open' : ''}>`
+        + `<summary>More routers and platforms (${moreDevices.length})</summary>`
+        + `<div class="choice-grid">${moreDevices.map(deviceButton).join('')}</div></details>`
+      : '');
 
   const device = currentSetupDevice();
   const variantStage = document.getElementById('variantStage');
@@ -3852,11 +3843,32 @@ function renderSetupChoices() {
   const variant = currentSetupVariant();
   const modeStage = document.getElementById('modeStage');
   const modeBox = document.getElementById('modeChoices');
+  const familyStage = document.getElementById('familyStage');
+  const familyBox = document.getElementById('familyChoices');
   const hasModes = !!(variant && variant.modes);
   modeStage.hidden = !hasModes;
+  familyStage.hidden = !hasModes;
   if (hasModes) {
-    const profiles = buildAsusModeProfiles(latestSetupContext.routingTiers
-      || buildStandardRoutingTiers(latestSetupContext.configId));
+    const tiers = latestSetupContext.routingTiers
+      || buildStandardRoutingTiers(latestSetupContext.configId);
+    const familyOptions = buildAsusFamilyOptions(tiers, latestSetupContext.hasBenchmark);
+    if (!familyOptions.some(option => option.id === selectedSetupFamily && option.available)) {
+      selectedSetupFamily = familyOptions.find(option => option.id === 'dual' && option.available)
+        ? 'dual' : 'ipv4';
+    }
+    familyBox.innerHTML = familyOptions.map(option =>
+      `<button type="button" class="setup-choice setup-family-choice" aria-pressed="${option.id === selectedSetupFamily}"`
+      + ` onclick="chooseSetupFamily('${option.id}')" ${option.available ? '' : 'disabled'}>`
+      + `<strong>${escHtml(option.label)}</strong><small>${escHtml(option.description)}</small>`
+      + `<span class="mode-estimate${option.available ? '' : ' unavailable'}">${escHtml(option.status)}</span></button>`
+    ).join('');
+    document.getElementById('familyHint').textContent = selectedSetupFamily === 'dual'
+      ? 'Dual-stack is active. Every IPv4 and IPv6 row shown below can receive live queries.'
+      : familyOptions[0].available
+        ? 'IPv4-only reduces the active set; dual-stack remains available.'
+        : 'This run did not fully measure IPv6, so the guide fell back to IPv4-only.';
+
+    const profiles = buildAsusModeProfiles(tiers, currentSetupFamily());
     if (!profiles.some(profile => profile.id === selectedSetupMode && profile.available)) {
       selectedSetupMode = 'reliable';
     }
@@ -3864,8 +3876,8 @@ function renderSetupChoices() {
       const estimate = profile.requiresPin && !profile.available
         ? (profile.blockedReason || 'Run a benchmark to unlock')
         : profile.estimatedMedianMs == null
-          ? 'RTT estimate after benchmark'
-          : `≈${profile.estimatedMedianMs}ms transport RTT`;
+          ? `${profile.entries.length} active · RTT estimate after benchmark`
+          : `${profile.entries.length} active · ≈${profile.estimatedMedianMs}ms transport RTT`;
       return `<button type="button" class="setup-choice setup-mode-choice" aria-pressed="${profile.id === selectedSetupMode}"`
         + ` onclick="chooseSetupMode('${profile.id}')" ${profile.available ? '' : 'disabled'}>`
         + `<strong>${escHtml(profile.label)}</strong><small>${escHtml(profile.description)}</small>`
@@ -3873,10 +3885,13 @@ function renderSetupChoices() {
     }).join('');
   } else {
     selectedSetupMode = null;
+    selectedSetupFamily = null;
     modeBox.innerHTML = '';
+    familyBox.innerHTML = '';
   }
 
-  const ready = !!(device && (!device.variants || selectedSetupVariant) && (!hasModes || selectedSetupMode));
+  const ready = !!(device && (!device.variants || selectedSetupVariant)
+    && (!hasModes || (selectedSetupMode && selectedSetupFamily)));
   document.getElementById('showSetupBtn').disabled = !ready;
   document.getElementById('setupActionHint').textContent = ready
     ? 'Ready — the next view will contain every step and value.'
@@ -3889,6 +3904,7 @@ function chooseSetupScope(scopeId) {
   selectedSetupDevice = null;
   selectedSetupVariant = null;
   selectedSetupMode = null;
+  selectedSetupFamily = null;
   setupRunbookVisible = false;
   document.getElementById('setupRunbook').hidden = true;
   renderSetupChoices();
@@ -3901,6 +3917,7 @@ function chooseSetupDevice(deviceId) {
   selectedSetupDevice = device.id;
   selectedSetupVariant = device.variants ? null : '';
   selectedSetupMode = null;
+  selectedSetupFamily = null;
   setupRunbookVisible = false;
   document.getElementById('setupRunbook').hidden = true;
   renderSetupChoices();
@@ -3911,6 +3928,7 @@ function chooseSetupVariant(variantId) {
   selectedSetupVariant = variantId;
   const variant = currentSetupVariant();
   selectedSetupMode = variant && variant.modes ? 'reliable' : null;
+  selectedSetupFamily = variant && variant.modes ? 'dual' : null;
   setupRunbookVisible = false;
   document.getElementById('setupRunbook').hidden = true;
   renderSetupChoices();
@@ -3921,10 +3939,38 @@ function chooseSetupMode(modeId) {
   const variant = currentSetupVariant();
   if (!variant || !variant.modes || !variant.modes.some(mode => mode.id === modeId)) return;
   const profile = buildAsusModeProfiles(latestSetupContext.routingTiers
-    || buildStandardRoutingTiers(latestSetupContext.configId)).find(mode => mode.id === modeId);
+    || buildStandardRoutingTiers(latestSetupContext.configId), currentSetupFamily())
+    .find(mode => mode.id === modeId);
   if (!profile || !profile.available) return;
   selectedSetupMode = modeId;
-  if (setupRunbookVisible) renderSetupRunbook();
+  if (setupRunbookVisible) {
+    renderSetupRunbook();
+    syncSelectedSetupUrl();
+  }
+  renderSetupChoices();
+  renderAiPrompt(latestSetupContext.config, latestSetupContext.hasBenchmark);
+}
+
+function chooseSetupFamily(familyId) {
+  const variant = currentSetupVariant();
+  if (!variant || !variant.modes) return;
+  const options = buildAsusFamilyOptions(
+    latestSetupContext.routingTiers || buildStandardRoutingTiers(latestSetupContext.configId),
+    latestSetupContext.hasBenchmark,
+  );
+  if (!options.some(option => option.id === familyId && option.available)) return;
+  selectedSetupFamily = familyId;
+  const profiles = buildAsusModeProfiles(
+    latestSetupContext.routingTiers || buildStandardRoutingTiers(latestSetupContext.configId),
+    currentSetupFamily(),
+  );
+  if (!profiles.some(profile => profile.id === selectedSetupMode && profile.available)) {
+    selectedSetupMode = 'reliable';
+  }
+  if (setupRunbookVisible) {
+    renderSetupRunbook();
+    syncSelectedSetupUrl();
+  }
   renderSetupChoices();
   renderAiPrompt(latestSetupContext.config, latestSetupContext.hasBenchmark);
 }
@@ -3975,7 +4021,14 @@ function buildGuideValues(setup, pairs, context) {
         ? `${pair.label} · active`
         : `${pair.family} ${pair.role} · ${pair.route}`, pair.address]));
   } else {
-    values.push(['DoH URL', tier.url]);
+    const v4Url = tier.urls && tier.urls.ipv4;
+    const v6Url = tier.urls && tier.urls.ipv6;
+    if (tier.id === 'pinned' && v4Url && v6Url && v4Url !== v6Url) {
+      values.push(['IPv4 DoH URL', v4Url]);
+      values.push(['IPv6 DoH URL', v6Url]);
+    } else {
+      values.push(['DoH URL', tier.url]);
+    }
     if (setupUsesEndpointPairs(setup)) {
       pairs.forEach(pair => {
         const pairLabel = `${pair.family} ${pair.role} · ${pair.route}`;
@@ -4053,12 +4106,26 @@ function buildDeviceSteps(setup, pairs, context) {
           '<strong>Restart the service and renew one client lease.</strong> Confirm that client now uses the router as its resolver.',
         ];
       }
-      return [
-        '<strong>Open WAN → Internet Connection.</strong> Set <em>DNS Privacy Protocol</em> to DNS-over-TLS (DoT); the server list appears after this change.',
-        `<strong>Add exactly the ${pairs.length} ${escHtml(setup.asusMode.familyLabel)} ${pairs.length === 1 ? 'entry' : 'entries'} shown here.</strong> Put each IP in <em>IP Address</em>, use ${escHtml(dot)} as <em>TLS Hostname</em>, leave TLS Port blank (853), and leave SPKI Fingerprint blank.`,
-        `<strong>Treat every row as active.</strong> Verified Merlin builds distribute queries across the list; they do not reserve later rows as ordered fallbacks. This ${escHtml(setup.asusMode.label)} mode intentionally emits ${pairs.length === 1 ? 'one upstream' : 'two upstreams'}.`,
-        '<strong>Apply the change and renew a client lease.</strong> Confirm the LAN/DHCP settings distribute the router as DNS; WAN DNS fields may affect only the router.',
-      ];
+      {
+        const dualStack = setup.asusMode.familyPolicy === 'dual';
+        const entryDescription = dualStack
+          ? `${pairs.length} dual-stack entries shown here (${pairs.filter(pair => pair.family === 'IPv4').length} IPv4 + ${pairs.filter(pair => pair.family === 'IPv6').length} IPv6)`
+          : `${pairs.length} IPv4 ${pairs.length === 1 ? 'entry' : 'entries'} shown here`;
+        const asusSteps = [
+          '<strong>Open WAN → Internet Connection.</strong> Set <em>DNS Privacy Protocol</em> to DNS-over-TLS (DoT); the server list appears after this change.',
+          `<strong>Add exactly the ${escHtml(entryDescription)} to the WAN DNS-over-TLS Server list.</strong> Put each address in <em>IP Address</em>, use ${escHtml(dot)} as <em>TLS Hostname</em>, leave TLS Port blank (853), and leave SPKI Fingerprint blank.`,
+          `<strong>Treat every row as active.</strong> Verified Merlin builds distribute queries across the list; they do not reserve later rows as ordered fallbacks. This ${escHtml(setup.asusMode.label)} mode intentionally emits all ${pairs.length} ${pairs.length === 1 ? 'upstream' : 'upstreams'}.`,
+        ];
+        if (dualStack) {
+          asusSteps.push(
+            '<strong>Advertise the router for LAN IPv6 DNS.</strong> If the IPv6 page exposes DNS server fields, use the router’s LAN IPv6 link-local address there—not a NextDNS upstream address from the WAN DoT list. This lets IPv6 clients ask the router while the router forwards through encrypted upstreams.',
+          );
+        }
+        asusSteps.push(
+          '<strong>Apply the change and renew a client lease.</strong> Confirm LAN DHCP and IPv6 router advertisements distribute the router as DNS; WAN DNS fields alone may affect only the router.',
+        );
+        return asusSteps;
+      }
     case 'pfsense': {
       const forwarders = pairs.map(p => `    forward-addr: ${p.address}#${dot}`).join('\n');
       return [
@@ -4171,6 +4238,9 @@ function buildPrerequisites(setup, context) {
   if (setup.device.protocol === 'Plain DNS') {
     items.push('A stable public IPv4 address or DDNS; Linked IP may not work behind carrier-grade NAT.');
   }
+  if (setup.asusMode && setup.asusMode.familyPolicy === 'dual') {
+    items.push('Working WAN IPv6 and the router’s LAN IPv6 link-local address from its IPv6 status page.');
+  }
   return items;
 }
 
@@ -4198,10 +4268,10 @@ function renderSetupRunbook() {
     : 'Not benchmarked — standard compatible route';
   const limitation = setup.asusMode
     ? setup.asusMode.id === 'reliable'
-      ? 'Verified Merlin behavior is active-set round robin. Stock AsusWRT is believed to inherit similar behavior, but it varies by model and firmware.'
+      ? `${setup.asusMode.entries.length} listed ${setup.asusMode.familyLabel} upstreams can receive live queries. Verified Merlin behavior is active-set round robin; Stock AsusWRT is believed to inherit similar behavior, but it varies by model and firmware.`
       : setup.asusMode.id === 'balanced'
-        ? 'Pinned and anycast entries both receive live queries. The RTT estimate does not include cache fragmentation or resolver processing.'
-        : 'On verified Merlin settings, affected queries can wait about 6 seconds (two 3-second retries); Stubby then backs the dead server off for 15 minutes before trying again. Stock behavior can vary by model and firmware.'
+        ? `All ${setup.asusMode.entries.length} pinned and anycast ${setup.asusMode.familyLabel} entries can receive live queries. The RTT estimate does not include cache fragmentation or resolver processing.`
+        : `All ${setup.asusMode.entries.length} pinned ${setup.asusMode.familyLabel} entries target the same PoP. On verified Merlin settings, affected queries can wait about 6 seconds (two 3-second retries); Stubby then backs the dead server off for 15 minutes before trying again. Stock behavior can vary by model and firmware.`
     : device.id === 'android'
     ? 'Android Private DNS accepts a hostname, not a bootstrap IP, so it cannot stay pinned to one measured edge.'
     : (device.scope === 'browser'
@@ -4246,7 +4316,7 @@ function renderSetupRunbook() {
       <div class="runbook-title-row">
         <div>
           <h2 id="setupRunbookTitle">${escHtml(device.label)}${variant ? ` · ${escHtml(variant.label)}` : ''}</h2>
-          <p>${escHtml(setup.device.scopeLabel)} · ${escHtml(setup.device.protocol)} · ${escHtml(setup.asusMode ? setup.asusMode.label : setup.tier.label)}</p>
+          <p>${escHtml(setup.device.scopeLabel)} · ${escHtml(setup.device.protocol)} · ${escHtml(setup.asusMode ? `${setup.asusMode.label} · ${setup.asusMode.familyLabel}` : setup.tier.label)}</p>
         </div>
         <button type="button" class="share-guide-btn" onclick="copyGuideLink(this)">Share guide</button>
       </div>
@@ -4261,7 +4331,7 @@ function renderSetupRunbook() {
             <p>${escHtml(setup.reason)}</p></div>
         </div>
         ${setup.asusMode ? `<div class="asus-effective">
-          <span>Active set</span>
+          <span>Active set · ${setup.asusMode.entries.length}</span>
           <strong>${setup.asusMode.entries.map(entry => escHtml(entry.label)).join(' + ')}</strong>
           <span>${setup.asusMode.estimatedMedianMs == null ? 'RTT estimate unavailable' : `≈${setup.asusMode.estimatedMedianMs}ms transport RTT estimate`}</span>
         </div>` : ''}
@@ -4309,17 +4379,23 @@ function renderSetupRunbook() {
   runbook.hidden = false;
 }
 
-function showSelectedSetup() {
-  if (!currentSetupDevice()) return;
-  setupRunbookVisible = true;
-  renderSetupRunbook();
+function syncSelectedSetupUrl() {
   const params = new URLSearchParams(window.location.search);
   params.set('device', selectedSetupDevice);
   if (selectedSetupVariant) params.set('variant', selectedSetupVariant);
   else params.delete('variant');
   if (selectedSetupMode) params.set('mode', selectedSetupMode);
   else params.delete('mode');
+  if (currentSetupVariant()?.modes && selectedSetupFamily) params.set('family', selectedSetupFamily);
+  else params.delete('family');
   history.replaceState(null, '', `${window.location.pathname}${params.toString() ? '?' + params : ''}${window.location.hash}`);
+}
+
+function showSelectedSetup() {
+  if (!currentSetupDevice()) return;
+  setupRunbookVisible = true;
+  renderSetupRunbook();
+  syncSelectedSetupUrl();
   const heading = document.getElementById('setupRunbookTitle');
   if (heading) {
     heading.tabIndex = -1;
@@ -4341,6 +4417,11 @@ function buildGuideShareUrl() {
   else url.searchParams.delete('variant');
   if (selectedSetupMode) url.searchParams.set('mode', selectedSetupMode);
   else url.searchParams.delete('mode');
+  if (currentSetupVariant()?.modes && selectedSetupFamily) {
+    url.searchParams.set('family', selectedSetupFamily);
+  } else {
+    url.searchParams.delete('family');
+  }
   url.hash = 'setupGuide';
   return url.toString();
 }
@@ -4385,22 +4466,129 @@ function resetSetupContextForInput() {
   renderAiPrompt(null, false);
 }
 
-function updateSetupContext(configId, config) {
+function updateSetupContext(configId, config, hasProfileId = true, benchmarkAt = new Date()) {
   latestSetupContext = {
     hasBenchmark: true,
-    benchmarkAt: new Date(),
+    benchmarkAt,
     configId,
     config,
     routingTiers: config.routingTiers,
   };
   const banner = document.getElementById('setupStateBanner');
   banner.classList.add('measured');
-  banner.innerHTML = `<span class="setup-state-icon" aria-hidden="true">✓</span>`
-    + `<div><strong>Personalized setup ready.</strong> Routes measured ${escHtml(latestSetupContext.benchmarkAt.toLocaleString())}.</div>`
-    + `<button type="button" class="text-action" onclick="focusBenchmark()">Rerun benchmark</button>`;
+  banner.innerHTML = hasProfileId
+    ? `<span class="setup-state-icon" aria-hidden="true">✓</span>`
+      + `<div><strong>Personalized setup ready.</strong> Routes measured ${escHtml(latestSetupContext.benchmarkAt.toLocaleString())}.</div>`
+      + `<button type="button" class="text-action" onclick="focusBenchmark()">Rerun benchmark</button>`
+    : `<span class="setup-state-icon" aria-hidden="true">✓</span>`
+      + `<div><strong>Setup templates ready.</strong> Values use a {config-id} placeholder until you add an optional ID or substitute it manually.</div>`
+      + `<button type="button" class="text-action" onclick="focusBenchmark()">Add Configuration ID</button>`;
   renderSetupChoices();
   if (setupRunbookVisible) renderSetupRunbook();
   renderAiPrompt(config, true);
+}
+
+function currentProfileInputState() {
+  const entered = document.getElementById('configId').value.trim();
+  const valid = CONFIG_ID_PATTERN.test(entered);
+  return {
+    entered,
+    valid,
+    configId: valid ? entered : '{config-id}',
+  };
+}
+
+function applyProfileToLatestBenchmark() {
+  if (!latestBenchmarkProfileContext) return false;
+  const profile = currentProfileInputState();
+  const routingTiers = buildRoutingTiers(
+    latestBenchmarkProfileContext.ok,
+    profile.configId,
+    latestBenchmarkProfileContext.pin,
+    latestBenchmarkProfileContext.preference
+  );
+  const config = generateConfig(profile.configId, routingTiers);
+
+  renderConfig(config, profile.valid);
+  renderPinSection(routingTiers);
+
+  updateSetupContext(
+    profile.configId,
+    config,
+    profile.valid,
+    latestBenchmarkProfileContext.benchmarkAt
+  );
+  return true;
+}
+
+function buildResultsToolbarEvidence(recommended, ok, pin = null) {
+  const lowestEdge = ok
+    .filter(result => result.family === 'IPv4'
+      && result.type === 'server'
+      && result.metric === 'server')
+    .sort((a, b) => a.medianMs - b.medianMs)[0];
+  if (!lowestEdge) return 'No comparable IPv4 edge result was available.';
+
+  const edgeName = serverLabel(lowestEdge);
+  if (!recommended) return `Lowest edge · ${edgeName} · ${lowestEdge.medianMs}ms`;
+  if (recommended.id === 'pinned') {
+    return `Lowest edge · ${edgeName} · ${lowestEdge.medianMs}ms · direct route selected`;
+  }
+
+  const routed = recommended.decisionResult && recommended.decisionResult.ipv4;
+  const reachesLowestPop = routed && lowestEdge.pop
+    && (routed.pop === lowestEdge.pop || routed.pop === lowestEdge.nodeId);
+  if (reachesLowestPop) {
+    return `Lowest edge · ${edgeName} · ${lowestEdge.medianMs}ms · recommended route reaches this PoP`;
+  }
+
+  const routeLatency = recommended.latency && recommended.latency.ipv4;
+  const gap = routeLatency == null ? null : roundMs(routeLatency - lowestEdge.medianMs);
+  return `Lowest edge · ${edgeName} · ${lowestEdge.medianMs}ms`
+    + (gap != null && gap > 0
+      ? ` · ${gap}ms below the recommended route`
+        + (pin && !pin.worthIt ? ` · inside the ${pin.thresholdMs}ms pin threshold` : '')
+      : '');
+}
+
+function updateResultsToolbar(routingTiers, ok, benchmarkAt, previousSummary = '') {
+  const toolbar = document.getElementById('resultsToolbar');
+  const recommended = routingTiers.find(tier => tier.recommended)
+    || routingTiers.find(tier => tier.available);
+  const pin = routingTiers.find(tier => tier.id === 'pinned')?.pin || null;
+  const latency = recommended && (recommended.latency.ipv4 ?? recommended.latency.ipv6);
+  document.querySelector('.results-toolbar-label').textContent = 'Measurement locked';
+  document.getElementById('resultsToolbarRoute').textContent = recommended
+    ? `Recommended route · ${recommended.label}${latency == null ? '' : ` · ${latency}ms`}`
+    : 'Benchmark complete';
+  document.getElementById('resultsToolbarEvidence').textContent =
+    buildResultsToolbarEvidence(recommended, ok, pin);
+  document.getElementById('resultsToolbarMeta').textContent =
+    `${benchmarkAt.toLocaleString()}${previousSummary ? ` · ${previousSummary}` : ''}`;
+  document.getElementById('resultsConfigId').value = document.getElementById('configId').value;
+  toolbar.hidden = false;
+  toolbar.classList.remove('is-locking');
+  void toolbar.offsetWidth;
+  toolbar.classList.add('is-locking');
+}
+
+function syncProfileInputs(sourceId) {
+  const source = document.getElementById(sourceId);
+  const other = document.getElementById(sourceId === 'configId' ? 'resultsConfigId' : 'configId');
+  if (other && other.value !== source.value) other.value = source.value;
+  if (applyProfileToLatestBenchmark()) {
+    hideError();
+    return;
+  }
+  const enteredId = document.getElementById('configId').value.trim();
+  if (enteredId !== latestSetupContext.configId) resetSetupContextForInput();
+}
+
+function cancelBenchmark() {
+  if (!activeBenchmarkController) return;
+  document.getElementById('cancelBenchmarkBtn').disabled = true;
+  setProgress('Cancelling benchmark…', Number(document.getElementById('progressFill').getAttribute('aria-valuenow')) || 0);
+  activeBenchmarkController.abort();
 }
 
 function initSetupGuide() {
@@ -4416,6 +4604,10 @@ function initSetupGuide() {
     const requestedMode = params.get('mode');
     selectedSetupMode = variant && variant.modes && variant.modes.some(mode => mode.id === requestedMode)
       ? requestedMode : (variant && variant.modes ? 'reliable' : null);
+    const requestedFamily = params.get('family');
+    selectedSetupFamily = variant && variant.modes
+      ? (requestedFamily === 'ipv4' ? 'ipv4' : 'dual')
+      : null;
   }
   const enteredId = document.getElementById('configId').value.trim();
   latestSetupContext.configId = CONFIG_ID_PATTERN.test(enteredId) ? enteredId : '{config-id}';
@@ -4423,7 +4615,7 @@ function initSetupGuide() {
   renderSetupChoices();
   renderAiPrompt(null, false);
   if (requestedDevice && (!requestedDevice.variants || selectedSetupVariant)
-    && (!currentSetupVariant()?.modes || selectedSetupMode)) {
+    && (!currentSetupVariant()?.modes || (selectedSetupMode && selectedSetupFamily))) {
     setupRunbookVisible = true;
     renderSetupRunbook();
   }
@@ -4460,7 +4652,9 @@ function buildAiPrompt(config, hasRun) {
       ? selectCompatibleSetup(selectedDevice, selectedVariant, latestSetupContext)
       : null;
     L.push('Benchmark recommendation: ' + (compatible
-      ? (compatible.asusMode ? compatible.asusMode.label + ' native DoT mode' : compatible.tier.label)
+      ? (compatible.asusMode
+        ? compatible.asusMode.label + ' native DoT mode · ' + compatible.asusMode.familyLabel
+        : compatible.tier.label)
       : config.recommendedTier.label));
     if (compatible && compatible.adapted) {
       L.push('Compatibility adjustment: the overall benchmark winner is not supported by this device, so use the compatible route named above.');
@@ -4479,11 +4673,19 @@ function buildAiPrompt(config, hasRun) {
     for (const tier of config.routingTiers.filter(t => t.available
       && (!selectedDevice || effectiveDevice(selectedDevice, selectedVariant).routes.includes(t.id)))) {
       const marker = compatible ? (tier.id === compatible.tier.id ? '  [RECOMMENDED]' : '') : (tier.recommended ? '  [RECOMMENDED]' : '');
-      const aiUrl = tier.url.replace(/\/[^/]+$/, '/' + AI_ID);
       L.push('  ' + tier.label + marker);
-      L.push('    DoH template: ' + aiUrl);
-      if (tier.addresses.ipv4[0]) L.push('    Matching IPv4: ' + tier.addresses.ipv4[0]);
-      if (tier.addresses.ipv6[0]) L.push('    Matching IPv6: ' + tier.addresses.ipv6[0]);
+      const v4Url = tier.urls && tier.urls.ipv4;
+      const v6Url = tier.urls && tier.urls.ipv6;
+      if (tier.id === 'pinned' && v4Url && v6Url && v4Url !== v6Url) {
+        L.push('    IPv4 DoH template: ' + v4Url.replace(/\/[^/]+$/, '/' + AI_ID));
+        if (tier.addresses.ipv4[0]) L.push('    Matching IPv4: ' + tier.addresses.ipv4[0]);
+        L.push('    IPv6 DoH template: ' + v6Url.replace(/\/[^/]+$/, '/' + AI_ID));
+        if (tier.addresses.ipv6[0]) L.push('    Matching IPv6: ' + tier.addresses.ipv6[0]);
+      } else {
+        L.push('    DoH template: ' + tier.url.replace(/\/[^/]+$/, '/' + AI_ID));
+        if (tier.addresses.ipv4[0]) L.push('    Matching IPv4: ' + tier.addresses.ipv4[0]);
+        if (tier.addresses.ipv6[0]) L.push('    Matching IPv6: ' + tier.addresses.ipv6[0]);
+      }
       L.push('    Trade-off: ' + tier.tradeoff);
     }
   } else {
@@ -4503,6 +4705,7 @@ function buildAiPrompt(config, hasRun) {
   L.push('- A pinned server has no automatic steering. The NextDNS CLI can express an ordered fallback list; native Asus DoT treats listed entries as an active set on verified Merlin builds.');
   if (selectedDevice && selectedDevice.id === 'asus' && selectedVariant && selectedVariant.modes) {
     L.push('- Add only the active upstreams named for the selected Asus mode. Do not silently add extra addresses as “backups,” because they can receive live queries.');
+    L.push('- IPv4 and IPv6 NextDNS upstream addresses both go in the WAN DNS-over-TLS Server list. If LAN clients should use the router for DNS over IPv6, the IPv6 page advertises the router’s LAN IPv6 link-local address, not a NextDNS upstream.');
   } else {
     L.push('- Configure only the endpoint count and address families the device actually supports; extra entries may share traffic rather than wait as backups.');
   }
@@ -4535,62 +4738,84 @@ async function copyAiPrompt(btn) {
 // ─── Main Entry ───────────────────────────────────────────────────────────────
 
 async function runBenchmark() {
-  const configId = document.getElementById('configId').value.trim();
+  if (activeBenchmarkController) return;
+  const configInput = document.getElementById('configId');
+  const resultsConfigInput = document.getElementById('resultsConfigId');
+  const profile = currentProfileInputState();
   const rounds = parseInt(document.getElementById('rounds').value);
   const preference = document.getElementById('preference').value;
   const resolver = document.getElementById('dohResolver').value;
 
-  if (!CONFIG_ID_PATTERN.test(configId)) {
+  if (profile.entered && !profile.valid) {
     showError('Enter the profile ID exactly as shown at my.nextdns.io → Setup (letters, numbers, hyphen or underscore).');
     return;
   }
+  const configId = profile.configId;
 
   hideError();
+  const controller = new AbortController();
+  const signal = controller.signal;
+  activeBenchmarkController = controller;
   const btn = document.getElementById('runBtn');
+  const rerunBtn = document.getElementById('rerunBtn');
+  const cancelBtn = document.getElementById('cancelBenchmarkBtn');
   btn.disabled = true;
   btn.textContent = 'Running...';
+  rerunBtn.disabled = true;
+  rerunBtn.textContent = 'Running…';
+  cancelBtn.disabled = false;
+  configInput.disabled = true;
+  resultsConfigInput.disabled = true;
 
   const progressSection = document.getElementById('progressSection');
   const resultsSection = document.getElementById('resultsSection');
+  const hadResults = resultsSection.style.display === 'block';
   progressSection.style.display = 'block';
-  resultsSection.style.display = 'none';
-  document.getElementById('configInline').style.display = 'none';
+  setBenchmarkPhase('discover');
+  if (!hadResults) {
+    resultsSection.style.display = 'none';
+    document.getElementById('configInline').style.display = 'none';
+  }
   document.getElementById('progressFill').classList.add('running');
 
   try {
     // Phase 1: Discovery
     setProgress('Discovering servers...', 0);
-    const servers = await discoverServers(msg => setProgress(msg, 5));
+    const servers = await discoverServers(msg => setProgress(msg, 5), signal);
 
     if (servers.length === 0) {
       showError('No servers discovered. Check your internet connection.');
       return;
     }
 
+    setBenchmarkPhase('probe');
     setProgress(`Discovered ${servers.length} servers. Benchmarking...`, 10);
 
     // Phase 2: Benchmark
     let results = await runFullBenchmark(servers, rounds, (cur, tot) => {
       const pct = Math.round(10 + (cur / tot) * 65);
       setProgress(`Benchmarking: ${cur}/${tot} servers...`, pct);
-    });
+    }, signal);
 
     // Phase 3: refine the leading IPv4 routes without concurrent probes. Each
     // round randomizes finalist order to reduce fixed-position and time drift.
+    setBenchmarkPhase('refine');
     setProgress(`Refining the leading routes (${REFINEMENT_ROUNDS} rounds)...`, 76);
     results = await refineFinalists(results, REFINEMENT_ROUNDS, (cur, tot) => {
       const pct = Math.round(76 + (cur / tot) * 12);
       setProgress(`Refining finalists: ${cur}/${tot} checks...`, pct);
-    });
+    }, signal);
 
     // Phase 4: Resolve IPs
+    setBenchmarkPhase('resolve');
     setProgress(`Resolving DNS via ${DOH_RESOLVERS[resolver].label}...`, 89);
     await resolveAllIPs(results, (cur, tot) => {
       const pct = Math.round(89 + (cur / tot) * 6);
       setProgress(`Resolving IPs: ${cur}/${tot} hostnames...`, pct);
-    }, resolver);
+    }, resolver, signal);
 
     // Phase 5: Rank
+    setBenchmarkPhase('rank');
     setProgress('Ranking results...', 96);
     const ranked = rankResults(results, preference);
 
@@ -4617,9 +4842,14 @@ async function runBenchmark() {
     const pin = selectPinTarget(ok);
     const routingTiers = buildRoutingTiers(ok, configId, pin, preference);
     const config = generateConfig(configId, routingTiers);
+    const benchmarkAt = new Date();
+    const previousSummary = describePreviousRun(ok);
+    throwIfCancelled(signal);
+    latestBenchmarkProfileContext = { ok, pin, preference, benchmarkAt };
 
     // Render results
     resultsSection.style.display = 'block';
+    document.getElementById('setupGuide').hidden = false;
 
     // Insight box
     const insightBox = document.getElementById('insightBox');
@@ -4627,20 +4857,10 @@ async function runBenchmark() {
       buildInsightHtml(errors, ipv4Xref, ipv6Xref, preference, routingTiers);
     insightBox.innerHTML = insightHtml;
 
-    // Animate stat pill counters (skip animation if reduced motion preferred)
+    // Keep summary counts immediate; the authored motion belongs to the route board.
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     insightBox.querySelectorAll('[data-count]').forEach(el => {
-      const target = parseInt(el.dataset.count);
-      if (prefersReducedMotion) {
-        el.textContent = target;
-        return;
-      }
-      const t0 = performance.now();
-      (function tick(now) {
-        const p = Math.min((now - t0) / 500, 1);
-        el.textContent = Math.round(p * target);
-        if (p < 1) requestAnimationFrame(tick);
-      })(performance.now());
+      el.textContent = parseInt(el.dataset.count);
     });
 
     // IPv4 table
@@ -4678,12 +4898,14 @@ async function runBenchmark() {
       document.getElementById('errorServersSection').style.display = 'none';
     }
 
-    renderConfig(config);
+    renderConfig(config, profile.valid);
     renderPinSection(routingTiers);
-    updateSetupContext(configId, config);
+    updateSetupContext(configId, config, profile.valid, benchmarkAt);
+    updateResultsToolbar(routingTiers, ok, benchmarkAt, previousSummary);
     saveRunHistory(ok, routingTiers);
 
-    setProgress('Done!', 100);
+    setBenchmarkPhase('locked');
+    setProgress('Measurement locked. Opening route register…', 100);
 
     // Auto-scroll to results
     resultsSection.scrollIntoView({
@@ -4691,13 +4913,27 @@ async function runBenchmark() {
       block: 'start',
     });
   } catch (e) {
-    showError('Benchmark failed: ' + e.message);
-    console.error(e);
+    if (e.name === 'AbortError') {
+      setBenchmarkPhase('cancelled');
+      setProgress('Benchmark cancelled. Previous results were not changed.', 0);
+      if (hadResults) resultsSection.style.display = 'block';
+    } else {
+      showError('Benchmark failed: ' + e.message);
+      console.error(e);
+    }
   } finally {
+    if (activeBenchmarkController === controller) activeBenchmarkController = null;
     btn.disabled = false;
     btn.textContent = 'Run Benchmark';
+    rerunBtn.disabled = false;
+    rerunBtn.textContent = 'Rerun benchmark';
+    cancelBtn.disabled = true;
+    configInput.disabled = false;
+    resultsConfigInput.disabled = false;
     document.getElementById('progressFill').classList.remove('running');
-    setTimeout(() => { progressSection.style.display = 'none'; }, 1000);
+    setTimeout(() => {
+      if (!activeBenchmarkController) progressSection.style.display = 'none';
+    }, 1000);
   }
 }
 
@@ -4705,9 +4941,10 @@ async function runBenchmark() {
 document.getElementById('configId').addEventListener('keydown', e => {
   if (e.key === 'Enter') runBenchmark();
 });
-document.getElementById('configId').addEventListener('input', () => {
-  const enteredId = document.getElementById('configId').value.trim();
-  if (enteredId !== latestSetupContext.configId) resetSetupContextForInput();
+document.getElementById('configId').addEventListener('input', () => syncProfileInputs('configId'));
+document.getElementById('resultsConfigId').addEventListener('input', () => syncProfileInputs('resultsConfigId'));
+document.getElementById('resultsConfigId').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runBenchmark();
 });
 
 
@@ -4793,9 +5030,10 @@ async function checkNextDNSConnection(updateHeader = true) {
       const loc = (info.locationName || '').replace(/^[\p{Emoji}\s]+/u, '').trim();
       if (updateHeader && el) {
         el.innerHTML = '<span class="status-dot active"></span>'
-          + 'Connected to NextDNS via <span class="status-server">' + escHtml(info.pop) + '</span>'
-          + (loc ? ' <span class="text-dim">' + escHtml(loc) + '</span>' : '')
-          + (detectedRtt ? ' &middot; <span class="status-rtt">~' + detectedRtt + 'ms</span>' : '')
+          + '<span class="status-primary"><span class="status-label">Connected to NextDNS via</span>'
+          + '<span class="status-server">' + escHtml(info.pop) + '</span></span>'
+          + (loc ? '<span class="status-separator" aria-hidden="true">&middot;</span><span class="status-location">' + escHtml(loc) + '</span>' : '')
+          + (detectedRtt ? '<span class="status-separator" aria-hidden="true">&middot;</span><span class="status-rtt">~' + detectedRtt + 'ms</span>' : '')
           + (v6 ? ' <span class="status-ipv6">IPv6</span>' : '');
       }
     } else {
@@ -4803,7 +5041,9 @@ async function checkNextDNSConnection(updateHeader = true) {
       detectedRtt = null;
       if (updateHeader && el) {
         el.innerHTML = '<span class="status-dot inactive"></span>'
-          + 'Not connected to NextDNS &mdash; enter your Config ID to benchmark'
+          + '<span class="status-primary"><span class="status-label">Not connected to NextDNS</span></span>'
+          + '<span class="status-separator" aria-hidden="true">&middot;</span>'
+          + '<span>Benchmark this network to compare available routes</span>'
           + (v6 ? ' <span class="status-ipv6">IPv6 ready</span>' : '');
       }
     }
@@ -4848,173 +5088,6 @@ async function verifySetupConnection() {
 }
 
 checkNextDNSConnection(true);
-
-/* Matrix rain canvas effect for banner */
-/* Matrix rain — slowed down */
-(function initMatrixRain() {
-  const canvas = document.getElementById('matrixRain');
-  if (!canvas) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    canvas.hidden = true;
-    return;
-  }
-  const ctx = canvas.getContext('2d');
-  const banner = canvas.parentElement;
-  const chars = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω0123456789ABCDEF.:;=+*#@%&';
-  const fontSize = 11;
-  const interval = 80; // ms between frames (higher = slower)
-  let columns, drops, last = 0;
-
-  function resize() {
-    canvas.width = banner.offsetWidth;
-    canvas.height = banner.offsetHeight;
-    columns = Math.floor(canvas.width / fontSize);
-    drops = Array(columns).fill(0).map(() => Math.random() * -20 | 0);
-  }
-
-  function draw(now) {
-    requestAnimationFrame(draw);
-    if (now - last < interval) return;
-    last = now;
-    ctx.fillStyle = 'rgba(13, 17, 23, 0.18)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.font = fontSize + 'px monospace';
-
-    for (let i = 0; i < columns; i++) {
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-        drops[i] = 0;
-      }
-      if (drops[i] >= 0) {
-        const char = chars[Math.random() * chars.length | 0];
-        const hue = [160, 140, 300, 120][Math.random() * 4 | 0];
-        ctx.fillStyle = 'hsla(' + hue + ', 80%, 60%, ' + (0.5 + Math.random() * 0.5) + ')';
-        ctx.fillText(char, i * fontSize, drops[i] * fontSize);
-      }
-      drops[i]++;
-    }
-  }
-
-  resize();
-  requestAnimationFrame(draw);
-  window.addEventListener('resize', resize);
-  /* Re-fit canvas when banner content changes size (e.g. benchmark results load) */
-  if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(resize).observe(banner);
-  }
-})();
-
-/* Title scramble-decode effect */
-/* Advanced title animation: per-char decode, wave, glitch, RGB split */
-(function initTitleFX() {
-  const el = document.getElementById('bannerTitle');
-  if (!el) return;
-  const target = el.dataset.text;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    el.textContent = target;
-    return;
-  }
-  const glyphs = 'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδ0123456789@#$%&+=.:;';
-  const h1 = el.closest('h1');
-  const len = target.length;
-
-  // Build per-character spans
-  const spans = [];
-  el.innerHTML = '';
-  for (let i = 0; i < len; i++) {
-    if (target[i] === ' ') {
-      const sp = document.createElement('span');
-      sp.className = 't-space';
-      sp.innerHTML = '&nbsp;';
-      el.appendChild(sp);
-      spans.push(null); // null = space, skip in animations
-    } else {
-      const sp = document.createElement('span');
-      sp.className = 't-char';
-      sp.textContent = glyphs[Math.random() * glyphs.length | 0];
-      el.appendChild(sp);
-      spans.push(sp);
-    }
-  }
-
-  // Phase 1: Per-character independent decode
-  // Each char scrambles for a random duration (staggered, not left-to-right)
-  const lockTimes = spans.map((sp, i) => {
-    if (!sp) return 0;
-    // Random lock time: 400ms-1800ms, with slight left-bias so it roughly flows L→R
-    return 400 + i * 40 + Math.random() * 800;
-  });
-  const startTime = performance.now();
-  let allLocked = false;
-
-  function animateDecode() {
-    const now = performance.now();
-    const elapsed = now - startTime;
-    let done = true;
-    for (let i = 0; i < len; i++) {
-      if (!spans[i]) continue;
-      if (elapsed >= lockTimes[i]) {
-        spans[i].textContent = target[i];
-      } else {
-        spans[i].textContent = glyphs[Math.random() * glyphs.length | 0];
-        done = false;
-      }
-    }
-    if (!done) {
-      requestAnimationFrame(animateDecode);
-    } else if (!allLocked) {
-      allLocked = true;
-      startIdleEffects();
-    }
-  }
-  requestAnimationFrame(animateDecode);
-
-  // Phase 2: Idle effects after decode completes
-  function startIdleEffects() {
-    // Start wave animation with staggered delays
-    spans.forEach((sp, i) => {
-      if (!sp) return;
-      sp.style.animation = 'charWave 3s ease-in-out infinite, charGradient 8s linear infinite';
-      sp.style.animationDelay = (i * 0.12) + 's, 0s';
-    });
-
-    // Random single-char glitch (flip to glyph + flash)
-    function charGlitch() {
-      const indices = spans.map((s, i) => s ? i : -1).filter(i => i >= 0);
-      const count = 1 + (Math.random() > 0.5 ? 1 : 0);
-      for (let c = 0; c < count; c++) {
-        const idx = indices[Math.random() * indices.length | 0];
-        const sp = spans[idx];
-        sp.textContent = glyphs[Math.random() * glyphs.length | 0];
-        sp.classList.add('glitch-flash');
-        setTimeout(() => {
-          sp.textContent = target[idx];
-          sp.classList.remove('glitch-flash');
-        }, 80 + Math.random() * 70);
-      }
-      setTimeout(charGlitch, 3000 + Math.random() * 5000);
-    }
-    setTimeout(charGlitch, 2500);
-
-    // Rare RGB chromatic aberration split on entire title
-    function rgbSplit() {
-      h1.classList.add('rgb-split');
-      setTimeout(() => h1.classList.remove('rgb-split'), 120 + Math.random() * 80);
-      setTimeout(rgbSplit, 8000 + Math.random() * 12000);
-    }
-    setTimeout(rgbSplit, 6000 + Math.random() * 4000);
-
-    // Random brightness flicker on individual chars
-    function charFlicker() {
-      const indices = spans.map((s, i) => s ? i : -1).filter(i => i >= 0);
-      const idx = indices[Math.random() * indices.length | 0];
-      const sp = spans[idx];
-      sp.style.filter = 'brightness(2)';
-      setTimeout(() => { sp.style.filter = ''; }, 60);
-      setTimeout(charFlicker, 1500 + Math.random() * 3000);
-    }
-    setTimeout(charFlicker, 3000);
-  }
-})();
 </script>
 </body>
 </html>

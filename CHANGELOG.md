@@ -2,6 +2,20 @@
 
 All notable changes to NextDNS DNS Matrix are documented here.
 
+## [2.1.0] — 2026-07-28
+
+### Added
+- **Complete route-board redesign** — the benchmark is now the clear first action, the full IPv4/IPv6 route register remains the primary evidence, and optional configuration values stay secondary.
+- **Truthful benchmark phase rail** — Discover, Probe, Refine, Resolve, and Rank expose the real stage of a run before the measured result locks into the route register.
+- **Dual-stack native Asus guides by default** — when both IPv6 anycast members are measured, Reliable emits Anycast DNS1/DNS2 over IPv4 and IPv6, Balanced emits each family’s lowest-latency edge plus its fastest anycast member, and Maximum performance emits the independently selected lowest-latency edge for each family.
+- **Asus address-family choice** — users can switch the generated active set to IPv4-only. Shared guide links preserve this choice without carrying the NextDNS profile ID.
+
+### Changed
+- Asus mode estimates and clear-advantage gating now include every emitted IPv4 and IPv6 active upstream.
+- IPv4 and IPv6 pinned targets are selected independently by measured latency instead of forcing IPv6 onto the IPv4 winner’s PoP. Each pinned address retains its matching family-specific DoH hostname.
+- Asus runbooks distinguish WAN DoT upstream addresses from LAN IPv6 DNS advertisement: the IPv6 page advertises the router’s LAN link-local address, not a NextDNS upstream.
+- The current NextDNS connection is a compact header readout rather than a competing hero panel, and completion/copy feedback now uses bounded reduced-motion-safe board transitions.
+
 ## [2.0.0] — 2026-07-27
 
 ### Added
